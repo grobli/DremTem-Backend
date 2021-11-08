@@ -120,57 +120,52 @@ namespace DeviceGrpcService.Services
             return location != null;
         }
 
-        private static string GetNameValueFromRequest(DeviceCreateRequest request)
-        {
-            return request.NameCase switch
+        private static string GetNameValueFromRequest(DeviceCreateRequest request) =>
+            request.NameCase switch
             {
                 DeviceCreateRequest.NameOneofCase.None => null,
                 DeviceCreateRequest.NameOneofCase.NameValue => request.NameValue,
                 _ => throw new ArgumentException("Invalid message - NameCase")
             };
-        }
 
-        private static (string value, bool clearFlag) GetNameValueFromRequest(DeviceUpdateRequest request)
-        {
-            return request.NameCase switch
+
+        private static (string value, bool clearFlag) GetNameValueFromRequest(DeviceUpdateRequest request) =>
+            request.NameCase switch
             {
                 DeviceUpdateRequest.NameOneofCase.None => (null, false),
                 DeviceUpdateRequest.NameOneofCase.NameValue => (request.NameValue, false),
                 DeviceUpdateRequest.NameOneofCase.NameNullified => (null, request.NameNullified),
                 _ => throw new ArgumentException("Invalid message - NameCase")
             };
-        }
 
-        private static bool? GetOnlineValueFromRequest(DeviceUpdateRequest request)
-        {
-            return request.OnlineCase switch
+
+        private static bool? GetOnlineValueFromRequest(DeviceUpdateRequest request) =>
+            request.OnlineCase switch
             {
                 DeviceUpdateRequest.OnlineOneofCase.None => null,
                 DeviceUpdateRequest.OnlineOneofCase.OnlineValue => request.OnlineValue,
                 _ => throw new ArgumentException("Invalid message - OnlineValue")
             };
-        }
 
-        private static int? GetLocationIdValueFromRequest(DeviceCreateRequest request)
-        {
-            return request.LocationIDCase switch
+
+        private static int? GetLocationIdValueFromRequest(DeviceCreateRequest request) =>
+            request.LocationIDCase switch
             {
                 DeviceCreateRequest.LocationIDOneofCase.None => null,
                 DeviceCreateRequest.LocationIDOneofCase.LocationIdValue => request.LocationIdValue,
                 _ => throw new ArgumentException("Invalid message - LocationIDCase")
             };
-        }
 
-        private static (int? value, bool clearFlag) GetLocationIdValueFromRequest(DeviceUpdateRequest request)
-        {
-            return request.LocationIDCase switch
+
+        private static (int? value, bool clearFlag) GetLocationIdValueFromRequest(DeviceUpdateRequest request) =>
+            request.LocationIDCase switch
             {
                 DeviceUpdateRequest.LocationIDOneofCase.None => (null, false),
                 DeviceUpdateRequest.LocationIDOneofCase.LocationIdValue => (request.LocationIdValue, false),
                 DeviceUpdateRequest.LocationIDOneofCase.LocationNullified => (null, request.LocationNullified),
                 _ => throw new ArgumentException("Invalid message - LocationIDCase")
             };
-        }
+
 
         public override async Task<DeviceGrpcBaseModel> UpdateDeviceByID(DeviceUpdateRequest request,
             ServerCallContext context)

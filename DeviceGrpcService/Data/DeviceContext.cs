@@ -28,6 +28,8 @@ namespace DeviceGrpcService.Data
             modelBuilder.Entity<Device>()
                 .Navigation(d => d.Sensors)
                 .UsePropertyAccessMode(PropertyAccessMode.Property);
+            
+            
         }
     }
 }

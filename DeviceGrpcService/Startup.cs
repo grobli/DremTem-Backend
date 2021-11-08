@@ -53,6 +53,8 @@ namespace DeviceGrpcService
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapGrpcService<DeviceService>();
+                endpoints.MapGrpcService<LocationService>();
+                endpoints.MapGrpcService<SensorService>();
 
                 endpoints.MapGet("/",
                     async context =>
