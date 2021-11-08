@@ -387,5 +387,8 @@ FodyWeavers.xsd
 .idea/
 *.sln.iml
 
+# Visual Code
+.vscode
+
 # testing projects
 ConsoleApp*

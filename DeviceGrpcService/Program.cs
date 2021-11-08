@@ -42,11 +42,11 @@ namespace DeviceGrpcService
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.ConfigureKestrel(options =>
-                    {
-                        options.Listen(IPAddress.Loopback, 5000);
-                        options.Listen(IPAddress.Loopback, 5005, configure => configure.UseHttps());
-                    });
+                    // webBuilder.ConfigureKestrel(options =>
+                    // {
+                    //     options.Listen(IPAddress.Loopback, 5000);
+                    //     options.Listen(IPAddress.Loopback, 5005, configure => configure.UseHttps());
+                    // });
                     webBuilder.UseStartup<Startup>();
                 });
     }

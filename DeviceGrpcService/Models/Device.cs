@@ -7,7 +7,7 @@ namespace DeviceGrpcService.Models
     public class Device
     {
         public Guid ID { get; set; }
-        public int LocationID { get; set; }
+        public int? LocationID { get; set; }
         public string Name { get; set; }
         public bool Online { get; set; }
 
