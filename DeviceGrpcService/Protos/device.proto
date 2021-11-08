@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+import "Protos/location.proto";
+
+option csharp_namespace = "DeviceGrpcService.Proto";
+
+package device;
+
+
+service Device {
+  rpc GetAllDevices (google.protobuf.Empty) returns (stream DeviceGrpcBaseModel);
+  rpc GetAllDevicesNested (google.protobuf.Empty) returns (stream DeviceGrpcNestedModel);
+}
+
+message DeviceGrpcBaseModel {
+  string ID = 1;
+  string Name = 2;
+  bool Online = 3;
+  int32 LocationID = 4;
+}
+
+message  DeviceGrpcNestedModel {
+  string ID = 1;
+  string Name = 2;
+  bool Online = 3;
+  LocationGrpcModel Location = 4;
+}
+

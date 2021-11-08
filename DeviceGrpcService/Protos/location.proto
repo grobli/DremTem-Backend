@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+option csharp_namespace = "DeviceGrpcService.Proto";
+
+package device;
+
+service Location {
+
+}
+
+message LocationGrpcModel {
+  string ID = 1;
+  string Name = 2;
+  double Latitude = 3;
+  double Longitude = 4;
+}
+
