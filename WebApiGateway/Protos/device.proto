@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+import "Protos/location.proto";
+
+option csharp_namespace = "DeviceGrpcService.Proto";
+
+package device;
+
+
+service Device {
+  // ------------- Basic CRUD functionality ----------------------------------------------
+  // Create
+  rpc CreateDevice (DeviceCreateRequest) returns (DeviceGrpcBaseModel);
+  // Read
+  rpc GetAllDevices (google.protobuf.Empty) returns (stream DeviceGrpcBaseModel);
+  rpc GetAllDevicesNested (google.protobuf.Empty) returns (stream DeviceGrpcNestedModel);
+
+  rpc GetDeviceById (DeviceByIdRequest) returns (DeviceGrpcBaseModel);
+  rpc GetDeviceByIdNested (DeviceByIdRequest) returns (DeviceGrpcNestedModel);
+  // Update
+  rpc UpdateDeviceByID (DeviceUpdateRequest) returns (DeviceGrpcBaseModel);
+  // Delete
+  rpc DeleteDeviceByID (DeviceByIdRequest) returns (google.protobuf.Empty);
+  // -------------------------------------- ----------------------------------------------
+}
+
+message DeviceCreateRequest {
+  oneof Name {
+    string NameValue = 1;
+  }
+  bool Online = 2;
+  oneof LocationID {
+    int32 LocationIdValue = 3;
+  }
+}
+
+message DeviceUpdateRequest {
+  string ID = 1;
+  oneof Name {
+    string NameValue = 2;
+    bool NameNullified = 3;
+  }
+  oneof Online {
+    bool OnlineValue = 4;
+  }
+  oneof LocationID {
+    int32 LocationIdValue = 5;
+    bool LocationNullified = 6;
+  }
+}
+
+message DeviceByIdRequest {
+  string ID = 1;
+}
+
+message DeviceGrpcBaseModel {
+  string ID = 1;
+  string Name = 2;
+  bool Online = 3;
+  int32 LocationID = 4;
+}
+
+message  DeviceGrpcNestedModel {
+  string ID = 1;
+  string Name = 2;
+  bool Online = 3;
+  LocationGrpcModel Location = 4;
+}
+

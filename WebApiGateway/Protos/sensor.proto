@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+option csharp_namespace = "DeviceGrpcService.Proto";
+
+package device;
+
+service Sensor {
+  // ------------- Basic CRUD functionality ----------------------------------------------
+  // Create
+  // rpc CreateLocation (LocationCreateRequest) returns (LocationGrpcModel);
+  // Read
+  //  rpc GetAllLocations (google.protobuf.Empty) returns (stream LocationGrpcModel);
+  //  rpc GetLocationById (LocationByIdRequest) returns (LocationGrpcModel);
+  // Update
+  // rpc UpdateLocationByID (LocationUpdateRequest) returns (LocationGrpcModel);
+  // Delete
+  // rpc DeleteLocationByID (LocationByIdRequest) returns (google.protobuf.Empty);
+  // -------------------------------------------------------------------------------------
+}
