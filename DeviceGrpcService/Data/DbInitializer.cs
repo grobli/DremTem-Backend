@@ -16,7 +16,7 @@ namespace DeviceGrpcService.Data
             {
                 new()
                 {
-                    ID = 1, Name = "Home", Latitude = 54.2, Longitude = 14.34
+                    Id = 1, Name = "Home", Latitude = 54.2, Longitude = 14.34
                 }
             };
             foreach (var location in locations)
@@ -26,7 +26,7 @@ namespace DeviceGrpcService.Data
 
             var devices = new Device[]
             {
-                new() { LocationID = 1, Name = "Air Temp", Online = true, }
+                new() { LocationId = 1, Name = "Air Temp", Online = true, }
             };
             foreach (var dev in devices)
             {

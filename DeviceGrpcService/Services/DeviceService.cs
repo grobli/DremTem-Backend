@@ -77,10 +77,10 @@ namespace DeviceGrpcService.Services
             {
                 return await _context.Devices
                     .Include(d => d.Location)
-                    .FirstOrDefaultAsync(d => d.ID == requestId);
+                    .FirstOrDefaultAsync(d => d.Id == requestId);
             }
 
-            return await _context.Devices.FirstOrDefaultAsync(d => d.ID == requestId);
+            return await _context.Devices.FirstOrDefaultAsync(d => d.Id == requestId);
         }
 
         public override async Task<DeviceGrpcBaseModel> CreateDevice(DeviceCreateRequest request,
@@ -96,7 +96,7 @@ namespace DeviceGrpcService.Services
             }
 
             var device = new Models.Device
-                { Name = name, Online = request.Online, LocationID = locationId };
+                { Name = name, Online = request.Online, LocationId = locationId };
 
             try
             {
@@ -182,7 +182,7 @@ namespace DeviceGrpcService.Services
             var online = GetOnlineValueFromRequest(request);
 
             device.Name = nameClearFlag ? null : name ?? device.Name;
-            device.LocationID = locationClearFlag ? null : locationId ?? device.LocationID;
+            device.LocationId = locationClearFlag ? null : locationId ?? device.LocationId;
             device.Online = online ?? device.Online;
 
             try
