@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using DeviceGrpcService.Data;
@@ -24,20 +25,22 @@ namespace DeviceGrpcService.Services
             _mapper = mapper;
         }
 
-        public override async Task GetAllDevices(Empty request, IServerStreamWriter<DeviceGrpcBaseModel> responseStream,
+        public override async Task GetAllDevices(GetAllDevicesRequest request,
+            IServerStreamWriter<DeviceGrpcBaseModel> responseStream,
             ServerCallContext context)
         {
-            foreach (var device in _context.Devices)
+            foreach (var device in _context.Devices.Where(d => d.OwnerId.ToString() == request.OwnerId))
             {
                 await responseStream.WriteAsync(_mapper.Map<DeviceGrpcBaseModel>(device));
             }
         }
 
-        public override async Task GetAllDevicesNested(Empty request,
+        public override async Task GetAllDevicesNested(GetAllDevicesRequest request,
             IServerStreamWriter<DeviceGrpcNestedModel> responseStream, ServerCallContext context)
         {
             foreach (var device in _context.Devices
-                .Include(d => d.Location))
+                .Include(d => d.Location)
+                .Where(d => d.OwnerId.ToString() == request.OwnerId))
             {
                 await responseStream.WriteAsync(_mapper.Map<DeviceGrpcNestedModel>(device));
             }
@@ -46,11 +49,11 @@ namespace DeviceGrpcService.Services
         public override async Task<DeviceGrpcBaseModel> GetDeviceById(DeviceByIdRequest request,
             ServerCallContext context)
         {
-            var device = await GetDeviceFromDatabaseAsync(request.ID);
+            var device = await GetDeviceFromDatabaseAsync(request.Id, request.OwnerId);
             if (device == null)
             {
                 throw new RpcException(new Status(StatusCode.NotFound,
-                    $"Specified device with ID=\"{request.ID}\" does not exist"));
+                    $"Specified device with ID=\"{request.Id}\" does not exist"));
             }
 
             return await Task.FromResult(_mapper.Map<DeviceGrpcBaseModel>(device));
@@ -59,44 +62,27 @@ namespace DeviceGrpcService.Services
         public override async Task<DeviceGrpcNestedModel> GetDeviceByIdNested(DeviceByIdRequest request,
             ServerCallContext context)
         {
-            var device = await GetDeviceFromDatabaseAsync(request.ID, true);
+            var device = await GetDeviceFromDatabaseAsync(request.Id, request.OwnerId, true);
             if (device == null)
             {
                 throw new RpcException(new Status(StatusCode.NotFound,
-                    $"Specified device with ID=\"{request.ID}\" does not exist"));
+                    $"Specified device with ID=\"{request.Id}\" does not exist"));
             }
 
             return await Task.FromResult(_mapper.Map<DeviceGrpcNestedModel>(device));
         }
 
-        private async Task<Models.Device> GetDeviceFromDatabaseAsync(string id,
-            bool includeNavigations = false)
-        {
-            if (!Guid.TryParse(id, out var requestId)) return null;
-            if (includeNavigations)
-            {
-                return await _context.Devices
-                    .Include(d => d.Location)
-                    .FirstOrDefaultAsync(d => d.Id == requestId);
-            }
-
-            return await _context.Devices.FirstOrDefaultAsync(d => d.Id == requestId);
-        }
-
         public override async Task<DeviceGrpcBaseModel> CreateDevice(DeviceCreateRequest request,
             ServerCallContext context)
         {
-            var name = GetNameValueFromRequest(request);
-            var locationId = GetLocationIdValueFromRequest(request);
-
-            if (locationId != null && !await CheckLocationExistsAsync((int)locationId))
+            if (request.LocationId is not null && !await CheckLocationExistsAsync((int)request.LocationId))
             {
                 throw new RpcException(new Status(StatusCode.NotFound,
-                    $"Specified location with ID={locationId} does not exist"));
+                    $"Specified location with ID={request.LocationId} does not exist"));
             }
 
             var device = new Models.Device
-                { Name = name, Online = request.Online, LocationId = locationId };
+                { Name = request.Name, Online = request.Online, LocationId = request.LocationId };
 
             try
             {
@@ -120,15 +106,6 @@ namespace DeviceGrpcService.Services
             return location != null;
         }
 
-        private static string GetNameValueFromRequest(DeviceCreateRequest request) =>
-            request.NameCase switch
-            {
-                DeviceCreateRequest.NameOneofCase.None => null,
-                DeviceCreateRequest.NameOneofCase.NameValue => request.NameValue,
-                _ => throw new ArgumentException("Invalid message - NameCase")
-            };
-
-
         private static (string value, bool clearFlag) GetNameValueFromRequest(DeviceUpdateRequest request) =>
             request.NameCase switch
             {
@@ -148,15 +125,6 @@ namespace DeviceGrpcService.Services
             };
 
 
-        private static int? GetLocationIdValueFromRequest(DeviceCreateRequest request) =>
-            request.LocationIDCase switch
-            {
-                DeviceCreateRequest.LocationIDOneofCase.None => null,
-                DeviceCreateRequest.LocationIDOneofCase.LocationIdValue => request.LocationIdValue,
-                _ => throw new ArgumentException("Invalid message - LocationIDCase")
-            };
-
-
         private static (int? value, bool clearFlag) GetLocationIdValueFromRequest(DeviceUpdateRequest request) =>
             request.LocationIDCase switch
             {
@@ -170,7 +138,7 @@ namespace DeviceGrpcService.Services
         public override async Task<DeviceGrpcBaseModel> UpdateDeviceByID(DeviceUpdateRequest request,
             ServerCallContext context)
         {
-            var device = await GetDeviceFromDatabaseAsync(request.ID, true);
+            var device = await GetDeviceFromDatabaseAsync(request.ID, request.OwnerId, true);
             if (device == null)
             {
                 throw new RpcException(new Status(StatusCode.NotFound,
@@ -204,11 +172,11 @@ namespace DeviceGrpcService.Services
         public override async Task<Empty> DeleteDeviceByID(DeviceByIdRequest request,
             ServerCallContext context)
         {
-            var device = await GetDeviceFromDatabaseAsync(request.ID, true);
+            var device = await GetDeviceFromDatabaseAsync(request.Id, request.OwnerId, true);
             if (device == null)
             {
                 throw new RpcException(new Status(StatusCode.NotFound,
-                    $"Specified device with ID=\"{request.ID}\" does not exist"));
+                    $"Specified device with ID=\"{request.Id}\" does not exist"));
             }
 
             try
@@ -225,6 +193,23 @@ namespace DeviceGrpcService.Services
             }
 
             return await Task.FromResult(new Empty());
+        }
+
+        private async Task<Models.Device> GetDeviceFromDatabaseAsync(string id, string ownerId,
+            bool includeNavigations = false)
+        {
+            if (!Guid.TryParse(id, out var deviceGuid) || !Guid.TryParse(ownerId, out var ownerGuid)) return null;
+            if (includeNavigations)
+            {
+                return await _context.Devices
+                    .Include(d => d.Location)
+                    .Where(d => d.OwnerId == ownerGuid)
+                    .FirstOrDefaultAsync(d => d.Id == deviceGuid);
+            }
+
+            return await _context.Devices
+                .Where(d => d.OwnerId == ownerGuid)
+                .FirstOrDefaultAsync(d => d.Id == deviceGuid);
         }
     }
 }

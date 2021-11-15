@@ -10,8 +10,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DeviceGrpcService.Migrations
 {
     [DbContext(typeof(DeviceContext))]
-    [Migration("20211108170957_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20211115222017_xd")]
+    partial class xd
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -23,11 +23,27 @@ namespace DeviceGrpcService.Migrations
 
             modelBuilder.Entity("DeviceGrpcService.Models.Device", b =>
                 {
-                    b.Property<Guid>("ID")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<int?>("LocationID")
+                    b.Property<string>("ApiKey")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<DateTime?>("Created")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime?>("LastModified")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime?>("LastSeen")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<int?>("LocationId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Name")
@@ -36,19 +52,35 @@ namespace DeviceGrpcService.Migrations
                     b.Property<bool>("Online")
                         .HasColumnType("boolean");
 
-                    b.HasKey("ID");
+                    b.Property<Guid>("OwnerId")
+                        .HasColumnType("uuid");
 
-                    b.HasIndex("LocationID");
+                    b.HasKey("Id");
+
+                    b.HasIndex("LocationId");
+
+                    b.HasIndex("OwnerId", "LocationId");
 
                     b.ToTable("Device");
                 });
 
             modelBuilder.Entity("DeviceGrpcService.Models.Location", b =>
                 {
-                    b.Property<int>("ID")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<DateTime?>("Created")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid>("CreatedById")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("LastModified")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<double?>("Latitude")
                         .HasColumnType("double precision");
@@ -60,44 +92,47 @@ namespace DeviceGrpcService.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("ID");
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
 
                     b.ToTable("Location");
                 });
 
             modelBuilder.Entity("DeviceGrpcService.Models.Sensor", b =>
                 {
-                    b.Property<int>("ID")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-                    b.Property<Guid>("DeviceID")
+                    b.Property<Guid>("DeviceId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Name")
                         .HasColumnType("text");
 
-                    b.Property<int>("TypeID")
+                    b.Property<int>("TypeId")
                         .HasColumnType("integer");
 
-                    b.HasKey("ID");
+                    b.HasKey("Id");
 
-                    b.HasIndex("DeviceID");
+                    b.HasIndex("DeviceId");
 
-                    b.HasIndex("TypeID");
+                    b.HasIndex("TypeId");
 
                     b.ToTable("Sensor");
                 });
 
             modelBuilder.Entity("DeviceGrpcService.Models.SensorType", b =>
                 {
-                    b.Property<int>("ID")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<string>("DataType")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<bool>("IsDiscrete")
@@ -107,18 +142,21 @@ namespace DeviceGrpcService.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Unit")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("UnitShort")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("UnitSymbol")
                         .HasColumnType("text");
 
-                    b.HasKey("ID");
+                    b.HasKey("Id");
 
                     b.ToTable("SensorType");
                 });
@@ -126,8 +164,8 @@ namespace DeviceGrpcService.Migrations
             modelBuilder.Entity("DeviceGrpcService.Models.Device", b =>
                 {
                     b.HasOne("DeviceGrpcService.Models.Location", "Location")
-                        .WithMany()
-                        .HasForeignKey("LocationID");
+                        .WithMany("Devices")
+                        .HasForeignKey("LocationId");
 
                     b.Navigation("Location");
                 });
@@ -136,13 +174,13 @@ namespace DeviceGrpcService.Migrations
                 {
                     b.HasOne("DeviceGrpcService.Models.Device", "Device")
                         .WithMany("Sensors")
-                        .HasForeignKey("DeviceID")
+                        .HasForeignKey("DeviceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("DeviceGrpcService.Models.SensorType", "Type")
                         .WithMany()
-                        .HasForeignKey("TypeID")
+                        .HasForeignKey("TypeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -154,6 +192,11 @@ namespace DeviceGrpcService.Migrations
             modelBuilder.Entity("DeviceGrpcService.Models.Device", b =>
                 {
                     b.Navigation("Sensors");
+                });
+
+            modelBuilder.Entity("DeviceGrpcService.Models.Location", b =>
+                {
+                    b.Navigation("Devices");
                 });
 #pragma warning restore 612, 618
         }

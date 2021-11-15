@@ -16,7 +16,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using UserIdentity.Core.Proto;
+using WebApiGateway.Extensions;
 using WebApiGateway.Models;
+using WebApiGateway.Settings;
 
 namespace WebApiGateway
 {
@@ -36,53 +39,53 @@ namespace WebApiGateway
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "WebApiGateway", Version = "v1" });
+
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Description = "JWT containing userid claim",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.ApiKey
+                });
+
+                var security = new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Id = "Bearer",
+                                Type = ReferenceType.SecurityScheme
+                            },
+                            UnresolvedReference = true
+                        },
+                        new List<string>()
+                    }
+                };
+
+                c.AddSecurityRequirement(security);
             });
 
             // DeviceGrpcService
-            services.AddGrpcClient<Device.DeviceClient>(o =>
-            {
-                o.Address = new Uri("https://localhost:5005");
-                o.ChannelOptionsActions.Add(options =>
-                {
-                    var clientHandler = new HttpClientHandler
-                    {
-                        ServerCertificateCustomValidationCallback =
-                            (_, _, _, _) => true // TODO: Remove in production
-                    };
+            services.AddGrpcClient<Device.DeviceClient>(o => { o.Address = new Uri("https://localhost:6001"); });
+            services.AddGrpcClient<Location.LocationClient>(o => { o.Address = new Uri("https://localhost:6001"); });
+            services.AddGrpcClient<Sensor.SensorClient>(o => { o.Address = new Uri("https://localhost:6001"); });
 
-                    options.HttpHandler = clientHandler;
-                });
+            services.AddGrpcClient<UserAuthGrpc.UserAuthGrpcClient>(o =>
+            {
+                o.Address = new Uri("https://localhost:5001");
             });
-            services.AddGrpcClient<Location.LocationClient>(o =>
-            {
-                o.Address = new Uri("https://localhost:5005");
-                o.ChannelOptionsActions.Add(options =>
-                {
-                    var clientHandler = new HttpClientHandler
-                    {
-                        ServerCertificateCustomValidationCallback =
-                            (_, _, _, _) => true // TODO: Remove in production
-                    };
 
-                    options.HttpHandler = clientHandler;
-                });
-            });
-            services.AddGrpcClient<Sensor.SensorClient>(o =>
+            services.AddGrpcClient<UserInfoGrpc.UserInfoGrpcClient>(o =>
             {
-                o.Address = new Uri("https://localhost:5005");
-                o.ChannelOptionsActions.Add(options =>
-                {
-                    var clientHandler = new HttpClientHandler
-                    {
-                        ServerCertificateCustomValidationCallback =
-                            (_, _, _, _) => true // TODO: Remove in production
-                    };
-
-                    options.HttpHandler = clientHandler;
-                });
+                o.Address = new Uri("https://localhost:5001");
             });
 
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+            var jwtSettings = Configuration.GetSection("Jwt").Get<JwtSettings>();
+            services.AddAuth(jwtSettings);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -99,7 +102,7 @@ namespace WebApiGateway
 
             app.UseRouting();
 
-            app.UseAuthorization();
+            app.UseAuth();
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }

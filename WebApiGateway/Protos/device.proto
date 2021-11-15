@@ -2,6 +2,7 @@ syntax = "proto3";
 
 import "google/protobuf/empty.proto";
 import "Protos/location.proto";
+import "google/protobuf/wrappers.proto";
 
 option csharp_namespace = "DeviceGrpcService.Proto";
 
@@ -13,8 +14,8 @@ service Device {
   // Create
   rpc CreateDevice (DeviceCreateRequest) returns (DeviceGrpcBaseModel);
   // Read
-  rpc GetAllDevices (google.protobuf.Empty) returns (stream DeviceGrpcBaseModel);
-  rpc GetAllDevicesNested (google.protobuf.Empty) returns (stream DeviceGrpcNestedModel);
+  rpc GetAllDevices (GetAllDevicesRequest) returns (stream DeviceGrpcBaseModel);
+  rpc GetAllDevicesNested (GetAllDevicesRequest) returns (stream DeviceGrpcNestedModel);
 
   rpc GetDeviceById (DeviceByIdRequest) returns (DeviceGrpcBaseModel);
   rpc GetDeviceByIdNested (DeviceByIdRequest) returns (DeviceGrpcNestedModel);
@@ -25,14 +26,15 @@ service Device {
   // -------------------------------------- ----------------------------------------------
 }
 
+message GetAllDevicesRequest {
+  string OwnerId = 1;
+}
+
 message DeviceCreateRequest {
-  oneof Name {
-    string NameValue = 1;
-  }
+  google.protobuf.StringValue Name = 1;
   bool Online = 2;
-  oneof LocationID {
-    int32 LocationIdValue = 3;
-  }
+  google.protobuf.Int32Value LocationId = 3;
+  string OwnerId = 4;
 }
 
 message DeviceUpdateRequest {
@@ -47,11 +49,13 @@ message DeviceUpdateRequest {
   oneof LocationID {
     int32 LocationIdValue = 5;
     bool LocationNullified = 6;
-  }
+  };
+  string OwnerId = 7;
 }
 
 message DeviceByIdRequest {
-  string ID = 1;
+  string Id = 1;
+  string OwnerId = 2;
 }
 
 message DeviceGrpcBaseModel {

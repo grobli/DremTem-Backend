@@ -4,7 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using UserGrpcService.Data;
+using UserGrpcService.Utilities.Security;
 
 namespace UserGrpcService
 {
@@ -12,7 +16,15 @@ namespace UserGrpcService
     {
         public static void Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
+            var host = CreateHostBuilder(args).Build();
+
+            using (var scope = host.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<UserDbContext>();
+                db.Database.Migrate();
+            }
+            
+            host.Run();
         }
 
         // Additional configuration is required to successfully run gRPC on macOS.

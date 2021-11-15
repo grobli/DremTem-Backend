@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using DeviceGrpcService.Models;
 
 namespace DeviceGrpcService.Data
@@ -16,7 +17,8 @@ namespace DeviceGrpcService.Data
             {
                 new()
                 {
-                    Id = 1, Name = "Home", Latitude = 54.2, Longitude = 14.34
+                    Id = 1, Name = "Home", Latitude = 54.2, Longitude = 14.34,
+                    CreatedById = Guid.Parse("de2fd5b2-fb6e-4698-943a-5e840489fcec"), Created = DateTime.UtcNow
                 }
             };
             foreach (var location in locations)
@@ -26,7 +28,12 @@ namespace DeviceGrpcService.Data
 
             var devices = new Device[]
             {
-                new() { LocationId = 1, Name = "Air Temp", Online = true, }
+                new()
+                {
+                    LocationId = 1, Name = "Air Temp", Online = true,
+                    OwnerId = Guid.Parse("de2fd5b2-fb6e-4698-943a-5e840489fcec"), ApiKey = "someApikey",
+                    Created = DateTime.UtcNow, LastSeen = DateTime.UtcNow.AddDays(1)
+                }
             };
             foreach (var dev in devices)
             {

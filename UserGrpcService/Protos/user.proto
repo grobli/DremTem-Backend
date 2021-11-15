@@ -1,0 +1,67 @@
+﻿syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+option csharp_namespace = "UserGrpcService.Proto";
+
+package user;
+
+service User {
+  // ------------- Basic CRUD functionality ----------------------------------------------
+  // Create
+  rpc CreateUser (CreateUserRequest) returns (UserGrpcModel);
+  // Read
+  rpc GetUserById (GetUserByIdRequest) returns (UserGrpcModel);
+  rpc GetUserByEmail (GetUserByEmailRequest) returns (UserGrpcModel);
+  // Update
+  rpc UpdateUserPassword (UpdatePasswordRequest) returns (google.protobuf.Empty);
+  rpc UpdateUserName (UpdateNameRequest) returns (UserGrpcModel);
+  // Delete
+  rpc DeleteUser (DeleteUserRequest) returns (google.protobuf.Empty);
+  // -------------------------------------------------------------------------------------
+
+
+}
+
+message DeleteUserRequest {
+  int32 Id = 1;
+}
+
+message UpdateNameRequest {
+  int32 Id = 1;
+  oneof FirstName {
+    string FirstNameValue = 2;
+  }
+  oneof LastName {
+    string LastNameValue = 3;
+  }
+}
+
+message GetUserByIdRequest {
+  int32 Id = 1;
+}
+
+message GetUserByEmailRequest {
+  string Email = 1;
+}
+
+message UpdatePasswordRequest {
+  int32 Id = 1;
+  string Password = 2;
+}
+
+message CreateUserRequest {
+  string FirstName = 1;
+  oneof LastName {
+    string LastNameValue = 2;
+  }
+  string Email = 3;
+  string Password = 4;
+}
+
+message UserGrpcModel {
+  int32 Id = 1;
+  string FirstName = 2;
+  string LastName = 3;
+  string Email = 4;
+}

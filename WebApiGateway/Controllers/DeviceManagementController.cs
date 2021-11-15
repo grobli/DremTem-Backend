@@ -4,28 +4,33 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using AutoMapper;
 using DeviceGrpcService.Proto;
-using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Extensions;
+using UserIdentity.Core.Proto;
 using WebApiGateway.Models;
 
 namespace WebApiGateway.Controllers
 {
+    [Authorize]
     [Route("api/v1/[controller]")]
     [ApiController]
     public class DeviceManagementController : ControllerBase
     {
         private readonly ILogger<DeviceManagementController> _logger;
         private readonly Device.DeviceClient _deviceClient;
+        private readonly UserInfoGrpc.UserInfoGrpcClient _userClient;
         private readonly IMapper _mapper;
 
         public DeviceManagementController(ILogger<DeviceManagementController> logger, Device.DeviceClient deviceClient,
+            UserInfoGrpc.UserInfoGrpcClient userClient,
             IMapper mapper)
         {
             _logger = logger;
             _deviceClient = deviceClient;
+            _userClient = userClient;
             _mapper = mapper;
         }
 
@@ -33,9 +38,18 @@ namespace WebApiGateway.Controllers
 
         // GET: api/v1/DeviceManagement/devices
         [HttpGet("devices", Name = "Get All Devices")]
-        public async Task<IEnumerable<DeviceGrpcBaseModel>> GetAllDevices()
+        public async Task<ActionResult<IEnumerable<DeviceGrpcBaseModel>>> GetAllDevices()
         {
-            using var clientData = _deviceClient.GetAllDevices(new Empty());
+            var user = await GetUserInfoAsync();
+            if (user is null)
+            {
+                return BadRequest();
+            }
+
+            using var clientData = _deviceClient.GetAllDevices(new GetAllDevicesRequest
+            {
+                OwnerId = user.Id
+            });
             var devices = new List<DeviceGrpcBaseModel>(20);
 
             await foreach (var device in clientData.ResponseStream.ReadAllAsync())
@@ -48,9 +62,18 @@ namespace WebApiGateway.Controllers
 
         // GET: api/v1/DeviceManagement/devices/nested
         [HttpGet("devices/nested", Name = "Get All Devices Nested")]
-        public async Task<IEnumerable<DeviceGrpcNestedModel>> GetAllDevicesNested()
+        public async Task<ActionResult<IEnumerable<DeviceGrpcNestedModel>>> GetAllDevicesNested()
         {
-            using var clientData = _deviceClient.GetAllDevicesNested(new Empty());
+            var user = await GetUserInfoAsync();
+            if (user is null)
+            {
+                return BadRequest();
+            }
+
+            using var clientData = _deviceClient.GetAllDevicesNested(new GetAllDevicesRequest
+            {
+                OwnerId = user.Id
+            });
             var devices = new List<DeviceGrpcNestedModel>();
 
             await foreach (var device in clientData.ResponseStream.ReadAllAsync())
@@ -65,9 +88,16 @@ namespace WebApiGateway.Controllers
         [HttpGet("devices/{id:guid}", Name = "Get Device By ID")]
         public async Task<ActionResult<DeviceGrpcBaseModel>> GetDeviceById(Guid id)
         {
+            var user = await GetUserInfoAsync();
+            if (user is null)
+            {
+                return BadRequest();
+            }
+
             try
             {
-                var device = await _deviceClient.GetDeviceByIdAsync(new DeviceByIdRequest { ID = id.ToString() });
+                var device = await _deviceClient.GetDeviceByIdAsync(new DeviceByIdRequest
+                    { Id = id.ToString(), OwnerId = user.Id });
                 return device;
             }
             catch (RpcException e)
@@ -87,9 +117,16 @@ namespace WebApiGateway.Controllers
         [HttpGet("devices/nested/{id:guid}", Name = "Get Device By ID Nested")]
         public async Task<ActionResult<DeviceGrpcNestedModel>> GetDeviceByIdNested(Guid id)
         {
+            var user = await GetUserInfoAsync();
+            if (user is null)
+            {
+                return BadRequest();
+            }
+
             try
             {
-                var device = await _deviceClient.GetDeviceByIdNestedAsync(new DeviceByIdRequest { ID = id.ToString() });
+                var device = await _deviceClient.GetDeviceByIdNestedAsync(new DeviceByIdRequest
+                    { Id = id.ToString(), OwnerId = user.Id });
                 return device;
             }
             catch (RpcException e)
@@ -112,8 +149,8 @@ namespace WebApiGateway.Controllers
             if (deviceDto.Online == null) return BadRequest("invalid model");
 
             var deviceCreateRequest = new DeviceCreateRequest { Online = (bool)deviceDto.Online };
-            if (!string.IsNullOrEmpty(deviceDto.Name)) deviceCreateRequest.NameValue = deviceDto.Name;
-            if (deviceDto.LocationID != null) deviceCreateRequest.LocationIdValue = (int)deviceDto.LocationID;
+            if (!string.IsNullOrEmpty(deviceDto.Name)) deviceCreateRequest.Name = deviceDto.Name;
+            if (deviceDto.LocationID != null) deviceCreateRequest.LocationId = (int)deviceDto.LocationID;
 
             try
             {
@@ -150,15 +187,36 @@ namespace WebApiGateway.Controllers
         [HttpDelete("devices/{id:guid}")]
         public async Task<ActionResult> DeleteDevice(Guid id)
         {
+            var user = await GetUserInfoAsync();
+            if (user is null)
+            {
+                return BadRequest();
+            }
+
             try
             {
-                await _deviceClient.DeleteDeviceByIDAsync(new DeviceByIdRequest { ID = id.ToString() });
+                await _deviceClient.DeleteDeviceByIDAsync(new DeviceByIdRequest
+                    { Id = id.ToString(), OwnerId = user.Id });
                 return new OkResult();
             }
             catch (RpcException e)
             {
                 return BadRequest(JsonSerializer.Serialize(e.Status));
             }
+        }
+
+        private async Task<UserInfoResource> GetUserInfoAsync()
+        {
+            var email = HttpContext.User.Identity?.Name;
+            if (email is null)
+            {
+                return null;
+            }
+
+            return await _userClient.GetUserByEmailAsync(new GetUserByEmailRequest
+            {
+                Email = email
+            });
         }
 
         #endregion
