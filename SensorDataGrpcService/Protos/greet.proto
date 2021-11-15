@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option csharp_namespace = "DeviceGrpcService";
+option csharp_namespace = "SensorDataGrpcService";
 
 package greet;
 

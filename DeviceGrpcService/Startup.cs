@@ -52,8 +52,9 @@ namespace DeviceGrpcService
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapGrpcService<GreeterService>();
                 endpoints.MapGrpcService<DeviceService>();
+                endpoints.MapGrpcService<LocationService>();
+                endpoints.MapGrpcService<SensorService>();
 
                 endpoints.MapGet("/",
                     async context =>
@@ -69,8 +70,10 @@ namespace DeviceGrpcService
     {
         public AutoMapperProfile()
         {
-            CreateMap<Device, DeviceGrpcBaseModel>();
-            CreateMap<Device, DeviceGrpcNestedModel>();
+            CreateMap<Device, DeviceGrpcBaseModel>()
+                .ForMember(dest => dest.Name, opt => opt.NullSubstitute(""));
+            CreateMap<Device, DeviceGrpcNestedModel>()
+                .ForMember(dest => dest.Name, opt => opt.NullSubstitute(""));
             CreateMap<Location, LocationGrpcModel>();
 
 

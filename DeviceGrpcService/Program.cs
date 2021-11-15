@@ -19,7 +19,7 @@ namespace DeviceGrpcService
             host.Run();
         }
 
-        public static void CreateDbIfNotExists(IHost host)
+        private static void CreateDbIfNotExists(IHost host)
         {
             using var scope = host.Services.CreateScope();
             var services = scope.ServiceProvider;
@@ -42,11 +42,6 @@ namespace DeviceGrpcService
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.ConfigureKestrel(options =>
-                    {
-                        options.Listen(IPAddress.Loopback, 5000);
-                        options.Listen(IPAddress.Loopback, 5005, configure => configure.UseHttps());
-                    });
                     webBuilder.UseStartup<Startup>();
                 });
     }
