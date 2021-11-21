@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <ProjectReference Include="..\DeviceManager.Data\DeviceManager.Data.csproj" />
+        <ProjectReference Include="..\DeviceManager.Core\DeviceManager.Core.csproj" />
+    </ItemGroup>
+    
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+    </PropertyGroup>
+
+</Project>

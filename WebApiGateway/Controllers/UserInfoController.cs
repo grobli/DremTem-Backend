@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OData.Query;
 using Microsoft.Extensions.Logging;
 using UserIdentity.Core.Proto;
 
@@ -10,6 +11,7 @@ namespace WebApiGateway.Controllers
 {
     [Route("api/v1/[controller]")]
     [ApiController]
+    [EnableQuery]
     [Authorize]
     public class UserController : ControllerBase
     {

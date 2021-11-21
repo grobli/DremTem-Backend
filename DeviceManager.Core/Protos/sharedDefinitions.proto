@@ -1,0 +1,71 @@
+﻿syntax = "proto3";
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
+
+option csharp_namespace = "DeviceManager.Core.Proto";
+
+message DeviceResource {
+  string Name = 1;
+  google.protobuf.StringValue DisplayName = 2;
+  bool Online = 3;
+  google.protobuf.Timestamp LastSeen = 4;
+  google.protobuf.Timestamp LastModified = 5;
+  google.protobuf.Timestamp Created = 6;
+  google.protobuf.StringValue LocationName = 7;
+  string UserId = 8;
+
+  LocationResource Location = 32;
+  repeated SensorResource Sensors = 33;
+}
+
+message LocationResource {
+  // Primary Key (Name, UserId)
+  string Name = 1;
+  string UserId = 2;
+
+  // Properties
+  google.protobuf.StringValue DisplayName = 3;
+  google.protobuf.FloatValue Latitude = 4;
+  google.protobuf.FloatValue Longitude = 5;
+  google.protobuf.Timestamp LastModified = 6;
+  google.protobuf.Timestamp Created = 7;
+
+  repeated DeviceResource Devices = 32;
+}
+
+message SensorResource {
+  // Primary Key (Name, DeviceName, UserId)
+  string Name = 1;
+  string DeviceName = 2;
+  string UserId = 3;
+
+  // Properties
+  google.protobuf.StringValue DisplayName = 4;
+  string TypeName = 5;
+
+  SensorTypeResource Type = 32;
+}
+
+message SaveSensorRequest {
+  // Primary Key (Name, DeviceName, UserId)
+  string Name = 1;
+  string DeviceName = 2;
+  string UserId = 3;
+
+  // Properties
+  google.protobuf.StringValue DisplayName = 4;
+  string TypeName = 5;
+}
+
+message SensorTypeResource {
+  // Primary Key (Name)
+  string Name = 1;
+
+  string DataType = 2;
+  string Unit = 3;
+  string UnitShort = 4;
+  google.protobuf.StringValue UnitSymbol = 5;
+  bool IsDiscrete = 6;
+  bool IsSummable = 7;
+}

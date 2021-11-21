@@ -1,0 +1,85 @@
+﻿syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
+
+import "Protos/sharedDefinitions.proto";
+
+option csharp_namespace = "DeviceManager.Core.Proto";
+
+service DeviceGrpcService {
+  rpc GetAllDevices (GetAllDevicesRequest) returns (stream DeviceResource);
+  rpc GetDeviceById (GetDeviceRequest) returns (DeviceResource);
+  rpc GetDeviceApiKey (GetDeviceApiKeyRequest) returns (GetDeviceApiKeyResponse);
+
+  rpc CreateDevice (CreateDeviceResource) returns (DeviceResource);
+  rpc UpdateDevice (UpdateDeviceResource) returns (DeviceResource);
+  rpc DeleteDevice (DeleteDeviceRequest) returns (google.protobuf.Empty);
+
+  rpc Ping (PingRequest) returns (google.protobuf.Empty);
+}
+
+message GetAllDevicesRequest {
+  bool IncludeLocation = 1;
+  bool IncludeSensors = 2;
+  google.protobuf.StringValue UserId = 3; // (optional) filter by user ID
+}
+
+message GetDeviceRequest {
+  // Primary Key (Name, UserId)
+  string Name = 1;
+  string UserId = 2;
+
+  bool IncludeLocation = 3;
+  bool IncludeSensors = 4;
+}
+
+message GetDeviceApiKeyRequest {
+  // Primary Key (Name, UserId)
+  string Name = 1;
+  string UserId = 2;
+}
+
+message DeleteDeviceRequest {
+  // Primary Key (Name, UserId)
+  string Name = 1;
+  string UserId = 2;
+}
+
+message GetDeviceApiKeyResponse {
+  string ApiKey = 1;
+}
+
+message CreateDeviceResource {
+  // Primary Key (Name, UserId)
+  string Name = 1;
+  string UserId = 2;
+
+  google.protobuf.StringValue DisplayName = 3;
+  bool Online = 4;
+  google.protobuf.StringValue LocationName = 5;
+
+  // Sensors mounted on the device to be added
+  repeated SaveSensorRequest Sensors = 6;
+}
+
+message UpdateDeviceResource {
+  // Primary Key (Name, UserId)
+  string Name = 1;
+  string UserId = 2;
+
+  // Fields to update
+  google.protobuf.StringValue DisplayName = 3;
+  bool Online = 4;
+  google.protobuf.StringValue LocationName = 5;
+  google.protobuf.Timestamp LastSeen = 6;
+}
+
+message PingRequest {
+  // Primary Key (Name, UserId)
+  string Name = 1;
+  string UserId = 2;
+}
+
+

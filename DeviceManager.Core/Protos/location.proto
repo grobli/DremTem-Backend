@@ -1,0 +1,47 @@
+﻿syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+
+import "Protos/sharedDefinitions.proto";
+
+option csharp_namespace = "DeviceManager.Core.Proto";
+
+service LocationGrpcService {
+  rpc GetAllLocations (GetAllLocationsRequest) returns (stream LocationResource);
+  rpc GetLocation (GetLocationRequest) returns (LocationResource);
+
+  rpc CreateLocation (SaveLocationRequest) returns (LocationResource);
+  rpc UpdateLocation (SaveLocationRequest) returns (LocationResource);
+  rpc DeleteLocation (DeleteLocationRequest) returns (google.protobuf.Empty);
+}
+
+message GetAllLocationsRequest {
+  bool IncludeDevices = 1;
+  google.protobuf.StringValue UserId = 2; // (optional) filter by user ID
+}
+
+message GetLocationRequest {
+  // Primary Key (Name, UserId)
+  string Name = 1;
+  string UserId = 2;
+
+  bool IncludeDevices = 3;
+}
+
+message SaveLocationRequest {
+  // Primary Key (Name, UserId)
+  string Name = 1;
+  string UserId = 2;
+
+  // Properties
+  google.protobuf.StringValue DisplayName = 3;
+  google.protobuf.FloatValue Latitude = 4;
+  google.protobuf.FloatValue Longitude = 5;
+}
+
+message DeleteLocationRequest {
+  // Primary Key (Name, UserId)
+  string Name = 1;
+  string UserId = 2;
+}

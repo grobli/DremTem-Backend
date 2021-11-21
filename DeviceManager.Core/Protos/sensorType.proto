@@ -1,0 +1,44 @@
+﻿syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+
+import "Protos/sharedDefinitions.proto";
+
+option csharp_namespace = "DeviceManager.Core.Proto";
+
+service SensorTypeGrpcService {
+  rpc GetAllSensorTypes (GetAllSensorTypesRequest) returns (stream SensorTypeResource);
+  rpc GetSensorType (GetSensorTypeRequest) returns (SensorTypeResource);
+
+  rpc CreateSensorType (SaveSensorTypeRequest) returns (SensorTypeResource);
+  rpc UpdateSensorType (SaveSensorTypeRequest) returns (SensorTypeResource);
+  rpc DeleteSensorType (DeleteSensorTypeRequest) returns (google.protobuf.Empty);
+}
+
+
+
+message GetAllSensorTypesRequest {}
+
+message GetSensorTypeRequest {
+  // Primary Key (Name)
+  string Name = 1;
+}
+
+message SaveSensorTypeRequest {
+  // Primary Key (Name)
+  string Name = 1;
+
+  // Properties
+  string DataType = 2;
+  string Unit = 3;
+  string UnitShort = 4;
+  google.protobuf.StringValue UnitSymbol = 5;
+  bool IsDiscrete = 6;
+  bool IsSummable = 7;
+}
+
+message DeleteSensorTypeRequest {
+  // Primary Key (Name)
+  string Name = 1;
+}

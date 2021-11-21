@@ -3,6 +3,7 @@ syntax = "proto3";
 import "google/protobuf/empty.proto";
 import "Protos/location.proto";
 import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
 
 option csharp_namespace = "DeviceGrpcService.Proto";
 
@@ -12,15 +13,15 @@ package device;
 service Device {
   // ------------- Basic CRUD functionality ----------------------------------------------
   // Create
-  rpc CreateDevice (DeviceCreateRequest) returns (DeviceGrpcBaseModel);
+  rpc CreateDevice (DeviceCreateRequest) returns (DeviceResource);
   // Read
-  rpc GetAllDevices (GetAllDevicesRequest) returns (stream DeviceGrpcBaseModel);
+  rpc GetAllDevices (GetAllDevicesRequest) returns (stream DeviceResource);
   rpc GetAllDevicesNested (GetAllDevicesRequest) returns (stream DeviceGrpcNestedModel);
 
-  rpc GetDeviceById (DeviceByIdRequest) returns (DeviceGrpcBaseModel);
+  rpc GetDeviceById (DeviceByIdRequest) returns (DeviceResource);
   rpc GetDeviceByIdNested (DeviceByIdRequest) returns (DeviceGrpcNestedModel);
   // Update
-  rpc UpdateDeviceByID (DeviceUpdateRequest) returns (DeviceGrpcBaseModel);
+  rpc UpdateDeviceByID (DeviceUpdateRequest) returns (DeviceResource);
   // Delete
   rpc DeleteDeviceByID (DeviceByIdRequest) returns (google.protobuf.Empty);
   // -------------------------------------- ----------------------------------------------
@@ -58,11 +59,14 @@ message DeviceByIdRequest {
   string OwnerId = 2;
 }
 
-message DeviceGrpcBaseModel {
-  string ID = 1;
-  string Name = 2;
-  bool Online = 3;
-  int32 LocationID = 4;
+message DeviceResource {
+  google.protobuf.StringValue Id = 1;
+  google.protobuf.StringValue Name = 2;
+  google.protobuf.BoolValue Online = 3;
+  google.protobuf.Int32Value LocationID = 4;
+  google.protobuf.Timestamp LastSeen = 5;
+  google.protobuf.Timestamp LastModified = 6;
+  google.protobuf.Timestamp Created = 7;
 }
 
 message  DeviceGrpcNestedModel {

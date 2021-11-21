@@ -6,9 +6,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Protobuf Include="Protos\device.proto" GrpcServices="Server" />
-        <Protobuf Include="Protos\location.proto" GrpcServices="Server" />
-        <Protobuf Include="Protos\sensor.proto" GrpcServices="Server" />
+        <Protobuf Include="Protos\device.proto" GrpcServices="Both" />
+        <Protobuf Include="Protos\location.proto" GrpcServices="Both" />
+        <Protobuf Include="Protos\sensor.proto" GrpcServices="Both" />
     </ItemGroup>
 
     <ItemGroup>

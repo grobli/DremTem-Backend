@@ -26,12 +26,12 @@ namespace DeviceGrpcService.Services
         }
 
         public override async Task GetAllDevices(GetAllDevicesRequest request,
-            IServerStreamWriter<DeviceGrpcBaseModel> responseStream,
+            IServerStreamWriter<DeviceResource> responseStream,
             ServerCallContext context)
         {
             foreach (var device in _context.Devices.Where(d => d.OwnerId.ToString() == request.OwnerId))
             {
-                await responseStream.WriteAsync(_mapper.Map<DeviceGrpcBaseModel>(device));
+                await responseStream.WriteAsync(_mapper.Map<DeviceResource>(device));
             }
         }
 
@@ -46,7 +46,7 @@ namespace DeviceGrpcService.Services
             }
         }
 
-        public override async Task<DeviceGrpcBaseModel> GetDeviceById(DeviceByIdRequest request,
+        public override async Task<DeviceResource> GetDeviceById(DeviceByIdRequest request,
             ServerCallContext context)
         {
             var device = await GetDeviceFromDatabaseAsync(request.Id, request.OwnerId);
@@ -56,7 +56,7 @@ namespace DeviceGrpcService.Services
                     $"Specified device with ID=\"{request.Id}\" does not exist"));
             }
 
-            return await Task.FromResult(_mapper.Map<DeviceGrpcBaseModel>(device));
+            return await Task.FromResult(_mapper.Map<DeviceResource>(device));
         }
 
         public override async Task<DeviceGrpcNestedModel> GetDeviceByIdNested(DeviceByIdRequest request,
@@ -72,7 +72,7 @@ namespace DeviceGrpcService.Services
             return await Task.FromResult(_mapper.Map<DeviceGrpcNestedModel>(device));
         }
 
-        public override async Task<DeviceGrpcBaseModel> CreateDevice(DeviceCreateRequest request,
+        public override async Task<DeviceResource> CreateDevice(DeviceCreateRequest request,
             ServerCallContext context)
         {
             if (request.LocationId is not null && !await CheckLocationExistsAsync((int)request.LocationId))
@@ -97,7 +97,7 @@ namespace DeviceGrpcService.Services
                     "Try again, and if the problem persists see your system administrator."));
             }
 
-            return await Task.FromResult(_mapper.Map<DeviceGrpcBaseModel>(device));
+            return await Task.FromResult(_mapper.Map<DeviceResource>(device));
         }
 
         private async Task<bool> CheckLocationExistsAsync(int locationId)
@@ -135,7 +135,7 @@ namespace DeviceGrpcService.Services
             };
 
 
-        public override async Task<DeviceGrpcBaseModel> UpdateDeviceByID(DeviceUpdateRequest request,
+        public override async Task<DeviceResource> UpdateDeviceByID(DeviceUpdateRequest request,
             ServerCallContext context)
         {
             var device = await GetDeviceFromDatabaseAsync(request.ID, request.OwnerId, true);
@@ -166,7 +166,7 @@ namespace DeviceGrpcService.Services
                     "Try again, and if the problem persists see your system administrator."));
             }
 
-            return await Task.FromResult(_mapper.Map<DeviceGrpcBaseModel>(device));
+            return await Task.FromResult(_mapper.Map<DeviceResource>(device));
         }
 
         public override async Task<Empty> DeleteDeviceByID(DeviceByIdRequest request,

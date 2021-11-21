@@ -7,6 +7,7 @@ using DeviceGrpcService.Data;
 using DeviceGrpcService.Models;
 using DeviceGrpcService.Proto;
 using DeviceGrpcService.Services;
+using Google.Protobuf.WellKnownTypes;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -70,8 +71,30 @@ namespace DeviceGrpcService
     {
         public AutoMapperProfile()
         {
-            CreateMap<Device, DeviceGrpcBaseModel>()
-                .ForMember(dest => dest.Name, opt => opt.NullSubstitute(""));
+            CreateMap<Device, DeviceResource>()
+                .ForMember(
+                    dest => dest.Created,
+                    opt =>
+                    {
+                        opt.PreCondition(src => src.Created.HasValue);
+                        opt.MapFrom(src => Timestamp.FromDateTime(src.Created.Value));
+                    })
+                .ForMember(
+                    dest => dest.LastSeen,
+                    opt =>
+                    {
+                        opt.PreCondition(src => src.LastSeen.HasValue);
+                        opt.MapFrom(src => Timestamp.FromDateTime(src.LastSeen.Value));
+                    })
+                .ForMember(
+                    dest => dest.LastModified,
+                    opt =>
+                    {
+                        opt.PreCondition(src => src.LastModified.HasValue);
+                        opt.MapFrom(src => Timestamp.FromDateTime(src.LastModified.Value));
+                    });
+
+            //   .ForMember(dest => dest.Name, opt => opt.NullSubstitute(""));
             CreateMap<Device, DeviceGrpcNestedModel>()
                 .ForMember(dest => dest.Name, opt => opt.NullSubstitute(""));
             CreateMap<Location, LocationGrpcModel>();

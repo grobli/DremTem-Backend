@@ -7,6 +7,7 @@ using DeviceGrpcService.Proto;
 using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OData.Query;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Extensions;
 using UserIdentity.Core.Proto;
@@ -16,6 +17,7 @@ namespace WebApiGateway.Controllers
 {
     [Authorize]
     [Route("api/v1/[controller]")]
+    [EnableQuery]
     [ApiController]
     public class DeviceManagementController : ControllerBase
     {
@@ -38,7 +40,7 @@ namespace WebApiGateway.Controllers
 
         // GET: api/v1/DeviceManagement/devices
         [HttpGet("devices", Name = "Get All Devices")]
-        public async Task<ActionResult<IEnumerable<DeviceGrpcBaseModel>>> GetAllDevices()
+        public async Task<ActionResult<IEnumerable<DeviceResource>>> GetAllDevices()
         {
             var user = await GetUserInfoAsync();
             if (user is null)
@@ -50,7 +52,7 @@ namespace WebApiGateway.Controllers
             {
                 OwnerId = user.Id
             });
-            var devices = new List<DeviceGrpcBaseModel>(20);
+            var devices = new List<DeviceResource>(20);
 
             await foreach (var device in clientData.ResponseStream.ReadAllAsync())
             {
@@ -86,7 +88,7 @@ namespace WebApiGateway.Controllers
 
         // GET: api/v1/DeviceManagement/devices/98fbabe3-3ff8-4b39-ad19-d44e7e2b6180
         [HttpGet("devices/{id:guid}", Name = "Get Device By ID")]
-        public async Task<ActionResult<DeviceGrpcBaseModel>> GetDeviceById(Guid id)
+        public async Task<ActionResult<DeviceResource>> GetDeviceById(Guid id)
         {
             var user = await GetUserInfoAsync();
             if (user is null)
@@ -144,7 +146,7 @@ namespace WebApiGateway.Controllers
 
         // POST: api/v1/DeviceManagement/devices
         [HttpPost("devices/")]
-        public async Task<ActionResult<DeviceGrpcBaseModel>> CreateDevice(DeviceCreateDto deviceDto)
+        public async Task<ActionResult<DeviceResource>> CreateDevice(DeviceCreateDto deviceDto)
         {
             if (deviceDto.Online == null) return BadRequest("invalid model");
 
@@ -155,7 +157,7 @@ namespace WebApiGateway.Controllers
             try
             {
                 var deviceCreated = await _deviceClient.CreateDeviceAsync(deviceCreateRequest);
-                return new CreatedResult($"api/v1/devices/{deviceCreated.ID}", deviceCreated);
+                return new CreatedResult($"api/v1/devices/{deviceCreated.Id}", deviceCreated);
             }
             catch (RpcException e)
             {
@@ -165,7 +167,7 @@ namespace WebApiGateway.Controllers
 
         // PUT: api/v1/DeviceManagement/devices/98fbabe3-3ff8-4b39-ad19-d44e7e2b6180
         [HttpPut("devices/{id:guid}")]
-        public async Task<ActionResult<DeviceGrpcBaseModel>> UpdateDevice(Guid id, DeviceCreateDto deviceDto)
+        public async Task<ActionResult<DeviceResource>> UpdateDevice(Guid id, DeviceCreateDto deviceDto)
         {
             var deviceUpdateRequest = new DeviceUpdateRequest { ID = id.ToString() };
             if (!string.IsNullOrEmpty(deviceDto.Name)) deviceUpdateRequest.NameValue = deviceDto.Name;

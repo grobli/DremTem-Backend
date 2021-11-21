@@ -15,51 +15,16 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.12" />
+        <PackageReference Include="Microsoft.AspNetCore.OData" Version="8.0.4" />
         <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="5.0.2" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
     </ItemGroup>
 
     <ItemGroup>
-        <Protobuf Include="Protos\auth.proto">
-            <GrpcServices>Client</GrpcServices>
-            <Access>Public</Access>
-            <ProtoCompile>True</ProtoCompile>
-            <CompileOutputs>True</CompileOutputs>
-            <OutputDir>obj\Debug\net5.0\</OutputDir>
-            <Generator>MSBuild:Compile</Generator>
-        </Protobuf>
-        <Protobuf Include="Protos\device.proto">
-            <GrpcServices>Client</GrpcServices>
-            <Access>Public</Access>
-            <ProtoCompile>True</ProtoCompile>
-            <CompileOutputs>True</CompileOutputs>
-            <OutputDir>obj\Debug\net5.0\</OutputDir>
-            <Generator>MSBuild:Compile</Generator>
-        </Protobuf>
-        <Protobuf Include="Protos\location.proto">
-            <GrpcServices>Client</GrpcServices>
-            <Access>Public</Access>
-            <ProtoCompile>True</ProtoCompile>
-            <CompileOutputs>True</CompileOutputs>
-            <OutputDir>obj\Debug\net5.0\</OutputDir>
-            <Generator>MSBuild:Compile</Generator>
-        </Protobuf>
-        <Protobuf Include="Protos\sensor.proto">
-            <GrpcServices>Client</GrpcServices>
-            <Access>Public</Access>
-            <ProtoCompile>True</ProtoCompile>
-            <CompileOutputs>True</CompileOutputs>
-            <OutputDir>obj\Debug\net5.0\</OutputDir>
-            <Generator>MSBuild:Compile</Generator>
-        </Protobuf>
-        <Protobuf Include="Protos\user.proto">
-            <GrpcServices>Client</GrpcServices>
-            <Access>Public</Access>
-            <ProtoCompile>True</ProtoCompile>
-            <CompileOutputs>True</CompileOutputs>
-            <OutputDir>obj\Debug\net5.0\</OutputDir>
-            <Generator>MSBuild:Compile</Generator>
-        </Protobuf>
+      <ProjectReference Include="..\DeviceGrpcService\DeviceGrpcService.csproj" />
+      <ProjectReference Include="..\UserIdentity.Core\UserIdentity.Core.csproj" />
     </ItemGroup>
+
+   
 
 </Project>
