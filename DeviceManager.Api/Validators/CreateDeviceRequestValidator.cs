@@ -22,6 +22,7 @@ namespace DeviceManager.Api.Validators
                 .NotEmpty()
                 .MaximumLength(DeviceConfiguration.NameMaxLength);
 
+            //TODO: Check if user exists in UserIdentityService
             RuleFor(r => r.UserId)
                 .NotEmpty()
                 .MustBeValidGuid();

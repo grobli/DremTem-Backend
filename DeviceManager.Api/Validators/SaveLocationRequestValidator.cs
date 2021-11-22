@@ -8,6 +8,7 @@ namespace DeviceManager.Api.Validators
     {
         public SaveLocationRequestValidator()
         {
+            //TODO: Check if user exists in UserIdentityService
             RuleFor(r => r.UserId)
                 .MustBeValidGuid();
 
