@@ -16,14 +16,13 @@ namespace DeviceManager.Data.Repositories
         {
         }
 
-        public async Task<Location> GetByIdAsync(Guid userId, string locationName)
+        public async Task<IEnumerable<Location>> GetAllAsync(Guid? userId = null)
         {
-            return await DeviceManagerContext.Locations
-                .SingleOrDefaultAsync(l => l.UserId == userId && l.Name == locationName);
-        }
+            if (userId is null)
+            {
+                return await DeviceManagerContext.Locations.ToListAsync();
+            }
 
-        public async Task<IEnumerable<Location>> GetAllAsync(Guid userId)
-        {
             return await DeviceManagerContext.Locations
                 .Where(l => l.UserId == userId)
                 .ToListAsync();
@@ -43,6 +42,12 @@ namespace DeviceManager.Data.Repositories
             return await include
                 .Where(l => l.UserId == userId)
                 .ToListAsync();
+        }
+
+        public async Task<Location> GetByIdAsync(Guid userId, string locationName)
+        {
+            return await DeviceManagerContext.Locations
+                .SingleOrDefaultAsync(l => l.UserId == userId && l.Name == locationName);
         }
 
         public async Task<Location> GetWithDevicesByIdAsync(Guid userId, string locationName)

@@ -7,10 +7,10 @@ namespace DeviceManager.Core.Repositories
 {
     public interface ISensorRepository : IRepository<Sensor>
     {
-        Task<Sensor> GetByIdAsync(Guid userId, string deviceName, string sensorName);
-        Task<IEnumerable<Sensor>> GetAllAsync(Guid userId);
-
+        Task<IEnumerable<Sensor>> GetAllAsync(Guid? userId = null);
         Task<IEnumerable<Sensor>> GetAllWithSensorTypeAsync(Guid? userId = null);
-        Task<Sensor> GetWithSensorTypeByIdAsync(Guid userId, string deviceName, string sensorName);
+
+        Task<Sensor> GetByIdAsync(long sensorId);
+        Task<Sensor> GetWithSensorTypeByIdAsync(long sensorId);
     }
 }

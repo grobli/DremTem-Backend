@@ -10,8 +10,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DeviceManager.Data.Migrations
 {
     [DbContext(typeof(DeviceManagerContext))]
-    [Migration("20211121005828_InitialModel")]
-    partial class InitialModel
+    [Migration("20211122013922_FixSensorForeignKeys")]
+    partial class FixSensorForeignKeys
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -23,17 +23,10 @@ namespace DeviceManager.Data.Migrations
 
             modelBuilder.Entity("DeviceManager.Core.Models.Device", b =>
                 {
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Name")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("ApiKey")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<DateTime>("Created")
                         .HasPrecision(0)
@@ -52,13 +45,21 @@ namespace DeviceManager.Data.Migrations
                         .HasColumnType("timestamp(0) without time zone");
 
                     b.Property<string>("LocationName")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
                     b.Property<bool>("Online")
                         .HasColumnType("boolean");
 
-                    b.HasKey("UserId", "Name");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("LocationName");
 
@@ -73,8 +74,8 @@ namespace DeviceManager.Data.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("Name")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
 
                     b.Property<DateTime>("Created")
                         .HasPrecision(0)
@@ -101,27 +102,39 @@ namespace DeviceManager.Data.Migrations
 
             modelBuilder.Entity("DeviceManager.Core.Models.Sensor", b =>
                 {
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-                    b.Property<string>("DeviceName")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                    b.Property<DateTime>("Created")
+                        .HasPrecision(0)
+                        .HasColumnType("timestamp(0) without time zone");
 
-                    b.Property<string>("Name")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                    b.Property<long>("DeviceId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("DisplayName")
                         .HasMaxLength(150)
                         .HasColumnType("character varying(150)");
+
+                    b.Property<DateTime?>("LastModified")
+                        .HasPrecision(0)
+                        .HasColumnType("timestamp(0) without time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("TypeName")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.HasKey("UserId", "DeviceName", "Name");
+                    b.HasKey("Id");
+
+                    b.HasIndex("DeviceId");
 
                     b.HasIndex("TypeName");
 
@@ -131,7 +144,12 @@ namespace DeviceManager.Data.Migrations
             modelBuilder.Entity("DeviceManager.Core.Models.SensorType", b =>
                 {
                     b.Property<string>("Name")
-                        .HasColumnType("text");
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<DateTime>("Created")
+                        .HasPrecision(0)
+                        .HasColumnType("timestamp(0) without time zone");
 
                     b.Property<string>("DataType")
                         .IsRequired()
@@ -143,6 +161,10 @@ namespace DeviceManager.Data.Migrations
 
                     b.Property<bool>("IsSummable")
                         .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("LastModified")
+                        .HasPrecision(0)
+                        .HasColumnType("timestamp(0) without time zone");
 
                     b.Property<string>("Unit")
                         .IsRequired()
@@ -167,22 +189,23 @@ namespace DeviceManager.Data.Migrations
                 {
                     b.HasOne("DeviceManager.Core.Models.Location", "Location")
                         .WithMany("Devices")
-                        .HasForeignKey("UserId", "LocationName");
+                        .HasForeignKey("UserId", "LocationName")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Location");
                 });
 
             modelBuilder.Entity("DeviceManager.Core.Models.Sensor", b =>
                 {
+                    b.HasOne("DeviceManager.Core.Models.Device", "Device")
+                        .WithMany("Sensors")
+                        .HasForeignKey("DeviceId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.HasOne("DeviceManager.Core.Models.SensorType", "Type")
                         .WithMany("Sensors")
                         .HasForeignKey("TypeName")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("DeviceManager.Core.Models.Device", "Device")
-                        .WithMany("Sensors")
-                        .HasForeignKey("UserId", "DeviceName")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

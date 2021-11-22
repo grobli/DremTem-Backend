@@ -16,22 +16,12 @@ namespace DeviceManager.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<IEnumerable<Location>> GetAllLocations()
-        {
-            return await _unitOfWork.Locations.GetAllAsync();
-        }
-
-        public async Task<IEnumerable<Location>> GetAllLocationsWithDevices()
-        {
-            return await _unitOfWork.Locations.GetAllWithDevicesAsync();
-        }
-
-        public async Task<IEnumerable<Location>> GetAllLocationsOfUser(Guid userId)
+        public async Task<IEnumerable<Location>> GetAllLocations(Guid? userId = null)
         {
             return await _unitOfWork.Locations.GetAllAsync(userId);
         }
 
-        public async Task<IEnumerable<Location>> GetAllLocationsOfUserWithDevices(Guid userId)
+        public async Task<IEnumerable<Location>> GetAllLocationsWithDevices(Guid? userId = null)
         {
             return await _unitOfWork.Locations.GetAllWithDevicesAsync(userId);
         }
@@ -59,6 +49,7 @@ namespace DeviceManager.Services
         public async Task UpdateLocation(Location locationToBeUpdated, Location location)
         {
             locationToBeUpdated.LastModified = DateTime.UtcNow;
+
             locationToBeUpdated.Latitude = location.Latitude;
             locationToBeUpdated.Longitude = location.Longitude;
             locationToBeUpdated.DisplayName = location.DisplayName;

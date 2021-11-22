@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using DeviceManager.Api.RpcServices;
+﻿using DeviceManager.Api.RpcServices;
+using DeviceManager.Api.Validators;
 using DeviceManager.Core;
 using DeviceManager.Core.Services;
+using DeviceManager.Core.Services.DeviceTokenService;
 using DeviceManager.Data;
 using DeviceManager.Services;
+using FluentValidation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -32,17 +31,23 @@ namespace DeviceManager.Api
         {
             services.AddGrpc();
 
+            services.AddValidatorsFromAssemblyContaining<CreateDeviceRequestValidator>();
+
             var dataAssemblyName = typeof(DeviceManagerContext).Assembly.GetName().Name;
             services.AddDbContext<DeviceManagerContext>(options =>
-                options.UseNpgsql(Configuration.GetConnectionString("Default")));
+                options.UseNpgsql(Configuration.GetConnectionString("Default"),
+                    x => x.MigrationsAssembly(dataAssemblyName)));
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddTransient<IDeviceService, DeviceService>();
             services.AddTransient<ILocationService, LocationService>();
             services.AddTransient<ISensorService, SensorService>();
             services.AddTransient<ISensorTypeService, SensorTypeService>();
+            services.AddTransient<IDeviceTokenService, DeviceTokenService>();
 
             services.AddAutoMapper(typeof(Startup));
+
+            services.Configure<TokenConfig>(Configuration.GetSection("DeviceToken"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -66,7 +71,8 @@ namespace DeviceManager.Api
                     async context =>
                     {
                         await context.Response.WriteAsync(
-                            "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
+                            "Communication with gRPC endpoints must be made through a gRPC client. " +
+                            "To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
                     });
             });
         }

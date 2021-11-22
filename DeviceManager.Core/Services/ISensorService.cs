@@ -7,14 +7,11 @@ namespace DeviceManager.Core.Services
 {
     public interface ISensorService
     {
-        Task<IEnumerable<Sensor>> GetAllSensors();
-        Task<IEnumerable<Sensor>> GetAllSensorsWithType();
+        Task<IEnumerable<Sensor>> GetAllSensors(Guid? userId = null);
+        Task<IEnumerable<Sensor>> GetAllSensorsWithType(Guid? userId = null);
 
-        Task<IEnumerable<Sensor>> GetAllSensorsOfUser(Guid userId);
-        Task<IEnumerable<Sensor>> GetAllSensorsOfUserWithType(Guid userId);
-
-        Task<Sensor> GetSensor(Guid userId, string deviceName, string sensorName);
-        Task<Sensor> GetSensorWithType(Guid userId, string deviceName, string sensorName);
+        Task<Sensor> GetSensor(long sensorId);
+        Task<Sensor> GetSensorWithType(long sensorId);
 
         Task<Sensor> CreateSensor(Sensor newSensor);
         Task UpdateSensor(Sensor sensorToBeUpdated, Sensor sensor);

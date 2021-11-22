@@ -8,23 +8,25 @@ namespace DeviceManager.Data.Configurations
     {
         public const int NameMaxLength = 100;
         public const int DisplayNameMaxLength = 150;
+        public const int DateTimePrecision = 0;
 
         public void Configure(EntityTypeBuilder<Sensor> builder)
         {
             builder
-                .HasKey(s => new { s.UserId, s.DeviceName, s.Name });
+                .HasKey(s => s.Id);
+
+            builder
+                .Property(s => s.Id)
+                .ValueGeneratedOnAdd();
 
             builder
                 .Property(s => s.Name)
-                .HasMaxLength(NameMaxLength);
+                .HasMaxLength(NameMaxLength)
+                .IsRequired();
 
             builder
                 .Property(s => s.DisplayName)
                 .HasMaxLength(DisplayNameMaxLength);
-
-            builder
-                .Property(s => s.DeviceName)
-                .HasMaxLength(DeviceConfiguration.NameMaxLength);
 
             builder
                 .Property(s => s.TypeName)
@@ -33,14 +35,24 @@ namespace DeviceManager.Data.Configurations
             builder
                 .HasOne(s => s.Device)
                 .WithMany(d => d.Sensors)
-                .HasForeignKey(s => new { s.UserId, s.DeviceName })
-                .IsRequired();
+                .HasForeignKey(s => s.DeviceId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.NoAction);
 
             builder
                 .HasOne(s => s.Type)
                 .WithMany(st => st.Sensors)
                 .HasForeignKey(s => s.TypeName)
                 .IsRequired();
+
+            builder
+                .Property(d => d.LastModified)
+                .HasPrecision(DateTimePrecision);
+
+            builder
+                .Property(d => d.Created)
+                .IsRequired()
+                .HasPrecision(DateTimePrecision);
         }
     }
 }

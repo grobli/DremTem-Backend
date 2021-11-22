@@ -6,7 +6,7 @@ namespace DeviceManager.Data.Configurations
 {
     public class LocationConfiguration : IEntityTypeConfiguration<Location>
     {
-        public const int NameMaxLength = 100;
+        public const int NameMaxLength = 40;
         public const int DisplayNameMaxLength = 150;
         public const int DateTimePrecision = 0;
 
