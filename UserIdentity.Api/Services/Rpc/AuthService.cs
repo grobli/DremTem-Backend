@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using FluentValidation;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Microsoft.AspNetCore.Identity;
@@ -18,25 +19,31 @@ namespace UserIdentity.Api.Services.Rpc
         private readonly IMapper _mapper;
         private readonly JwtService _jwt;
 
+        private readonly IValidator<UserSignUpRequest> _userSignUpValidator;
 
-        public AuthService(UserManager<User> userManager, RoleManager<Role> roleManager, IMapper mapper,
-            JwtService jwt)
+
+        public AuthService(
+            UserManager<User> userManager,
+            RoleManager<Role> roleManager,
+            IMapper mapper,
+            JwtService jwt,
+            IValidator<UserSignUpRequest> userSignUpValidator)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _mapper = mapper;
             _jwt = jwt;
+
+            _userSignUpValidator = userSignUpValidator;
         }
 
         public override async Task<Empty> SignUp(UserSignUpRequest request, ServerCallContext context)
         {
-            var validator = new UserSignUpRequestValidator();
-            var validationResult = await validator.ValidateAsync(request);
-
+            var validationResult = await _userSignUpValidator.ValidateAsync(request);
             if (!validationResult.IsValid)
             {
                 throw new RpcException(new Status(StatusCode.InvalidArgument,
-                    validationResult.Errors.First().ToString()));
+                    validationResult.Errors.First().ErrorMessage));
             }
 
             var user = _mapper.Map<UserSignUpRequest, User>(request);
@@ -67,7 +74,6 @@ namespace UserIdentity.Api.Services.Rpc
             }
 
             var userSignInResult = await _userManager.CheckPasswordAsync(user, request.Password);
-
             if (!userSignInResult)
             {
                 await _userManager.AccessFailedAsync(user);

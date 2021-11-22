@@ -7,7 +7,9 @@ namespace UserIdentity.Api.Validators
     {
         public GetUserByEmailValidator()
         {
-            RuleFor(r => r.Email).EmailAddress();
+            RuleFor(r => r.Email)
+                .NotEmpty()
+                .EmailAddress();
         }
     }
 }

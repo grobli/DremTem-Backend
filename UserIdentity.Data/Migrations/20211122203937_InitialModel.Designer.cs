@@ -10,7 +10,7 @@ using UserIdentity.Data;
 namespace UserIdentity.Data.Migrations
 {
     [DbContext(typeof(UserDbContext))]
-    [Migration("20211115143558_InitialModel")]
+    [Migration("20211122203937_InitialModel")]
     partial class InitialModel
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -170,11 +170,12 @@ namespace UserIdentity.Data.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("LastName")
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("boolean");

@@ -4,18 +4,18 @@ using UserIdentity.Data.Configurations;
 
 namespace UserIdentity.Api.Validators
 {
-    public class UserSignUpRequestValidator : AbstractValidator<UserSignUpRequest>
+    public class UpdateUserDetailsRequestValidator : AbstractValidator<UpdateUserDetailsRequest>
     {
-        public UserSignUpRequestValidator()
+        public UpdateUserDetailsRequestValidator()
         {
-            RuleFor(u => u.Email)
+            RuleFor(r => r.Id)
                 .NotEmpty()
-                .EmailAddress();
-            
-            RuleFor(u => u.FirstName)
+                .MustBeValidGuid();
+
+            RuleFor(r => r.FirstName)
                 .MaximumLength(UserConfiguration.FirstNameMaxLength);
-            
-            RuleFor(u => u.LastName)
+
+            RuleFor(r => r.LastName)
                 .MaximumLength(UserConfiguration.LastNameMaxLength);
         }
     }

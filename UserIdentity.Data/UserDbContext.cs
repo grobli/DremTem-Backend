@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using UserIdentity.Core.Models.Auth;
+using UserIdentity.Data.Configurations;
 
 namespace UserIdentity.Data
 {
@@ -9,6 +10,13 @@ namespace UserIdentity.Data
     {
         public UserDbContext(DbContextOptions<UserDbContext> options) : base(options)
         {
+        }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+
+            builder.ApplyConfiguration(new UserConfiguration());
         }
     }
 }

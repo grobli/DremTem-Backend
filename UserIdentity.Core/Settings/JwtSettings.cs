@@ -1,4 +1,4 @@
-﻿namespace UserIdentity.Api.Settings
+﻿namespace UserIdentity.Core.Settings
 {
     public class JwtSettings
     {
