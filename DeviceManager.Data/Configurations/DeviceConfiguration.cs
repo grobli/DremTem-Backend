@@ -8,29 +8,32 @@ namespace DeviceManager.Data.Configurations
     {
         public const int NameMaxLength = 100;
         public const int DisplayNameMaxLenght = 150;
-        public const int ApiKeyMaxLength = 64;
         public const int DateTimePrecision = 0;
 
         public void Configure(EntityTypeBuilder<Device> builder)
         {
             builder
-                .HasKey(d => new { d.UserId, d.Name });
+                .HasKey(d => d.Id);
+
+            builder
+                .Property(d => d.Id)
+                .ValueGeneratedOnAdd();
+
+            builder
+                .Property(d => d.UserId)
+                .IsRequired();
 
             builder
                 .HasIndex(d => d.LocationName);
 
             builder
                 .Property(d => d.Name)
-                .HasMaxLength(NameMaxLength);
+                .HasMaxLength(NameMaxLength)
+                .IsRequired();
 
             builder
                 .Property(d => d.DisplayName)
                 .HasMaxLength(DisplayNameMaxLenght);
-
-            builder
-                .Property(d => d.ApiKey)
-                .IsRequired()
-                .HasMaxLength(ApiKeyMaxLength);
 
             builder
                 .Property(d => d.Online)
@@ -56,7 +59,11 @@ namespace DeviceManager.Data.Configurations
             builder
                 .HasOne(d => d.Location)
                 .WithMany(l => l.Devices)
-                .HasForeignKey(d => new { d.UserId, d.LocationName });
+                .HasForeignKey(d => new
+                {
+                    d.UserId, d.LocationName
+                })
+                .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

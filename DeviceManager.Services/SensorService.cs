@@ -16,38 +16,31 @@ namespace DeviceManager.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<IEnumerable<Sensor>> GetAllSensors()
-        {
-            return await _unitOfWork.Sensors.GetAllAsync();
-        }
 
-        public async Task<IEnumerable<Sensor>> GetAllSensorsWithType()
-        {
-            return await _unitOfWork.Sensors.GetAllWithSensorTypeAsync();
-        }
-
-        public async Task<IEnumerable<Sensor>> GetAllSensorsOfUser(Guid userId)
+        public async Task<IEnumerable<Sensor>> GetAllSensors(Guid? userId = null)
         {
             return await _unitOfWork.Sensors.GetAllAsync(userId);
         }
 
-        public async Task<IEnumerable<Sensor>> GetAllSensorsOfUserWithType(Guid userId)
+        public async Task<IEnumerable<Sensor>> GetAllSensorsWithType(Guid? userId = null)
         {
             return await _unitOfWork.Sensors.GetAllWithSensorTypeAsync(userId);
         }
 
-        public async Task<Sensor> GetSensor(Guid userId, string deviceName, string sensorName)
+        public async Task<Sensor> GetSensor(long sensorId)
         {
-            return await _unitOfWork.Sensors.GetByIdAsync(userId, deviceName, sensorName);
+            return await _unitOfWork.Sensors.GetByIdAsync(sensorId);
         }
 
-        public async Task<Sensor> GetSensorWithType(Guid userId, string deviceName, string sensorName)
+        public async Task<Sensor> GetSensorWithType(long sensorId)
         {
-            return await _unitOfWork.Sensors.GetWithSensorTypeByIdAsync(userId, deviceName, sensorName);
+            return await _unitOfWork.Sensors.GetWithSensorTypeByIdAsync(sensorId);
         }
 
         public async Task<Sensor> CreateSensor(Sensor newSensor)
         {
+            newSensor.Created = DateTime.UtcNow;
+
             await _unitOfWork.Sensors.AddAsync(newSensor);
             await _unitOfWork.CommitAsync();
 
@@ -56,6 +49,8 @@ namespace DeviceManager.Services
 
         public async Task UpdateSensor(Sensor sensorToBeUpdated, Sensor sensor)
         {
+            sensorToBeUpdated.LastModified = DateTime.UtcNow;
+            
             sensorToBeUpdated.DisplayName = sensor.DisplayName;
             sensorToBeUpdated.TypeName = sensor.TypeName;
 

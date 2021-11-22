@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text.Json;
 
 namespace DeviceManager.Core.Models
@@ -12,6 +13,8 @@ namespace DeviceManager.Core.Models
         public string UnitSymbol { get; set; }
         public bool IsDiscrete { get; set; }
         public bool IsSummable { get; set; }
+        public DateTime? LastModified { get; set; }
+        public DateTime Created { get; set; }
         public IEnumerable<Sensor> Sensors { get; set; }
 
         public override string ToString() => JsonSerializer.Serialize(this);

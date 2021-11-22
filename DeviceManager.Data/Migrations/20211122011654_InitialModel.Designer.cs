@@ -3,15 +3,17 @@ using System;
 using DeviceManager.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace DeviceManager.Data.Migrations
 {
     [DbContext(typeof(DeviceManagerContext))]
-    partial class DeviceManagerContextModelSnapshot : ModelSnapshot
+    [Migration("20211122011654_InitialModel")]
+    partial class InitialModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -198,13 +200,13 @@ namespace DeviceManager.Data.Migrations
                     b.HasOne("DeviceManager.Core.Models.Device", "Device")
                         .WithMany("Sensors")
                         .HasForeignKey("DeviceId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("DeviceManager.Core.Models.SensorType", "Type")
                         .WithMany("Sensors")
                         .HasForeignKey("TypeName")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Device");

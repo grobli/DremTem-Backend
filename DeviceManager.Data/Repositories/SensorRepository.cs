@@ -16,16 +16,16 @@ namespace DeviceManager.Data.Repositories
         {
         }
 
-        public async Task<Sensor> GetByIdAsync(Guid userId, string deviceName, string sensorName)
+        public async Task<IEnumerable<Sensor>> GetAllAsync(Guid? userId = null)
         {
-            return await DeviceManagerContext.Sensors
-                .SingleOrDefaultAsync(s => s.UserId == userId && s.DeviceName == deviceName && s.Name == sensorName);
-        }
+            if (userId is null)
+            {
+                return await DeviceManagerContext.Sensors.ToListAsync();
+            }
 
-        public async Task<IEnumerable<Sensor>> GetAllAsync(Guid userId)
-        {
             return await DeviceManagerContext.Sensors
-                .Where(s => s.UserId == userId)
+                .Include(s => s.Device)
+                .Where(s => s.Device.UserId == userId)
                 .ToListAsync();
         }
 
@@ -41,15 +41,24 @@ namespace DeviceManager.Data.Repositories
             }
 
             return await include
-                .Where(l => l.UserId == userId)
+                .Include(s => s.Device)
+                .Where(s => s.Device.UserId == userId)
                 .ToListAsync();
         }
 
-        public async Task<Sensor> GetWithSensorTypeByIdAsync(Guid userId, string deviceName, string sensorName)
+
+        public async Task<Sensor> GetByIdAsync(long sensorId)
+        {
+            return await DeviceManagerContext.Sensors
+                .SingleOrDefaultAsync(s => s.Id == sensorId);
+        }
+
+
+        public async Task<Sensor> GetWithSensorTypeByIdAsync(long sensorId)
         {
             return await DeviceManagerContext.Sensors
                 .Include(s => s.Type)
-                .SingleOrDefaultAsync(s => s.UserId == userId && s.DeviceName == deviceName && s.Name == sensorName);
+                .SingleOrDefaultAsync(s => s.Id == sensorId);
         }
     }
 }

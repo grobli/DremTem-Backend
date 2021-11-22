@@ -7,11 +7,8 @@ namespace DeviceManager.Core.Services
 {
     public interface ILocationService
     {
-        Task<IEnumerable<Location>> GetAllLocations();
-        Task<IEnumerable<Location>> GetAllLocationsWithDevices();
-
-        Task<IEnumerable<Location>> GetAllLocationsOfUser(Guid userId);
-        Task<IEnumerable<Location>> GetAllLocationsOfUserWithDevices(Guid userId);
+        Task<IEnumerable<Location>> GetAllLocations(Guid? userId = null);
+        Task<IEnumerable<Location>> GetAllLocationsWithDevices(Guid? userId = null);
 
         Task<Location> GetLocation(Guid userId, string locationName);
         Task<Location> GetLocationWithDevices(Guid userId, string locationName);

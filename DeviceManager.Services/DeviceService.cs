@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using DeviceManager.Core;
 using DeviceManager.Core.Models;
 using DeviceManager.Core.Services;
-using DeviceManager.Data.Configurations;
 
 namespace DeviceManager.Services
 {
@@ -19,9 +19,7 @@ namespace DeviceManager.Services
 
         public async Task<IEnumerable<Device>> GetAllDevices(Guid? userId = null)
         {
-            return userId is null
-                ? await _unitOfWork.Devices.GetAllAsync()
-                : await _unitOfWork.Devices.GetAllAsync(userId.Value);
+            return await _unitOfWork.Devices.GetAllAsync(userId);
         }
 
         public async Task<IEnumerable<Device>> GetAllDevicesWithLocation(Guid? userId = null)
@@ -39,34 +37,40 @@ namespace DeviceManager.Services
             return await _unitOfWork.Devices.GetAllWithEverything(userId);
         }
 
-        public async Task<Device> GetDevice(Guid userId, string deviceName)
+        public async Task<Device> GetDevice(long deviceId)
         {
-            return await _unitOfWork.Devices.GetByIdAsync(userId, deviceName);
+            return await _unitOfWork.Devices.GetByIdAsync(deviceId);
         }
 
-        public async Task<Device> GetDeviceWithLocation(Guid userId, string deviceName)
+        public async Task<Device> GetDeviceWithLocation(long deviceId)
         {
-            return await _unitOfWork.Devices.GetWithLocationByIdAsync(userId, deviceName);
+            return await _unitOfWork.Devices.GetWithLocationByIdAsync(deviceId);
         }
 
-        public async Task<Device> GetDeviceWithSensors(Guid userId, string deviceName)
+        public async Task<Device> GetDeviceWithSensors(long deviceId)
         {
-            return await _unitOfWork.Devices.GetWithSensorsByIdAsync(userId, deviceName);
+            return await _unitOfWork.Devices.GetWithSensorsByIdAsync(deviceId);
         }
 
-        public async Task<Device> GetDeviceWithAll(Guid userId, string deviceName)
+        public async Task<Device> GetDeviceWithAll(long deviceId)
         {
-            return await _unitOfWork.Devices.GetWithEverythingByIdAsync(userId, deviceName);
+            return await _unitOfWork.Devices.GetWithEverythingByIdAsync(deviceId);
         }
 
         public async Task<Device> CreateDevice(Device newDevice, IEnumerable<Sensor> sensors)
         {
-            newDevice.Created = DateTime.UtcNow;
-            newDevice.ApiKey = KeyGenerator.GetUniqueKey(DeviceConfiguration.ApiKeyMaxLength);
+            var now = DateTime.UtcNow;
+            newDevice.Created = now;
 
             await _unitOfWork.Devices.AddAsync(newDevice);
-            await _unitOfWork.Sensors.AddRangeAsync(sensors);
-            
+            await _unitOfWork.CommitAsync();
+
+            await _unitOfWork.Sensors.AddRangeAsync(sensors.Select(s =>
+            {
+                s.DeviceId = newDevice.Id;
+                s.Created = now;
+                return s;
+            }));
             await _unitOfWork.CommitAsync();
 
             return newDevice;

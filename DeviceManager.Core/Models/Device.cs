@@ -6,9 +6,9 @@ namespace DeviceManager.Core.Models
 {
     public record Device
     {
+        public long Id { get; set; }
         public string Name { get; set; }
         public string DisplayName { get; set; }
-        public string ApiKey { get; set; }
         public bool Online { get; set; }
         public DateTime? LastSeen { get; set; }
         public DateTime? LastModified { get; set; }

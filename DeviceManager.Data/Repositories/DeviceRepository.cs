@@ -17,14 +17,13 @@ namespace DeviceManager.Data.Repositories
         {
         }
 
-        public async Task<Device> GetByIdAsync(Guid userId, string deviceName)
+        public async Task<IEnumerable<Device>> GetAllAsync(Guid? userId = null)
         {
-            return await DeviceManagerContext.Devices
-                .SingleOrDefaultAsync(d => d.UserId == userId && d.Name == deviceName);
-        }
-
-        public async Task<IEnumerable<Device>> GetAllAsync(Guid userId)
-        {
+            if (userId is null)
+            {
+                return await DeviceManagerContext.Devices.ToListAsync();
+            }
+            
             return await DeviceManagerContext.Devices
                 .Where(d => d.UserId == userId)
                 .ToListAsync();
@@ -76,28 +75,36 @@ namespace DeviceManager.Data.Repositories
                 .ToListAsync();
         }
 
-        public async Task<Device> GetWithLocationByIdAsync(Guid userId, string deviceName)
+
+        public async Task<Device> GetByIdAsync(long deviceId)
         {
             return await DeviceManagerContext.Devices
-                .Include(d => d.Location)
-                .SingleOrDefaultAsync(d => d.UserId == userId && d.Name == deviceName);
+                .SingleOrDefaultAsync(d => d.Id == deviceId);
         }
 
 
-        public async Task<Device> GetWithSensorsByIdAsync(Guid userId, string deviceName)
+        public async Task<Device> GetWithLocationByIdAsync(long deviceId)
         {
             return await DeviceManagerContext.Devices
-                .Include(d => d.Sensors)
-                .SingleOrDefaultAsync(d => d.UserId == userId && d.Name == deviceName);
+                .Include(d => d.Location)
+                .SingleOrDefaultAsync(d => d.Id == deviceId);
         }
 
 
-        public async Task<Device> GetWithEverythingByIdAsync(Guid userId, string deviceName)
+        public async Task<Device> GetWithSensorsByIdAsync(long deviceId)
+        {
+            return await DeviceManagerContext.Devices
+                .Include(d => d.Sensors)
+                .SingleOrDefaultAsync(d => d.Id == deviceId);
+        }
+
+
+        public async Task<Device> GetWithEverythingByIdAsync(long deviceId)
         {
             return await DeviceManagerContext.Devices
                 .Include(d => d.Location)
                 .Include(d => d.Sensors)
-                .SingleOrDefaultAsync(d => d.UserId == userId && d.Name == deviceName);
+                .SingleOrDefaultAsync(d => d.Id == deviceId);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using DeviceManager.Core;
 using DeviceManager.Core.Models;
@@ -27,6 +28,8 @@ namespace DeviceManager.Services
 
         public async Task<SensorType> CreateSensorType(SensorType newSensorType)
         {
+            newSensorType.Created = DateTime.UtcNow;
+
             await _unitOfWork.SensorTypes.AddAsync(newSensorType);
             await _unitOfWork.CommitAsync();
 
@@ -35,6 +38,8 @@ namespace DeviceManager.Services
 
         public async Task UpdateSensorType(SensorType sensorTypeToBeUpdated, SensorType sensorType)
         {
+            sensorTypeToBeUpdated.LastModified = DateTime.UtcNow;
+
             sensorTypeToBeUpdated.Unit = sensorType.Unit;
             sensorTypeToBeUpdated.UnitShort = sensorType.UnitShort;
             sensorTypeToBeUpdated.UnitSymbol = sensorType.UnitSymbol;
