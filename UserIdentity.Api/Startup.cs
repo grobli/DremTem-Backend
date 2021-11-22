@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using FluentValidation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -12,8 +10,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using UserIdentity.Api.Services;
 using UserIdentity.Api.Services.Rpc;
-using UserIdentity.Api.Settings;
+using UserIdentity.Api.Validators;
 using UserIdentity.Core.Models.Auth;
+using UserIdentity.Core.Settings;
 using UserIdentity.Data;
 
 namespace UserIdentity.Api
@@ -33,6 +32,8 @@ namespace UserIdentity.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddGrpc();
+
+            services.AddValidatorsFromAssemblyContaining<UserSignUpRequestValidator>();
 
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -68,7 +69,7 @@ namespace UserIdentity.Api
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapGrpcService<AuthService>();
-                endpoints.MapGrpcService<UserInfoService>();
+                endpoints.MapGrpcService<UserService>();
 
                 endpoints.MapGet("/",
                     async context =>

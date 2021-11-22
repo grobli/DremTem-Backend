@@ -9,16 +9,17 @@ package user;
 
 service UserInfoGrpc {
   // Read
-  rpc GetUserById (GetUserByIdRequest) returns (UserInfoResource);
-  rpc GetUserByEmail (GetUserByEmailRequest) returns (UserInfoResource);
+  rpc GetAllUsers (GetAllUsersRequest) returns (stream UserResource);
+
+  rpc GetUserById (GetUserByIdRequest) returns (UserResource);
+  rpc GetUserByEmail (GetUserByEmailRequest) returns (UserResource);
   // Update
-  rpc UpdateUserFirstName (UpdateUserFirstNameRequest) returns (UserInfoResource);
-  rpc UpdateUserLastName (UpdateUserLastNameRequest) returns (UserInfoResource);
+  rpc UpdateUserDetails (UpdateUserDetailsRequest) returns (UserResource);
   // Delete
   rpc DeleteUser (DeleteUserRequest) returns (google.protobuf.Empty);
 }
 
-message UserInfoResource {
+message UserResource {
   string Id = 1;
   string FirstName = 2;
   google.protobuf.StringValue LastName = 3;
@@ -26,6 +27,15 @@ message UserInfoResource {
   string Email = 5;
   bool EmailConfirmed = 6;
   repeated string Roles = 7;
+}
+
+message GetAllUsersRequest {}
+
+message UpdateUserDetailsRequest {
+  string Id = 1;
+
+  google.protobuf.StringValue FirstName = 2;
+  google.protobuf.StringValue LastName = 3;
 }
 
 message DeleteUserRequest {
@@ -38,14 +48,4 @@ message GetUserByIdRequest {
 
 message GetUserByEmailRequest {
   string Email = 1;
-}
-
-message UpdateUserFirstNameRequest {
-  string Id = 1;
-  string FirstName = 2;
-}
-
-message UpdateUserLastNameRequest {
-  string Id = 1;
-  string LastName = 2;
 }

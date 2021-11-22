@@ -1,6 +1,7 @@
 ﻿syntax = "proto3";
 
 import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
 
 option csharp_namespace = "UserIdentity.Core.Proto";
 
@@ -14,10 +15,12 @@ service UserAuthGrpc {
 }
 
 message UserSignUpRequest{
-  string FirstName = 1;
-  string LastName = 2;
-  string Email = 3;
-  string Password = 4;
+  string Email = 1;
+  string Password = 2;
+
+  google.protobuf.StringValue FirstName = 3;
+  google.protobuf.StringValue LastName = 4;
+
 }
 
 message UserLoginRequest {
