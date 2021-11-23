@@ -40,6 +40,10 @@ namespace DeviceManager.Api.Validators
                     return location is not null;
                 }).WithMessage("{PropertyName} with value: \"{PropertyValue}\" not found.")
                 .Unless(r => string.IsNullOrWhiteSpace(r.LocationName));
+
+            RuleFor(r => r.UserId)
+                .MustBeValidGuid()
+                .Unless(r => string.IsNullOrWhiteSpace(r.UserId));
         }
     }
 }

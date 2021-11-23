@@ -14,7 +14,7 @@ using UserIdentity.Core.Proto;
 
 namespace UserIdentity.Api.Services.Rpc
 {
-    public class UserService : UserInfoGrpc.UserInfoGrpcBase
+    public class UserService : UserGrpcService.UserGrpcServiceBase
     {
         private readonly UserManager<User> _userManager;
         private readonly ILogger<UserService> _logger;
@@ -46,7 +46,9 @@ namespace UserIdentity.Api.Services.Rpc
             IServerStreamWriter<UserResource> responseStream,
             ServerCallContext context)
         {
-            foreach (var user in _userManager.Users)
+            foreach (var user in await _userManager.Users
+                .OrderBy(u => u.UserName)
+                .ToListAsync())
             {
                 await responseStream.WriteAsync(await CollectUserDataAsync(user));
             }

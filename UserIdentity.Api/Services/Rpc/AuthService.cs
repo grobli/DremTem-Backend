@@ -12,7 +12,7 @@ using UserIdentity.Core.Proto;
 
 namespace UserIdentity.Api.Services.Rpc
 {
-    public class AuthService : UserAuthGrpc.UserAuthGrpcBase
+    public class AuthService : UserAuthGrpcService.UserAuthGrpcServiceBase
     {
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<Role> _roleManager;
@@ -49,13 +49,18 @@ namespace UserIdentity.Api.Services.Rpc
             var user = _mapper.Map<UserSignUpRequest, User>(request);
 
             var userCreateResult = await _userManager.CreateAsync(user, request.Password);
-
-            if (userCreateResult.Succeeded)
+            if (!userCreateResult.Succeeded)
             {
-                return await Task.FromResult(new Empty());
+                throw new RpcException(new Status(StatusCode.Internal, userCreateResult.Errors.First().Description));
             }
 
-            throw new RpcException(new Status(StatusCode.Internal, userCreateResult.Errors.First().Description));
+            var roleResult = await _userManager.AddToRoleAsync(user, DefaultRoles.BaseUser);
+            if (!roleResult.Succeeded)
+            {
+                throw new RpcException(new Status(StatusCode.Internal, roleResult.Errors.First().Description));
+            }
+
+            return await Task.FromResult(new Empty());
         }
 
         public override async Task<UserLoginResponse> SignIn(UserLoginRequest request, ServerCallContext context)

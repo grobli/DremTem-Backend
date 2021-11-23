@@ -7,7 +7,7 @@ option csharp_namespace = "UserIdentity.Core.Proto";
 
 package user;
 
-service UserInfoGrpc {
+service UserGrpcService {
   // Read
   rpc GetAllUsers (GetAllUsersRequest) returns (stream UserResource);
 

@@ -7,7 +7,7 @@ option csharp_namespace = "UserIdentity.Core.Proto";
 
 package auth;
 
-service UserAuthGrpc {
+service UserAuthGrpcService {
   rpc SignUp (UserSignUpRequest) returns (google.protobuf.Empty);
   rpc SignIn (UserLoginRequest) returns (UserLoginResponse);
   rpc CreateRole (CreateRoleRequest) returns (google.protobuf.Empty);

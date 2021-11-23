@@ -24,6 +24,8 @@ namespace DeviceManager.Api.RpcServices
         private readonly IValidator<CreateDeviceRequest> _createDeviceValidator;
         private readonly IValidator<GetAllDevicesRequest> _getAllDevicesValidator;
         private readonly IValidator<UpdateDeviceRequest> _updateDeviceValidator;
+        private readonly IValidator<GetDeviceRequest> _getDeviceValidator;
+        private readonly IValidator<GenerateTokenRequest> _generateTokenValidator;
 
         public DeviceGrpcService(
             ILogger<DeviceGrpcService> logger,
@@ -32,7 +34,9 @@ namespace DeviceManager.Api.RpcServices
             IMapper mapper,
             IValidator<CreateDeviceRequest> createDeviceValidator,
             IValidator<GetAllDevicesRequest> getAllDevicesValidator,
-            IValidator<UpdateDeviceRequest> updateDeviceValidator)
+            IValidator<UpdateDeviceRequest> updateDeviceValidator,
+            IValidator<GetDeviceRequest> getDeviceValidator,
+            IValidator<GenerateTokenRequest> generateTokenValidator)
         {
             _logger = logger;
             _deviceService = deviceService;
@@ -42,6 +46,8 @@ namespace DeviceManager.Api.RpcServices
             _createDeviceValidator = createDeviceValidator;
             _getAllDevicesValidator = getAllDevicesValidator;
             _updateDeviceValidator = updateDeviceValidator;
+            _getDeviceValidator = getDeviceValidator;
+            _generateTokenValidator = generateTokenValidator;
         }
 
         public override async Task GetAllDevices(GetAllDevicesRequest request,
@@ -74,6 +80,14 @@ namespace DeviceManager.Api.RpcServices
 
         public override async Task<DeviceResource> GetDevice(GetDeviceRequest request, ServerCallContext context)
         {
+            var validationResult = await _getDeviceValidator.ValidateAsync(request);
+            if (!validationResult.IsValid)
+            {
+                throw new RpcException(
+                    new Status(StatusCode.InvalidArgument, validationResult.Errors.First().ErrorMessage));
+            }
+
+
             var device = (request.IncludeLocation, request.IncludeSensors) switch
             {
                 (true, true) => await _deviceService.GetDeviceWithAll(request.Id),
@@ -82,7 +96,8 @@ namespace DeviceManager.Api.RpcServices
                 _ => await _deviceService.GetDevice(request.Id)
             };
 
-            if (device is null)
+            Guid? userId = string.IsNullOrWhiteSpace(request.UserId) ? null : Guid.Parse(request.UserId);
+            if (device is null || userId.HasValue && device.UserId != userId)
             {
                 throw new RpcException(new Status(StatusCode.NotFound,
                     $"Device with Id = {request.Id} not found"));
@@ -120,7 +135,13 @@ namespace DeviceManager.Api.RpcServices
                     new Status(StatusCode.InvalidArgument, validationResult.Errors.First().ErrorMessage));
             }
 
+            Guid? userId = string.IsNullOrWhiteSpace(request.UserId) ? null : Guid.Parse(request.UserId);
             var device = await _deviceService.GetDevice(request.Id);
+            if (device is null || userId.HasValue && device.UserId != userId)
+            {
+                throw new RpcException(new Status(StatusCode.NotFound,
+                    $"Device with Id = {request.Id} not found"));
+            }
 
             await _deviceService
                 .UpdateDevice(device, _mapper.Map<UpdateDeviceRequest, Device>(request));
@@ -152,8 +173,16 @@ namespace DeviceManager.Api.RpcServices
         public override async Task<GenerateTokenResponse> GenerateToken(GenerateTokenRequest request,
             ServerCallContext context)
         {
+            var validationResult = await _generateTokenValidator.ValidateAsync(request);
+            if (!validationResult.IsValid)
+            {
+                throw new RpcException(
+                    new Status(StatusCode.InvalidArgument, validationResult.Errors.First().ErrorMessage));
+            }
+
+            Guid? userId = string.IsNullOrWhiteSpace(request.UserId) ? null : Guid.Parse(request.UserId);
             var device = await _deviceService.GetDevice(request.Id);
-            if (device is null)
+            if (device is null || userId.HasValue && device.UserId != userId)
             {
                 throw new RpcException(new Status(StatusCode.NotFound,
                     $"Device with Id = {request.Id} not found"));

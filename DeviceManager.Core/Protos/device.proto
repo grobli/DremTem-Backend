@@ -31,6 +31,9 @@ message GetDeviceRequest {
 
   bool IncludeLocation = 2;
   bool IncludeSensors = 3;
+
+  // optional userId filter
+  google.protobuf.StringValue UserId = 4;
 }
 
 
@@ -57,6 +60,9 @@ message UpdateDeviceRequest {
   google.protobuf.StringValue DisplayName = 2;
   bool Online = 3;
   google.protobuf.StringValue LocationName = 4;
+
+  // userId to limit access to resources
+  google.protobuf.StringValue UserId = 5;
 }
 
 message PingRequest {
@@ -65,6 +71,9 @@ message PingRequest {
 
 message GenerateTokenRequest {
   int64 Id = 1;
+
+  // userId to limit access to resources
+  google.protobuf.StringValue UserId = 2;
 }
 
 message GenerateTokenResponse {
