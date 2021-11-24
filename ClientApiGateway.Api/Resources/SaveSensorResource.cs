@@ -3,8 +3,8 @@
     public record SaveSensorResource
     (
         string Name,
-        long DeviceId,
+        int DeviceId,
         string DisplayName,
-        string TypeName
+        int TypeId
     );
 }

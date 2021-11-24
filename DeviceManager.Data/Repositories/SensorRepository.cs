@@ -47,17 +47,24 @@ namespace DeviceManager.Data.Repositories
         }
 
 
-        public async Task<Sensor> GetByIdAsync(long sensorId)
+        public async Task<Sensor> GetByIdAsync(int sensorId)
         {
             return await DeviceManagerContext.Sensors
                 .SingleOrDefaultAsync(s => s.Id == sensorId);
         }
 
 
-        public async Task<Sensor> GetWithSensorTypeByIdAsync(long sensorId)
+        public async Task<Sensor> GetWithSensorTypeByIdAsync(int sensorId)
         {
             return await DeviceManagerContext.Sensors
                 .Include(s => s.Type)
+                .SingleOrDefaultAsync(s => s.Id == sensorId);
+        }
+
+        public async Task<Sensor> GetWithDeviceByIdAsync(int sensorId)
+        {
+            return await DeviceManagerContext.Sensors
+                .Include(s => s.Device)
                 .SingleOrDefaultAsync(s => s.Id == sensorId);
         }
     }

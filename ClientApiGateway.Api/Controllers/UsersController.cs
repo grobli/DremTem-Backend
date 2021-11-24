@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using AutoMapper;
 using ClientApiGateway.Api.Resources;
 using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using UserIdentity.Core.Models.Auth;
 using UserIdentity.Core.Proto;
+using static ClientApiGateway.Api.Handlers.RpcExceptionHandler;
 
 namespace ClientApiGateway.Api.Controllers
 {
@@ -19,13 +21,16 @@ namespace ClientApiGateway.Api.Controllers
     {
         private readonly ILogger<UsersController> _logger;
         private readonly UserGrpcService.UserGrpcServiceClient _userService;
+        private readonly IMapper _mapper;
 
         public UsersController(
             ILogger<UsersController> logger,
-            UserGrpcService.UserGrpcServiceClient userService)
+            UserGrpcService.UserGrpcServiceClient userService,
+            IMapper mapper)
         {
             _logger = logger;
             _userService = userService;
+            _mapper = mapper;
         }
 
         // GET: api/v1/Users
@@ -47,7 +52,7 @@ namespace ClientApiGateway.Api.Controllers
             }
             catch (RpcException e)
             {
-                return BadRequest(e.Status);
+                return HandleRpcException(e);
             }
         }
 
@@ -62,7 +67,7 @@ namespace ClientApiGateway.Api.Controllers
             }
             catch (RpcException e)
             {
-                return BadRequest(e.Status);
+                return HandleRpcException(e);
             }
         }
 
@@ -77,7 +82,7 @@ namespace ClientApiGateway.Api.Controllers
             }
             catch (RpcException e)
             {
-                return BadRequest(e.Status);
+                return HandleRpcException(e);
             }
         }
 
@@ -92,7 +97,7 @@ namespace ClientApiGateway.Api.Controllers
             }
             catch (RpcException e)
             {
-                return BadRequest(e.Status);
+                return HandleRpcException(e);
             }
         }
 
@@ -101,21 +106,16 @@ namespace ClientApiGateway.Api.Controllers
         [HttpPut("{id:guid}")]
         public async Task<ActionResult<UserResource>> UpdateUserDetails(UpdateUserDetailsResource resource, Guid id)
         {
+            var request = _mapper.Map<UpdateUserDetailsResource, UpdateUserDetailsRequest>(resource);
+            request.Id = id.ToString();
+
             try
             {
-                var (firstName, lastName) = resource;
-                var request = new UpdateUserDetailsRequest
-                {
-                    Id = id.ToString(),
-                    FirstName = firstName,
-                    LastName = lastName
-                };
-
                 return Ok(await _userService.UpdateUserDetailsAsync(request));
             }
             catch (RpcException e)
             {
-                return BadRequest(e.Status);
+                return HandleRpcException(e);
             }
         }
 
@@ -123,13 +123,8 @@ namespace ClientApiGateway.Api.Controllers
         [HttpPut("me")]
         public async Task<ActionResult<UserResource>> UpdateCurrentUserDetails(UpdateUserDetailsResource resource)
         {
-            var (firstName, lastName) = resource;
-            var request = new UpdateUserDetailsRequest
-            {
-                Id = User.FindFirstValue(ClaimTypes.NameIdentifier),
-                FirstName = firstName,
-                LastName = lastName
-            };
+            var request = _mapper.Map<UpdateUserDetailsResource, UpdateUserDetailsRequest>(resource);
+            request.Id = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             try
             {
@@ -137,7 +132,7 @@ namespace ClientApiGateway.Api.Controllers
             }
             catch (RpcException e)
             {
-                return BadRequest(e.Status);
+                return HandleRpcException(e);
             }
         }
     }

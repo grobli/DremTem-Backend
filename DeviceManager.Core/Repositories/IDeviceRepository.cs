@@ -12,9 +12,9 @@ namespace DeviceManager.Core.Repositories
         Task<IEnumerable<Device>> GetAllWithSensorsAsync(Guid? userId = null);
         Task<IEnumerable<Device>> GetAllWithEverything(Guid? userId = null);
 
-        Task<Device> GetByIdAsync(long deviceId);
-        Task<Device> GetWithLocationByIdAsync(long deviceId);
-        Task<Device> GetWithSensorsByIdAsync(long deviceId);
-        Task<Device> GetWithEverythingByIdAsync(long deviceId);
+        Task<Device> GetByIdAsync(int deviceId);
+        Task<Device> GetWithLocationByIdAsync(int deviceId);
+        Task<Device> GetWithSensorsByIdAsync(int deviceId);
+        Task<Device> GetWithEverythingByIdAsync(int deviceId);
     }
 }

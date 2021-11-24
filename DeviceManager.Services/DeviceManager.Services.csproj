@@ -4,6 +4,10 @@
         <ProjectReference Include="..\DeviceManager.Data\DeviceManager.Data.csproj" />
         <ProjectReference Include="..\DeviceManager.Core\DeviceManager.Core.csproj" />
     </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.14.1" />
+    </ItemGroup>
     
     <PropertyGroup>
         <TargetFramework>net5.0</TargetFramework>

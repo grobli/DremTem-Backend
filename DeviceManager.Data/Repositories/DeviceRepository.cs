@@ -76,14 +76,14 @@ namespace DeviceManager.Data.Repositories
         }
 
 
-        public async Task<Device> GetByIdAsync(long deviceId)
+        public async Task<Device> GetByIdAsync(int deviceId)
         {
             return await DeviceManagerContext.Devices
                 .SingleOrDefaultAsync(d => d.Id == deviceId);
         }
 
 
-        public async Task<Device> GetWithLocationByIdAsync(long deviceId)
+        public async Task<Device> GetWithLocationByIdAsync(int deviceId)
         {
             return await DeviceManagerContext.Devices
                 .Include(d => d.Location)
@@ -91,7 +91,7 @@ namespace DeviceManager.Data.Repositories
         }
 
 
-        public async Task<Device> GetWithSensorsByIdAsync(long deviceId)
+        public async Task<Device> GetWithSensorsByIdAsync(int deviceId)
         {
             return await DeviceManagerContext.Devices
                 .Include(d => d.Sensors)
@@ -99,7 +99,7 @@ namespace DeviceManager.Data.Repositories
         }
 
 
-        public async Task<Device> GetWithEverythingByIdAsync(long deviceId)
+        public async Task<Device> GetWithEverythingByIdAsync(int deviceId)
         {
             return await DeviceManagerContext.Devices
                 .Include(d => d.Location)

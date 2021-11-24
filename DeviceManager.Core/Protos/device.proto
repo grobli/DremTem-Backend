@@ -8,8 +8,8 @@ import "Protos/sharedDefinitions.proto";
 option csharp_namespace = "DeviceManager.Core.Proto";
 
 service DeviceGrpcService {
-  rpc GetAllDevices (GetAllDevicesRequest) returns (stream DeviceResource);
-  rpc GetDevice (GetDeviceRequest) returns (DeviceResource);
+  rpc GetAllDevices (GetAllDevicesRequest) returns (stream DeviceResourceExtended);
+  rpc GetDevice (GetDeviceRequest) returns (DeviceResourceExtended);
 
   rpc CreateDevice (CreateDeviceRequest) returns (DeviceResource);
   rpc UpdateDevice (UpdateDeviceRequest) returns (DeviceResource);
@@ -17,67 +17,75 @@ service DeviceGrpcService {
 
   rpc Ping (PingRequest) returns (google.protobuf.Empty);
   rpc GenerateToken (GenerateTokenRequest) returns (GenerateTokenResponse);
-  rpc GetDeviceByToken (GetDeviceByTokenRequest) returns (DeviceResource);
+  rpc GetDeviceByToken (GetDeviceByTokenRequest) returns (DeviceResourceExtended);
 }
 
 message GetAllDevicesRequest {
   bool IncludeLocation = 1;
   bool IncludeSensors = 2;
-  google.protobuf.StringValue UserId = 3; // (optional) filter by user ID
+  // (optional) filter by user ID
+  google.protobuf.StringValue UserId = 3;
 }
 
 message GetDeviceRequest {
-  int64 Id = 1;
+  int32 Id = 1;
 
   bool IncludeLocation = 2;
   bool IncludeSensors = 3;
 
-  // optional userId filter
+  // (optional) filter by user ID
   google.protobuf.StringValue UserId = 4;
 }
 
 
 message DeleteDeviceRequest {
-  int64 Id = 1;
+  int32 Id = 1;
+  // (optional) limit access to user - if device does not belong to the user -> action will fail
+  google.protobuf.StringValue UserId = 4;
 }
 
 
 message CreateDeviceRequest {
   string Name = 1;
-  string UserId = 2;
-  google.protobuf.StringValue DisplayName = 3;
-  bool Online = 4;
-  google.protobuf.StringValue LocationName = 5;
+  google.protobuf.StringValue DisplayName = 2;
+  bool Online = 3;
+  string MacAddress = 4;
+  google.protobuf.StringValue Model = 5;
+  google.protobuf.StringValue Manufacturer = 6;
+  google.protobuf.Int32Value LocationId = 7;
+  string UserId = 8;
 
   // Sensors mounted on the device to be added
-  repeated CreateDeviceSensorResource Sensors = 6;
+  repeated CreateDeviceSensorResource Sensors = 16;
 }
 
 message UpdateDeviceRequest {
-  int64 Id = 1;
+  int32 Id = 1;
 
-  // Fields to update
-  google.protobuf.StringValue DisplayName = 2;
-  bool Online = 3;
-  google.protobuf.StringValue LocationName = 4;
+  // fields to update
+  google.protobuf.StringValue DisplayName = 3;
+  bool Online = 4;
+  google.protobuf.StringValue Model = 5;
+  google.protobuf.StringValue Manufacturer = 6;
+  google.protobuf.Int32Value LocationId = 7;
 
-  // userId to limit access to resources
-  google.protobuf.StringValue UserId = 5;
+  // userId to limit access to resource
+  google.protobuf.StringValue UserId = 16;
 }
 
 message PingRequest {
-  int64 Id = 1;
+  int32 Id = 1;
 }
 
 message GenerateTokenRequest {
-  int64 Id = 1;
+  int32 Id = 1;
 
-  // userId to limit access to resources
+  // userId to limit access to resource
   google.protobuf.StringValue UserId = 2;
 }
 
 message GenerateTokenResponse {
-  int64 Id = 1;
+  int32 Id = 1;
   string Token = 2;
 }
 

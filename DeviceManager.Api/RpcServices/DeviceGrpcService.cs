@@ -5,8 +5,6 @@ using AutoMapper;
 using DeviceManager.Core.Models;
 using DeviceManager.Core.Proto;
 using DeviceManager.Core.Services;
-using DeviceManager.Core.Services.DeviceTokenService;
-using DeviceManager.Services;
 using FluentValidation;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
@@ -51,7 +49,7 @@ namespace DeviceManager.Api.RpcServices
         }
 
         public override async Task GetAllDevices(GetAllDevicesRequest request,
-            IServerStreamWriter<DeviceResource> responseStream, ServerCallContext context)
+            IServerStreamWriter<DeviceResourceExtended> responseStream, ServerCallContext context)
         {
             var validationResult = await _getAllDevicesValidator.ValidateAsync(request);
             if (!validationResult.IsValid)
@@ -74,11 +72,11 @@ namespace DeviceManager.Api.RpcServices
 
             foreach (var device in devices)
             {
-                await responseStream.WriteAsync(_mapper.Map<Device, DeviceResource>(device));
+                await responseStream.WriteAsync(_mapper.Map<Device, DeviceResourceExtended>(device));
             }
         }
 
-        public override async Task<DeviceResource> GetDevice(GetDeviceRequest request, ServerCallContext context)
+        public override async Task<DeviceResourceExtended> GetDevice(GetDeviceRequest request, ServerCallContext context)
         {
             var validationResult = await _getDeviceValidator.ValidateAsync(request);
             if (!validationResult.IsValid)
@@ -86,7 +84,6 @@ namespace DeviceManager.Api.RpcServices
                 throw new RpcException(
                     new Status(StatusCode.InvalidArgument, validationResult.Errors.First().ErrorMessage));
             }
-
 
             var device = (request.IncludeLocation, request.IncludeSensors) switch
             {
@@ -96,15 +93,7 @@ namespace DeviceManager.Api.RpcServices
                 _ => await _deviceService.GetDevice(request.Id)
             };
 
-            Guid? userId = string.IsNullOrWhiteSpace(request.UserId) ? null : Guid.Parse(request.UserId);
-            if (device is null || userId.HasValue && device.UserId != userId)
-            {
-                throw new RpcException(new Status(StatusCode.NotFound,
-                    $"Device with Id = {request.Id} not found"));
-            }
-
-            var deviceResource = _mapper.Map<Device, DeviceResource>(device);
-            return await Task.FromResult(deviceResource);
+            return await Task.FromResult(_mapper.Map<Device, DeviceResourceExtended>(device));
         }
 
         public override async Task<DeviceResource> CreateDevice(CreateDeviceRequest request, ServerCallContext context)
@@ -135,14 +124,7 @@ namespace DeviceManager.Api.RpcServices
                     new Status(StatusCode.InvalidArgument, validationResult.Errors.First().ErrorMessage));
             }
 
-            Guid? userId = string.IsNullOrWhiteSpace(request.UserId) ? null : Guid.Parse(request.UserId);
             var device = await _deviceService.GetDevice(request.Id);
-            if (device is null || userId.HasValue && device.UserId != userId)
-            {
-                throw new RpcException(new Status(StatusCode.NotFound,
-                    $"Device with Id = {request.Id} not found"));
-            }
-
             await _deviceService
                 .UpdateDevice(device, _mapper.Map<UpdateDeviceRequest, Device>(request));
 
@@ -180,42 +162,14 @@ namespace DeviceManager.Api.RpcServices
                     new Status(StatusCode.InvalidArgument, validationResult.Errors.First().ErrorMessage));
             }
 
-            Guid? userId = string.IsNullOrWhiteSpace(request.UserId) ? null : Guid.Parse(request.UserId);
             var device = await _deviceService.GetDevice(request.Id);
-            if (device is null || userId.HasValue && device.UserId != userId)
+            var response = new GenerateTokenResponse
             {
-                throw new RpcException(new Status(StatusCode.NotFound,
-                    $"Device with Id = {request.Id} not found"));
-            }
-
-            var response = _mapper.Map<Device, GenerateTokenResponse>(device);
-            response.Token = await _tokenService.GenerateTokenAsync(device);
+                Id = device.Id,
+                Token = await _tokenService.GenerateTokenAsync(device)
+            };
 
             return await Task.FromResult(response);
-        }
-
-        public override async Task<DeviceResource> GetDeviceByToken(GetDeviceByTokenRequest request,
-            ServerCallContext context)
-        {
-            TokenContent token;
-
-            try
-            {
-                token = await _tokenService.DecodeTokenAsync(request.Token);
-            }
-            catch (DecodeTokenException e)
-            {
-                throw new RpcException(new Status(StatusCode.InvalidArgument, e.Message));
-            }
-
-            var device = await _deviceService.GetDevice(token.DeviceId);
-            if (device is null)
-            {
-                throw new RpcException(new Status(StatusCode.NotFound,
-                    $"No device associated with this token"));
-            }
-
-            return await Task.FromResult(_mapper.Map<Device, DeviceResource>(device));
         }
     }
 }

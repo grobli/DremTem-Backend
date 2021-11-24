@@ -4,6 +4,8 @@
     (
         string DisplayName,
         bool Online,
-        string LocationName
+        string Model,
+        string Manufacturer,
+        int? LocationId
     );
 }

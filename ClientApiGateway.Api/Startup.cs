@@ -78,6 +78,7 @@ namespace ClientApiGateway.Api
             services.AddGrpcClient<UserAuthGrpcService.UserAuthGrpcServiceClient>(o => o.Address = userIdentityUri);
             services.AddGrpcClient<UserGrpcService.UserGrpcServiceClient>(o => o.Address = userIdentityUri);
 
+            services.AddAutoMapper(typeof(Startup));
 
             var jwtSettings = Configuration.GetSection("Jwt").Get<JwtSettings>();
             services.AddAuth(jwtSettings);

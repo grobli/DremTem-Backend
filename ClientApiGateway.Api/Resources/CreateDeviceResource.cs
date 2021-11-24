@@ -8,7 +8,10 @@ namespace ClientApiGateway.Api.Resources
         string Name,
         string DisplayName,
         bool Online,
-        string LocationName,
+        string MacAddress,
+        string Model,
+        string Manufacturer,
+        int? LocationId,
         IEnumerable<CreateDeviceSensorResource> Sensors
     );
 }

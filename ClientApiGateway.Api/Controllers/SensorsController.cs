@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using AutoMapper;
 using ClientApiGateway.Api.Resources;
 using DeviceManager.Core.Proto;
 using Microsoft.AspNetCore.Authorization;
@@ -16,13 +17,16 @@ namespace ClientApiGateway.Api.Controllers
     {
         private readonly ILogger<SensorsController> _logger;
         private readonly SensorGrpcService.SensorGrpcServiceClient _sensorService;
+        private readonly IMapper _mapper;
 
         public SensorsController(
             ILogger<SensorsController> logger,
-            SensorGrpcService.SensorGrpcServiceClient sensorService)
+            SensorGrpcService.SensorGrpcServiceClient sensorService,
+            IMapper mapper)
         {
             _logger = logger;
             _sensorService = sensorService;
+            _mapper = mapper;
         }
 
         // GET: api/v1/Sensors?detailed=true

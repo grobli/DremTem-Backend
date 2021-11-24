@@ -19,21 +19,27 @@ namespace DeviceManager.Api.RpcServices
 
         // validators
         private readonly IValidator<GetAllSensorsRequest> _getAllSensorsValidator;
-        private readonly IValidator<SaveSensorRequest> _saveSensorValidator;
+        private readonly IValidator<GetSensorRequest> _getSensorValidator;
+        private readonly IValidator<CreateSensorRequest> _createSensorValidator;
+        private readonly IValidator<UpdateSensorRequest> _updateSensorValidator;
 
         public SensorGrpcService(
             ILogger<SensorGrpcService> logger,
             ISensorService sensorService,
             IMapper mapper,
             IValidator<GetAllSensorsRequest> getAllSensorsValidator,
-            IValidator<SaveSensorRequest> saveSensorValidator)
+            IValidator<CreateSensorRequest> saveSensorValidator,
+            IValidator<GetSensorRequest> getSensorValidator,
+            IValidator<UpdateSensorRequest> updateSensorValidator)
         {
             _logger = logger;
             _sensorService = sensorService;
             _mapper = mapper;
 
             _getAllSensorsValidator = getAllSensorsValidator;
-            _saveSensorValidator = saveSensorValidator;
+            _createSensorValidator = saveSensorValidator;
+            _getSensorValidator = getSensorValidator;
+            _updateSensorValidator = updateSensorValidator;
         }
 
         public override async Task GetAllSensors(GetAllSensorsRequest request,
@@ -62,59 +68,47 @@ namespace DeviceManager.Api.RpcServices
 
         public override async Task<SensorResource> GetSensor(GetSensorRequest request, ServerCallContext context)
         {
-            var sensor = request.IncludeType
-                ? await _sensorService.GetSensorWithType(request.Id)
-                : await _sensorService.GetSensor(request.Id);
-
-            if (sensor is null)
-            {
-                throw new RpcException(new Status(StatusCode.NotFound,
-                    $"Sensor with Id = {request.Id} not found"));
-            }
-
-            return await Task.FromResult(_mapper.Map<Sensor, SensorResource>(sensor));
-        }
-
-        public override async Task<SensorResource> AddSensor(SaveSensorRequest request, ServerCallContext context)
-        {
-            var validationResult = await _saveSensorValidator.ValidateAsync(request);
+            var validationResult = await _getSensorValidator.ValidateAsync(request);
             if (!validationResult.IsValid)
             {
                 throw new RpcException(
                     new Status(StatusCode.InvalidArgument, validationResult.Errors.First().ErrorMessage));
             }
 
-            var newSensor = _mapper.Map<SaveSensorRequest, Sensor>(request);
+            var sensor = request.IncludeType
+                ? await _sensorService.GetSensorWithType(request.Id)
+                : await _sensorService.GetSensor(request.Id);
 
+            return await Task.FromResult(_mapper.Map<Sensor, SensorResource>(sensor));
+        }
+
+        public override async Task<SensorResource> AddSensor(CreateSensorRequest request, ServerCallContext context)
+        {
+            var validationResult = await _createSensorValidator.ValidateAsync(request);
+            if (!validationResult.IsValid)
+            {
+                throw new RpcException(
+                    new Status(StatusCode.InvalidArgument, validationResult.Errors.First().ErrorMessage));
+            }
+
+            var newSensor = _mapper.Map<CreateSensorRequest, Sensor>(request);
             var createdSensor = await _sensorService.CreateSensor(newSensor);
 
             return await Task.FromResult(_mapper.Map<Sensor, SensorResource>(createdSensor));
         }
 
-        public override async Task<SensorResource> UpdateSensor(SaveSensorRequest request, ServerCallContext context)
+        public override async Task<SensorResource> UpdateSensor(UpdateSensorRequest request, ServerCallContext context)
         {
-            var validationResult = await _saveSensorValidator.ValidateAsync(request);
+            var validationResult = await _updateSensorValidator.ValidateAsync(request);
             if (!validationResult.IsValid)
             {
                 throw new RpcException(
                     new Status(StatusCode.InvalidArgument, validationResult.Errors.First().ErrorMessage));
             }
 
-            if (request.Id is null)
-            {
-                throw new RpcException(
-                    new Status(StatusCode.InvalidArgument, "Missing sensor Id"));
-            }
-
-            var sensor = await _sensorService.GetSensor(request.Id.Value);
-            if (sensor is null)
-            {
-                throw new RpcException(new Status(StatusCode.InvalidArgument,
-                    $"Sensor with Id = {request.Id.Value} not found"));
-            }
-
+            var sensor = await _sensorService.GetSensor(request.Id);
             await _sensorService
-                .UpdateSensor(sensor, _mapper.Map<SaveSensorRequest, Sensor>(request));
+                .UpdateSensor(sensor, _mapper.Map<UpdateSensorRequest, Sensor>(request));
 
             return await Task.FromResult(_mapper.Map<Sensor, SensorResource>(sensor));
         }
@@ -123,7 +117,7 @@ namespace DeviceManager.Api.RpcServices
         {
             /* TODO: Tutaj trochę skomplikowane bo trzeba nie tylko usunąć sam sensor ale również
           TODO: i dane zebrane z tego sensora w innym serwisie (bo nastąpi desynchronizacja danych AAAAAAAA) */
-            
+
             return base.DeleteSensor(request, context);
         }
     }

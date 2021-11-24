@@ -1,6 +1,7 @@
 ﻿using System;
 using DeviceManager.Core.Models;
 using DeviceManager.Data.Configurations;
+using DeviceManager.Data.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
@@ -21,38 +22,12 @@ namespace DeviceManager.Data
         {
             base.OnModelCreating(builder);
 
-            ConvertDateTimesToUtc();
+            builder.ConvertDateTimesToUtc();
 
             builder.ApplyConfiguration(new DeviceConfiguration());
             builder.ApplyConfiguration(new LocationConfiguration());
             builder.ApplyConfiguration(new SensorConfiguration());
             builder.ApplyConfiguration(new SensorTypeConfiguration());
-
-            void ConvertDateTimesToUtc()
-            {
-                var dateTimeConverter = new ValueConverter<DateTime, DateTime>(
-                    v => v.ToUniversalTime(),
-                    v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
-
-                var nullableDateTimeConverter = new ValueConverter<DateTime?, DateTime?>(
-                    v => v.HasValue ? v.Value.ToUniversalTime() : v,
-                    v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v);
-
-                foreach (var entityType in builder.Model.GetEntityTypes())
-                {
-                    foreach (var property in entityType.GetProperties())
-                    {
-                        if (property.ClrType == typeof(DateTime))
-                        {
-                            property.SetValueConverter(dateTimeConverter);
-                        }
-                        else if (property.ClrType == typeof(DateTime?))
-                        {
-                            property.SetValueConverter(nullableDateTimeConverter);
-                        }
-                    }
-                }
-            }
         }
     }
 }

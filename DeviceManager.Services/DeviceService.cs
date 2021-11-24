@@ -37,22 +37,22 @@ namespace DeviceManager.Services
             return await _unitOfWork.Devices.GetAllWithEverything(userId);
         }
 
-        public async Task<Device> GetDevice(long deviceId)
+        public async Task<Device> GetDevice(int deviceId)
         {
             return await _unitOfWork.Devices.GetByIdAsync(deviceId);
         }
 
-        public async Task<Device> GetDeviceWithLocation(long deviceId)
+        public async Task<Device> GetDeviceWithLocation(int deviceId)
         {
             return await _unitOfWork.Devices.GetWithLocationByIdAsync(deviceId);
         }
 
-        public async Task<Device> GetDeviceWithSensors(long deviceId)
+        public async Task<Device> GetDeviceWithSensors(int deviceId)
         {
             return await _unitOfWork.Devices.GetWithSensorsByIdAsync(deviceId);
         }
 
-        public async Task<Device> GetDeviceWithAll(long deviceId)
+        public async Task<Device> GetDeviceWithAll(int deviceId)
         {
             return await _unitOfWork.Devices.GetWithEverythingByIdAsync(deviceId);
         }
@@ -61,6 +61,8 @@ namespace DeviceManager.Services
         {
             var now = DateTime.UtcNow;
             newDevice.Created = now;
+
+            newDevice.MacAddress = newDevice.MacAddress.ToLower();
 
             await _unitOfWork.Devices.AddAsync(newDevice);
             await _unitOfWork.CommitAsync();
@@ -79,9 +81,12 @@ namespace DeviceManager.Services
         public async Task UpdateDevice(Device deviceToBeUpdated, Device device)
         {
             deviceToBeUpdated.LastModified = DateTime.UtcNow;
-            deviceToBeUpdated.LocationName = device.LocationName;
-            deviceToBeUpdated.Online = device.Online;
+            
             deviceToBeUpdated.DisplayName = device.DisplayName;
+            deviceToBeUpdated.Online = device.Online;
+            deviceToBeUpdated.Model = device.Model;
+            deviceToBeUpdated.Manufacturer = device.Manufacturer;
+            deviceToBeUpdated.LocationId = device.LocationId;
 
             await _unitOfWork.CommitAsync();
         }

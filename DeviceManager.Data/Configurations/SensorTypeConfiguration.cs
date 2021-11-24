@@ -16,10 +16,18 @@ namespace DeviceManager.Data.Configurations
         public void Configure(EntityTypeBuilder<SensorType> builder)
         {
             builder
-                .HasKey(st => st.Name);
+                .HasKey(st => st.Id);
+
+            builder
+                .HasAlternateKey(st => st.Name);
+
+            builder
+                .Property(st => st.Id)
+                .ValueGeneratedOnAdd();
 
             builder
                 .Property(st => st.Name)
+                .IsRequired()
                 .HasMaxLength(NameMaxLength);
 
             builder

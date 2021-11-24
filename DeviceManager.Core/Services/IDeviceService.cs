@@ -12,10 +12,10 @@ namespace DeviceManager.Core.Services
         Task<IEnumerable<Device>> GetAllDevicesWithSensors(Guid? userId = null);
         Task<IEnumerable<Device>> GetAllDevicesWithAll(Guid? userId = null);
 
-        Task<Device> GetDevice(long deviceId);
-        Task<Device> GetDeviceWithLocation(long deviceId);
-        Task<Device> GetDeviceWithSensors(long deviceId);
-        Task<Device> GetDeviceWithAll(long deviceId);
+        Task<Device> GetDevice(int deviceId);
+        Task<Device> GetDeviceWithLocation(int deviceId);
+        Task<Device> GetDeviceWithSensors(int deviceId);
+        Task<Device> GetDeviceWithAll(int deviceId);
 
 
         Task<Device> CreateDevice(Device newDevice, IEnumerable<Sensor> sensors);

@@ -5,6 +5,6 @@ namespace DeviceManager.Core.Repositories
 {
     public interface ISensorTypeRepository : IRepository<SensorType>
     {
-        Task<SensorType> GetByIdAsync(string typeName);
+        Task<SensorType> GetByIdAsync(int typeId);
     }
 }

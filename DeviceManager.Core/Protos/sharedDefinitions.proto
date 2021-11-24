@@ -6,71 +6,98 @@ import "google/protobuf/timestamp.proto";
 option csharp_namespace = "DeviceManager.Core.Proto";
 
 message DeviceResource {
-  int64 Id = 1;
+  int32 Id = 1;
   string Name = 2;
   google.protobuf.StringValue DisplayName = 3;
   bool Online = 4;
-  google.protobuf.Timestamp LastSeen = 5;
-  google.protobuf.Timestamp LastModified = 6;
-  google.protobuf.Timestamp Created = 7;
-  google.protobuf.StringValue LocationName = 8;
-  string UserId = 9;
+  string MacAddress = 5;
+  google.protobuf.StringValue Model = 6;
+  google.protobuf.StringValue Manufacturer = 7;
+  google.protobuf.Timestamp LastSeen = 8;
+  google.protobuf.Timestamp LastModified = 9;
+  google.protobuf.Timestamp Created = 10;
+  google.protobuf.Int32Value LocationId = 11;
+  string UserId = 12;
+}
+
+message DeviceResourceExtended {
+  int32 Id = 1;
+  string Name = 2;
+  google.protobuf.StringValue DisplayName = 3;
+  bool Online = 4;
+  string MacAddress = 5;
+  google.protobuf.StringValue Model = 6;
+  google.protobuf.StringValue Manufacturer = 7;
+  google.protobuf.Timestamp LastSeen = 8;
+  google.protobuf.Timestamp LastModified = 9;
+  google.protobuf.Timestamp Created = 10;
+  google.protobuf.Int32Value LocationId = 11;
+  string UserId = 12;
 
   LocationResource Location = 32;
   repeated SensorResource Sensors = 33;
 }
 
+
 message LocationResource {
-  // Primary Key (Name, UserId)
-  string Name = 1;
-  string UserId = 2;
+  int32 Id = 1;
+  string Name = 2;
+  string UserId = 3;
 
   // Properties
-  google.protobuf.StringValue DisplayName = 3;
-  google.protobuf.FloatValue Latitude = 4;
-  google.protobuf.FloatValue Longitude = 5;
-  google.protobuf.Timestamp LastModified = 6;
-  google.protobuf.Timestamp Created = 7;
+  google.protobuf.StringValue DisplayName = 4;
+  google.protobuf.FloatValue Latitude = 5;
+  google.protobuf.FloatValue Longitude = 6;
+  google.protobuf.Timestamp LastModified = 7;
+  google.protobuf.Timestamp Created = 8;
+}
+
+
+message LocationResourceExtended {
+  int32 Id = 1;
+  string Name = 2;
+  string UserId = 3;
+
+  // Properties
+  google.protobuf.StringValue DisplayName = 4;
+  google.protobuf.FloatValue Latitude = 5;
+  google.protobuf.FloatValue Longitude = 6;
+  google.protobuf.Timestamp LastModified = 7;
+  google.protobuf.Timestamp Created = 8;
 
   repeated DeviceResource Devices = 32;
 }
 
+
 message SensorResource {
-  int64 Id = 1;
+  int32 Id = 1;
 
   string Name = 2;
   google.protobuf.StringValue DisplayName = 3;
-  string TypeName = 4;
-  google.protobuf.Timestamp LastModified = 5;
-  google.protobuf.Timestamp Created = 6;
+  int32 DeviceId = 4;
+  int32 TypeId = 5;
+  google.protobuf.Timestamp LastModified = 6;
+  google.protobuf.Timestamp Created = 7;
 
   SensorTypeResource Type = 32;
-}
-
-message SaveSensorRequest {
-  string Name = 1;
-  int64 DeviceId = 2;
-  google.protobuf.StringValue DisplayName = 3;
-  string TypeName = 4;
-  google.protobuf.Int64Value Id = 8;
 }
 
 message CreateDeviceSensorResource {
   string Name = 1;
   google.protobuf.StringValue DisplayName = 2;
-  string TypeName = 3;
+  int32 TypeId = 3;
 }
 
 message SensorTypeResource {
-  // Primary Key (Name)
-  string Name = 1;
+  int32 Id = 1;
 
-  string DataType = 2;
-  string Unit = 3;
-  string UnitShort = 4;
-  google.protobuf.StringValue UnitSymbol = 5;
-  bool IsDiscrete = 6;
-  bool IsSummable = 7;
+  string Name = 2;
+  string DataType = 3;
+  string Unit = 4;
+  string UnitShort = 5;
+  google.protobuf.StringValue UnitSymbol = 6;
+  bool IsDiscrete = 7;
+  bool IsSummable = 8;
   google.protobuf.Timestamp LastModified = 10;
   google.protobuf.Timestamp Created = 11;
 }

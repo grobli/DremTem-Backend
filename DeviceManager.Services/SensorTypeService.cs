@@ -21,9 +21,9 @@ namespace DeviceManager.Services
             return await _unitOfWork.SensorTypes.GetAllAsync();
         }
 
-        public async Task<SensorType> GetSensorType(string typeName)
+        public async Task<SensorType> GetSensorType(int typeId)
         {
-            return await _unitOfWork.SensorTypes.GetByIdAsync(typeName);
+            return await _unitOfWork.SensorTypes.GetByIdAsync(typeId);
         }
 
         public async Task<SensorType> CreateSensorType(SensorType newSensorType)

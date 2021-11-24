@@ -10,7 +10,8 @@ namespace DeviceManager.Core.Repositories
         Task<IEnumerable<Sensor>> GetAllAsync(Guid? userId = null);
         Task<IEnumerable<Sensor>> GetAllWithSensorTypeAsync(Guid? userId = null);
 
-        Task<Sensor> GetByIdAsync(long sensorId);
-        Task<Sensor> GetWithSensorTypeByIdAsync(long sensorId);
+        Task<Sensor> GetByIdAsync(int sensorId);
+        Task<Sensor> GetWithSensorTypeByIdAsync(int sensorId);
+        Task<Sensor> GetWithDeviceByIdAsync(int sensorId);
     }
 }

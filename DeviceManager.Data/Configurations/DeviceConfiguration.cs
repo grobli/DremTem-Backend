@@ -9,11 +9,20 @@ namespace DeviceManager.Data.Configurations
         public const int NameMaxLength = 100;
         public const int DisplayNameMaxLenght = 150;
         public const int DateTimePrecision = 0;
+        public const int MacAddressMaxLength = 17;
+        public const int ModelMaxLength = 100;
+        public const int ManufacturerMaxLength = 100;
 
         public void Configure(EntityTypeBuilder<Device> builder)
         {
             builder
                 .HasKey(d => d.Id);
+
+            builder
+                .HasAlternateKey(d => d.MacAddress);
+
+            builder
+                .HasAlternateKey(d => new { d.Name, d.UserId });
 
             builder
                 .Property(d => d.Id)
@@ -22,9 +31,6 @@ namespace DeviceManager.Data.Configurations
             builder
                 .Property(d => d.UserId)
                 .IsRequired();
-
-            builder
-                .HasIndex(d => d.LocationName);
 
             builder
                 .Property(d => d.Name)
@@ -53,17 +59,23 @@ namespace DeviceManager.Data.Configurations
                 .HasPrecision(DateTimePrecision);
 
             builder
-                .Property(d => d.LocationName)
-                .HasMaxLength(LocationConfiguration.NameMaxLength);
-
-            builder
                 .HasOne(d => d.Location)
                 .WithMany(l => l.Devices)
-                .HasForeignKey(d => new
-                {
-                    d.UserId, d.LocationName
-                })
+                .HasForeignKey(d => d.LocationId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            builder
+                .Property(d => d.MacAddress)
+                .IsRequired()
+                .HasMaxLength(MacAddressMaxLength);
+
+            builder
+                .Property(d => d.Manufacturer)
+                .HasMaxLength(ManufacturerMaxLength);
+
+            builder
+                .Property(d => d.Model)
+                .HasMaxLength(ModelMaxLength);
         }
     }
 }

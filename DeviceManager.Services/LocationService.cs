@@ -26,14 +26,14 @@ namespace DeviceManager.Services
             return await _unitOfWork.Locations.GetAllWithDevicesAsync(userId);
         }
 
-        public async Task<Location> GetLocation(Guid userId, string locationName)
+        public async Task<Location> GetLocation(int locationId)
         {
-            return await _unitOfWork.Locations.GetByIdAsync(userId, locationName);
+            return await _unitOfWork.Locations.GetByIdAsync(locationId);
         }
 
-        public async Task<Location> GetLocationWithDevices(Guid userId, string locationName)
+        public async Task<Location> GetLocationWithDevices(int locationId)
         {
-            return await _unitOfWork.Locations.GetWithDevicesByIdAsync(userId, locationName);
+            return await _unitOfWork.Locations.GetWithDevicesByIdAsync(locationId);
         }
 
         public async Task<Location> CreateLocation(Location newLocation)

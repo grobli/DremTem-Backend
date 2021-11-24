@@ -1,14 +1,23 @@
-﻿using DeviceManager.Core.Proto;
+﻿using System;
+using DeviceManager.Core;
+using DeviceManager.Core.Proto;
 using DeviceManager.Data.Configurations;
 using FluentValidation;
 
-namespace DeviceManager.Api.Validators
+namespace DeviceManager.Api.Validators.LocationRequests
 {
-    public class SaveLocationRequestValidator : AbstractValidator<SaveLocationRequest>
+    public class CreateLocationRequestValidator : AbstractValidator<CreateLocationRequest>
     {
-        public SaveLocationRequestValidator()
+        private readonly IUnitOfWork _unitOfWork;
+
+        public CreateLocationRequestValidator(IUnitOfWork unitOfWork)
         {
-            //TODO: Check if user exists in UserIdentityService
+            _unitOfWork = unitOfWork;
+            SetupRules();
+        }
+
+        private void SetupRules()
+        {
             RuleFor(r => r.UserId)
                 .MustBeValidGuid();
 
@@ -28,6 +37,12 @@ namespace DeviceManager.Api.Validators
                 .NotNull()
                 .Unless(r => r.Latitude is null)
                 .WithMessage("Both Latitude and Longitude must be set simultaneously");
+
+            Transform(@from: r => r, to: r => new { r.Name, UserId = Guid.Parse(r.UserId) })
+                .MustAsync(async (key, _) =>
+                    await _unitOfWork.Locations.SingleOrDefaultAsync(l =>
+                        l.Name == key.Name && l.UserId == key.UserId) is null)
+                .WithMessage("Location must have unique Name");
         }
     }
 }

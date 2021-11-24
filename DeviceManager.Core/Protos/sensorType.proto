@@ -11,8 +11,8 @@ service SensorTypeGrpcService {
   rpc GetAllSensorTypes (GetAllSensorTypesRequest) returns (stream SensorTypeResource);
   rpc GetSensorType (GetSensorTypeRequest) returns (SensorTypeResource);
 
-  rpc CreateSensorType (SaveSensorTypeRequest) returns (SensorTypeResource);
-  rpc UpdateSensorType (SaveSensorTypeRequest) returns (SensorTypeResource);
+  rpc CreateSensorType (CreateSensorTypeRequest) returns (SensorTypeResource);
+  rpc UpdateSensorType (UpdateSensorTypeRequest) returns (SensorTypeResource);
   rpc DeleteSensorType (DeleteSensorTypeRequest) returns (google.protobuf.Empty);
 }
 
@@ -21,15 +21,11 @@ service SensorTypeGrpcService {
 message GetAllSensorTypesRequest {}
 
 message GetSensorTypeRequest {
-  // Primary Key (Name)
-  string Name = 1;
+  int32 Id = 1;
 }
 
-message SaveSensorTypeRequest {
-  // Primary Key (Name)
+message CreateSensorTypeRequest {
   string Name = 1;
-
-  // Properties
   string DataType = 2;
   string Unit = 3;
   string UnitShort = 4;
@@ -38,7 +34,18 @@ message SaveSensorTypeRequest {
   bool IsSummable = 7;
 }
 
+message UpdateSensorTypeRequest {
+  int32 Id = 1;
+
+  string Name = 2;
+  string DataType = 3;
+  string Unit = 4;
+  string UnitShort = 5;
+  google.protobuf.StringValue UnitSymbol = 6;
+  bool IsDiscrete = 7;
+  bool IsSummable = 8;
+}
+
 message DeleteSensorTypeRequest {
-  // Primary Key (Name)
-  string Name = 1;
+  int32 Id = 1;
 }

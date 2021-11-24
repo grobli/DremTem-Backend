@@ -6,6 +6,7 @@ namespace DeviceManager.Core.Models
 {
     public record Location
     {
+        public int Id { get; set; }
         public string Name { get; set; }
         public string DisplayName { get; set; }
         public float? Latitude { get; set; }

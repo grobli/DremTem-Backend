@@ -10,8 +10,8 @@ namespace DeviceManager.Core.Services
         Task<IEnumerable<Location>> GetAllLocations(Guid? userId = null);
         Task<IEnumerable<Location>> GetAllLocationsWithDevices(Guid? userId = null);
 
-        Task<Location> GetLocation(Guid userId, string locationName);
-        Task<Location> GetLocationWithDevices(Guid userId, string locationName);
+        Task<Location> GetLocation(int locationId);
+        Task<Location> GetLocationWithDevices(int locationId);
 
         Task<Location> CreateLocation(Location newLocation);
         Task UpdateLocation(Location locationToBeUpdated, Location location);

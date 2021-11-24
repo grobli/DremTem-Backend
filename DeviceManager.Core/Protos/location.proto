@@ -8,29 +8,29 @@ import "Protos/sharedDefinitions.proto";
 option csharp_namespace = "DeviceManager.Core.Proto";
 
 service LocationGrpcService {
-  rpc GetAllLocations (GetAllLocationsRequest) returns (stream LocationResource);
-  rpc GetLocation (GetLocationRequest) returns (LocationResource);
+  rpc GetAllLocations (GetAllLocationsRequest) returns (stream LocationResourceExtended);
+  rpc GetLocation (GetLocationRequest) returns (LocationResourceExtended);
 
-  rpc CreateLocation (SaveLocationRequest) returns (LocationResource);
-  rpc UpdateLocation (SaveLocationRequest) returns (LocationResource);
+  rpc CreateLocation (CreateLocationRequest) returns (LocationResource);
+  rpc UpdateLocation (UpdateLocationRequest) returns (LocationResource);
   rpc DeleteLocation (DeleteLocationRequest) returns (google.protobuf.Empty);
 }
 
 message GetAllLocationsRequest {
   bool IncludeDevices = 1;
-  google.protobuf.StringValue UserId = 2; // (optional) filter by user ID
+
+  google.protobuf.StringValue UserId = 2;
 }
 
 message GetLocationRequest {
-  // Primary Key (Name, UserId)
-  string Name = 1;
-  string UserId = 2;
+  int32 Id = 1;
 
+  // (optional) filter by user ID
+  string UserId = 2;
   bool IncludeDevices = 3;
 }
 
-message SaveLocationRequest {
-  // Primary Key (Name, UserId)
+message CreateLocationRequest {
   string Name = 1;
   string UserId = 2;
 
@@ -40,8 +40,21 @@ message SaveLocationRequest {
   google.protobuf.FloatValue Longitude = 5;
 }
 
+message UpdateLocationRequest {
+  int32 Id = 1;
+
+  // Properties
+  google.protobuf.StringValue DisplayName = 2;
+  google.protobuf.FloatValue Latitude = 3;
+  google.protobuf.FloatValue Longitude = 4;
+
+  // (optional) limit access to user - if location does not belong to the user -> action will fail
+  string UserId = 8;
+}
+
 message DeleteLocationRequest {
-  // Primary Key (Name, UserId)
-  string Name = 1;
-  string UserId = 2;
+  int32 Id = 1;
+
+  // (optional) limit access to user - if location does not belong to the user -> action will fail
+  google.protobuf.StringValue UserId = 2;
 }

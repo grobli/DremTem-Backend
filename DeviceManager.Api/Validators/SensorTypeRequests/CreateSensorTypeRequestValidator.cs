@@ -1,13 +1,17 @@
-﻿using DeviceManager.Core.Proto;
+﻿using DeviceManager.Core;
+using DeviceManager.Core.Proto;
 using DeviceManager.Data.Configurations;
 using FluentValidation;
 
-namespace DeviceManager.Api.Validators
+namespace DeviceManager.Api.Validators.SensorTypeRequests
 {
-    public class SaveSensorTypeRequestValidator : AbstractValidator<SaveSensorTypeRequest>
+    public class CreateSensorTypeRequestValidator : AbstractValidator<CreateSensorTypeRequest>
     {
-        public SaveSensorTypeRequestValidator()
+        private readonly IUnitOfWork _unitOfWork;
+
+        public CreateSensorTypeRequestValidator(IUnitOfWork unitOfWork)
         {
+            _unitOfWork = unitOfWork;
             SetupRules();
         }
 
@@ -15,7 +19,11 @@ namespace DeviceManager.Api.Validators
         {
             RuleFor(r => r.Name)
                 .NotEmpty()
-                .MaximumLength(SensorTypeConfiguration.NameMaxLength);
+                .MaximumLength(SensorTypeConfiguration.NameMaxLength)
+                .PascalCase()
+                .MustAsync(async (name, _) =>
+                    await _unitOfWork.SensorTypes.SingleOrDefaultAsync(st => st.Name == name) is null)
+                .WithMessage("SensorType must have unique Name");
 
             RuleFor(r => r.DataType)
                 .NotEmpty()

@@ -5,12 +5,12 @@ namespace DeviceManager.Core.Models
 {
     public record Sensor
     {
-        public long Id { get; set; }
+        public int Id { get; set; }
         public string Name { get; set; }
         public string DisplayName { get; set; }
-        public long DeviceId { get; set; }
+        public int DeviceId { get; set; }
         public Device Device { get; set; }
-        public string TypeName { get; set; }
+        public int TypeId { get; set; }
         public SensorType Type { get; set; }
         public DateTime? LastModified { get; set; }
         public DateTime Created { get; set; }

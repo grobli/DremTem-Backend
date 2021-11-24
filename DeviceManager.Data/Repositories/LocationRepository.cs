@@ -44,17 +44,17 @@ namespace DeviceManager.Data.Repositories
                 .ToListAsync();
         }
 
-        public async Task<Location> GetByIdAsync(Guid userId, string locationName)
+        public async Task<Location> GetByIdAsync(int locationId)
         {
             return await DeviceManagerContext.Locations
-                .SingleOrDefaultAsync(l => l.UserId == userId && l.Name == locationName);
+                .SingleOrDefaultAsync(l => l.Id == locationId);
         }
 
-        public async Task<Location> GetWithDevicesByIdAsync(Guid userId, string locationName)
+        public async Task<Location> GetWithDevicesByIdAsync(int locationId)
         {
             return await DeviceManagerContext.Locations
                 .Include(l => l.Devices)
-                .SingleOrDefaultAsync(l => l.UserId == userId && l.Name == locationName);
+                .SingleOrDefaultAsync(l => l.Id == locationId);
         }
     }
 }

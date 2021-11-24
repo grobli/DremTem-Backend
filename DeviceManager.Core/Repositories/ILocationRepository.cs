@@ -10,7 +10,7 @@ namespace DeviceManager.Core.Repositories
         Task<IEnumerable<Location>> GetAllAsync(Guid? userId = null);
         Task<IEnumerable<Location>> GetAllWithDevicesAsync(Guid? userId = null);
 
-        Task<Location> GetByIdAsync(Guid userId, string locationName);
-        Task<Location> GetWithDevicesByIdAsync(Guid userId, string locationName);
+        Task<Location> GetByIdAsync(int locationId);
+        Task<Location> GetWithDevicesByIdAsync(int locationId);
     }
 }

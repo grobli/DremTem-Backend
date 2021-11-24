@@ -1,8 +1,9 @@
 ﻿using DeviceManager.Api.RpcServices;
 using DeviceManager.Api.Validators;
+using DeviceManager.Api.Validators.DeviceRequests;
 using DeviceManager.Core;
 using DeviceManager.Core.Services;
-using DeviceManager.Core.Services.DeviceTokenService;
+using DeviceManager.Core.Settings;
 using DeviceManager.Data;
 using DeviceManager.Services;
 using FluentValidation;
@@ -31,12 +32,14 @@ namespace DeviceManager.Api
         {
             services.AddGrpc();
 
-            services.AddValidatorsFromAssemblyContaining<CreateDeviceRequestValidator>();
+            services.AddValidatorsFromAssembly(typeof(Startup).Assembly);
 
             var dataAssemblyName = typeof(DeviceManagerContext).Assembly.GetName().Name;
-            services.AddDbContext<DeviceManagerContext>(options =>
-                options.UseNpgsql(Configuration.GetConnectionString("Default"),
-                    x => x.MigrationsAssembly(dataAssemblyName)));
+            services.AddDbContext<DeviceManagerContext>(opt =>
+                opt.UseNpgsql(Configuration.GetConnectionString("Default"),
+                        x => x.MigrationsAssembly(dataAssemblyName))
+                    .UseSnakeCaseNamingConvention()
+            );
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddTransient<IDeviceService, DeviceService>();
@@ -47,7 +50,7 @@ namespace DeviceManager.Api
 
             services.AddAutoMapper(typeof(Startup));
 
-            services.Configure<TokenConfig>(Configuration.GetSection("DeviceToken"));
+            services.Configure<JwtSettings>(Configuration.GetSection("Jwt"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

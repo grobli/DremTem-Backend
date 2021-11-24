@@ -10,6 +10,7 @@ namespace DeviceManager.Api.Mapping
     {
         public MappingProfile()
         {
+            // TODO: Fix Mappers!!!
             //---------- Domain to Resource/Request ----------
             CreateMap<Device, DeviceResource>()
                 .ForMember(
@@ -32,8 +33,35 @@ namespace DeviceManager.Api.Mapping
                 .ForMember(
                     dest => dest.DisplayName,
                     opt => opt.Condition(src => !string.IsNullOrEmpty(src.DisplayName)))
-                .ForMember(dest => dest.LocationName,
-                    opt => opt.Condition(src => !string.IsNullOrEmpty(src.LocationName)))
+                .ForMember(dest => dest.LocationId,
+                    opt => opt.Condition(src => src.LocationId is not null))
+                .ForMember(
+                    dest => dest.UserId,
+                    opt => opt.MapFrom(src => src.UserId.ToString()));
+
+            CreateMap<Device, DeviceResourceExtended>()
+                .ForMember(
+                    dest => dest.Created,
+                    opt => opt.MapFrom(src => Timestamp.FromDateTime(src.Created)))
+                .ForMember(
+                    dest => dest.LastSeen,
+                    opt =>
+                    {
+                        opt.PreCondition(src => src.LastSeen.HasValue);
+                        opt.MapFrom(src => Timestamp.FromDateTime(src.LastSeen.Value));
+                    })
+                .ForMember(
+                    dest => dest.LastModified,
+                    opt =>
+                    {
+                        opt.PreCondition(src => src.LastModified.HasValue);
+                        opt.MapFrom(src => Timestamp.FromDateTime(src.LastModified.Value));
+                    })
+                .ForMember(
+                    dest => dest.DisplayName,
+                    opt => opt.Condition(src => !string.IsNullOrEmpty(src.DisplayName)))
+                .ForMember(dest => dest.LocationId,
+                    opt => opt.Condition(src => src.LocationId is not null))
                 .ForMember(
                     dest => dest.UserId,
                     opt => opt.MapFrom(src => src.UserId.ToString()));
@@ -74,6 +102,18 @@ namespace DeviceManager.Api.Mapping
                         opt.MapFrom(src => Timestamp.FromDateTime(src.LastModified.Value));
                     });
 
+            CreateMap<Location, LocationResourceExtended>()
+                .ForMember(
+                    dest => dest.Created,
+                    opt => opt.MapFrom(src => Timestamp.FromDateTime(src.Created)))
+                .ForMember(
+                    dest => dest.LastModified,
+                    opt =>
+                    {
+                        opt.PreCondition(src => src.LastModified.HasValue);
+                        opt.MapFrom(src => Timestamp.FromDateTime(src.LastModified.Value));
+                    });
+
             CreateMap<Device, GenerateTokenResponse>();
 
 
@@ -86,8 +126,8 @@ namespace DeviceManager.Api.Mapping
                     dest => dest.DisplayName,
                     opt => opt.Condition(src => !string.IsNullOrWhiteSpace(src.DisplayName)))
                 .ForMember(
-                    dest => dest.LocationName,
-                    opt => opt.Condition(src => !string.IsNullOrWhiteSpace(src.LocationName)))
+                    dest => dest.LocationId,
+                    opt => opt.Condition(src => src.LocationId is not null))
                 .ForMember(dest => dest.Sensors, opt => opt.Ignore());
 
             CreateMap<UpdateDeviceRequest, Device>()
@@ -95,13 +135,16 @@ namespace DeviceManager.Api.Mapping
                     dest => dest.DisplayName,
                     opt => opt.Condition(src => !string.IsNullOrWhiteSpace(src.DisplayName)))
                 .ForMember(
-                    dest => dest.LocationName,
-                    opt => opt.Condition(src => !string.IsNullOrWhiteSpace(src.LocationName)));
+                    dest => dest.LocationId,
+                    opt => opt.Condition(src => src.LocationId is not null));
 
-            CreateMap<SaveSensorRequest, Sensor>();
+            CreateMap<CreateSensorRequest, Sensor>();
+            CreateMap<UpdateSensorRequest, Sensor>();
             CreateMap<CreateDeviceSensorResource, Sensor>();
-            CreateMap<SaveLocationRequest, Location>();
-            CreateMap<SaveSensorTypeRequest, SensorType>();
+            CreateMap<CreateLocationRequest, Location>();
+            CreateMap<UpdateLocationRequest, Location>();
+            CreateMap<CreateSensorTypeRequest, SensorType>();
+            CreateMap<UpdateSensorTypeRequest, SensorType>();
         }
     }
 }

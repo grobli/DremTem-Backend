@@ -13,10 +13,10 @@ namespace DeviceManager.Data.Repositories
         {
         }
 
-        public async Task<SensorType> GetByIdAsync(string typeName)
+        public async Task<SensorType> GetByIdAsync(int typeId)
         {
             return await DeviceManagerContext.SensorTypes
-                .SingleOrDefaultAsync(st => st.Name == typeName);
+                .SingleOrDefaultAsync(st => st.Id == typeId);
         }
     }
 }

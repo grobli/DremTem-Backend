@@ -6,15 +6,18 @@ namespace DeviceManager.Core.Models
 {
     public record Device
     {
-        public long Id { get; set; }
+        public int Id { get; set; }
         public string Name { get; set; }
         public string DisplayName { get; set; }
         public bool Online { get; set; }
+        public string MacAddress { get; set; }
+        public string Model { get; set; }
+        public string Manufacturer { get; set; }
         public DateTime? LastSeen { get; set; }
         public DateTime? LastModified { get; set; }
         public DateTime Created { get; set; }
         public Location Location { get; set; }
-        public string LocationName { get; set; }
+        public int? LocationId { get; set; }
         public Guid UserId { get; set; }
 
         public ICollection<Sensor> Sensors { get; set; }

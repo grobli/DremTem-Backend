@@ -27,14 +27,19 @@ namespace DeviceManager.Services
             return await _unitOfWork.Sensors.GetAllWithSensorTypeAsync(userId);
         }
 
-        public async Task<Sensor> GetSensor(long sensorId)
+        public async Task<Sensor> GetSensor(int sensorId)
         {
             return await _unitOfWork.Sensors.GetByIdAsync(sensorId);
         }
 
-        public async Task<Sensor> GetSensorWithType(long sensorId)
+        public async Task<Sensor> GetSensorWithType(int sensorId)
         {
             return await _unitOfWork.Sensors.GetWithSensorTypeByIdAsync(sensorId);
+        }
+
+        public async Task<Sensor> GetSensorWithDevice(int sensorId)
+        {
+            return await _unitOfWork.Sensors.GetWithDeviceByIdAsync(sensorId);
         }
 
         public async Task<Sensor> CreateSensor(Sensor newSensor)
@@ -50,9 +55,9 @@ namespace DeviceManager.Services
         public async Task UpdateSensor(Sensor sensorToBeUpdated, Sensor sensor)
         {
             sensorToBeUpdated.LastModified = DateTime.UtcNow;
-            
+
             sensorToBeUpdated.DisplayName = sensor.DisplayName;
-            sensorToBeUpdated.TypeName = sensor.TypeName;
+            sensorToBeUpdated.TypeId = sensor.TypeId;
 
             await _unitOfWork.CommitAsync();
         }

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
@@ -7,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using UserIdentity.Core.Models.Auth;
 using UserIdentity.Core.Proto;
+using static ClientApiGateway.Api.Handlers.RpcExceptionHandler;
 
 namespace ClientApiGateway.Api.Controllers
 {
@@ -37,7 +37,7 @@ namespace ClientApiGateway.Api.Controllers
             }
             catch (RpcException e)
             {
-                return BadRequest(e.Status);
+                return HandleRpcException(e);
             }
         }
 
@@ -52,7 +52,7 @@ namespace ClientApiGateway.Api.Controllers
             }
             catch (RpcException e)
             {
-                return BadRequest(e.Status);
+                return HandleRpcException(e);
             }
         }
 
@@ -67,7 +67,7 @@ namespace ClientApiGateway.Api.Controllers
             }
             catch (RpcException e)
             {
-                return BadRequest(e.Status);
+                return HandleRpcException(e);
             }
         }
 
@@ -82,7 +82,7 @@ namespace ClientApiGateway.Api.Controllers
             }
             catch (RpcException e)
             {
-                return BadRequest(e.Status);
+                return HandleRpcException(e);
             }
         }
     }

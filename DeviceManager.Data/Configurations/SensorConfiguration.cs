@@ -16,6 +16,9 @@ namespace DeviceManager.Data.Configurations
                 .HasKey(s => s.Id);
 
             builder
+                .HasAlternateKey(s => new { s.Name, s.DeviceId });
+
+            builder
                 .Property(s => s.Id)
                 .ValueGeneratedOnAdd();
 
@@ -29,21 +32,18 @@ namespace DeviceManager.Data.Configurations
                 .HasMaxLength(DisplayNameMaxLength);
 
             builder
-                .Property(s => s.TypeName)
-                .HasMaxLength(100);
-
-            builder
                 .HasOne(s => s.Device)
                 .WithMany(d => d.Sensors)
                 .HasForeignKey(s => s.DeviceId)
                 .IsRequired()
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder
                 .HasOne(s => s.Type)
                 .WithMany(st => st.Sensors)
-                .HasForeignKey(s => s.TypeName)
-                .IsRequired();
+                .HasForeignKey(s => s.TypeId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder
                 .Property(d => d.LastModified)

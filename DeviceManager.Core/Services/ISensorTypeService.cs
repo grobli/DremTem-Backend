@@ -8,7 +8,7 @@ namespace DeviceManager.Core.Services
     {
         Task<IEnumerable<SensorType>> GetAllSensorTypes();
 
-        Task<SensorType> GetSensorType(string typeName);
+        Task<SensorType> GetSensorType(int typeId);
 
         Task<SensorType> CreateSensorType(SensorType newSensorType);
         Task UpdateSensorType(SensorType sensorTypeToBeUpdated, SensorType sensorType);

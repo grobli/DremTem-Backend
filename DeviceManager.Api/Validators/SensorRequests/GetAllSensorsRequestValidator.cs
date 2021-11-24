@@ -1,11 +1,11 @@
 ﻿using DeviceManager.Core.Proto;
 using FluentValidation;
 
-namespace DeviceManager.Api.Validators
+namespace DeviceManager.Api.Validators.SensorRequests
 {
-    public class GetAllDevicesRequestValidator : AbstractValidator<GetAllDevicesRequest>
+    public class GetAllSensorsRequestValidator : AbstractValidator<GetAllSensorsRequest>
     {
-        public GetAllDevicesRequestValidator()
+        public GetAllSensorsRequestValidator()
         {
             RuleFor(r => r.UserId)
                 .MustBeValidGuid()

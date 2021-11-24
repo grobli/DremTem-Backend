@@ -10,22 +10,49 @@ service SensorGrpcService {
   rpc GetAllSensors (GetAllSensorsRequest) returns (stream SensorResource);
   rpc GetSensor (GetSensorRequest) returns (SensorResource);
 
-  rpc AddSensor (SaveSensorRequest) returns (SensorResource);
-  rpc UpdateSensor (SaveSensorRequest) returns (SensorResource);
+  rpc AddSensor (CreateSensorRequest) returns (SensorResource);
+  rpc UpdateSensor (UpdateSensorRequest) returns (SensorResource);
   rpc DeleteSensor (DeleteSensorRequest) returns (SensorResource);
 }
 
 message GetAllSensorsRequest {
   bool IncludeType = 1;
+
+  // (optional) filter by user ID
   google.protobuf.StringValue UserId = 2;
 }
 
 message GetSensorRequest {
-  int64 Id = 1;
+  int32 Id = 1;
 
   bool IncludeType = 2;
+  // (optional) limit access to user - if sensor does not belong to the user -> action will fail
+  google.protobuf.StringValue UserId = 3;
+}
+
+message CreateSensorRequest {
+  string Name = 1;
+  int32 DeviceId = 2;
+  google.protobuf.StringValue DisplayName = 3;
+  int32 TypeId = 4;
+
+  // (optional) limit access to user - if sensor does not belong to the user -> action will fail
+  google.protobuf.StringValue UserId = 8;
+}
+
+message UpdateSensorRequest {
+  int32 Id = 1;
+
+  google.protobuf.StringValue DisplayName = 3;
+  int32 TypeId = 4;
+
+  // (optional) limit access to user - if sensor does not belong to the user -> action will fail
+  google.protobuf.StringValue UserId = 8;
 }
 
 message DeleteSensorRequest {
-  int64 Id = 1;
+  int32 Id = 1;
+
+  // (optional) limit access to user - if sensor does not belong to the user -> action will fail
+  google.protobuf.StringValue UserId = 2;
 }
