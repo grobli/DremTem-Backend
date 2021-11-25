@@ -9,7 +9,7 @@ namespace UserIdentity.Api.Validators
         {
             return ruleBuilder
                 .Must(str => Guid.TryParse(str, out _))
-                .WithMessage("UserId must be a valid GUID string");
+                .WithMessage("{PropertyName} must be a valid GUID string");
         }
     }
 }

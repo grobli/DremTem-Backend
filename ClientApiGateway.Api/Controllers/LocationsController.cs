@@ -4,6 +4,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
 using ClientApiGateway.Api.Resources;
+using ClientApiGateway.Api.Resources.Location;
 using DeviceManager.Core.Proto;
 using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
@@ -46,7 +47,6 @@ namespace ClientApiGateway.Api.Controllers
                 IncludeDevices = includeDevices,
                 UserId = UserId
             };
-
             try
             {
                 var locations = new List<GetLocationResource>();
@@ -73,7 +73,6 @@ namespace ClientApiGateway.Api.Controllers
             [FromQuery] bool includeDevices)
         {
             var request = new GetAllLocationsRequest { IncludeDevices = includeDevices };
-
             try
             {
                 var locations = new List<GetLocationResource>();
@@ -103,7 +102,6 @@ namespace ClientApiGateway.Api.Controllers
                 IncludeDevices = includeDevices,
                 UserId = User.IsInRole(DefaultRoles.SuperUser) ? null : UserId
             };
-
             try
             {
                 var response = await _locationService.GetLocationAsync(request);
@@ -123,7 +121,6 @@ namespace ClientApiGateway.Api.Controllers
         {
             var request = _mapper.Map<CreateLocationResource, CreateLocationRequest>(resource);
             request.UserId = UserId;
-
             try
             {
                 var createdLocation = await _locationService.CreateLocationAsync(request);
@@ -142,7 +139,6 @@ namespace ClientApiGateway.Api.Controllers
             var request = _mapper.Map<UpdateLocationResource, UpdateLocationRequest>(resource);
             request.UserId = User.IsInRole(DefaultRoles.SuperUser) ? null : UserId;
             request.Id = id;
-
             try
             {
                 return Ok(await _locationService.UpdateLocationAsync(request));
@@ -162,7 +158,6 @@ namespace ClientApiGateway.Api.Controllers
                 Id = id,
                 UserId = User.IsInRole(DefaultRoles.SuperUser) ? null : UserId
             };
-
             try
             {
                 return Ok(await _locationService.DeleteLocationAsync(request));

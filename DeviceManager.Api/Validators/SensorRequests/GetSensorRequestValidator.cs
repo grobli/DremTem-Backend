@@ -22,14 +22,14 @@ namespace DeviceManager.Api.Validators.SensorRequests
 
             RuleFor(r => r.Id)
                 .MustAsync(async (id, _) => await _unitOfWork.Sensors.GetByIdAsync(id) is not null)
-                .WithMessage("Sensor with {PropertyName} = \"{PropertyValue}\" not found");
+                .WithMessage("sensor not found");
 
             // if userId specified then sensor.userId must match
             Transform(@from: r => r, to: r => new { r.Id, r.UserId })
                 .MustAsync(async (x, _) =>
                     string.IsNullOrWhiteSpace(x.UserId) ||
                     (await _unitOfWork.Sensors.GetWithDeviceByIdAsync(x.Id)).Device.UserId.ToString() == x.UserId
-                ).WithMessage("Sensor not found");
+                ).WithMessage("sensor not found");
         }
     }
 }

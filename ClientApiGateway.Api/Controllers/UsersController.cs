@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
-using ClientApiGateway.Api.Resources;
+using ClientApiGateway.Api.Resources.User;
 using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -108,7 +108,6 @@ namespace ClientApiGateway.Api.Controllers
         {
             var request = _mapper.Map<UpdateUserDetailsResource, UpdateUserDetailsRequest>(resource);
             request.Id = id.ToString();
-
             try
             {
                 return Ok(await _userService.UpdateUserDetailsAsync(request));
@@ -125,7 +124,6 @@ namespace ClientApiGateway.Api.Controllers
         {
             var request = _mapper.Map<UpdateUserDetailsResource, UpdateUserDetailsRequest>(resource);
             request.Id = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
             try
             {
                 return Ok(await _userService.UpdateUserDetailsAsync(request));

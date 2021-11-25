@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net.Mime;
 using System.Threading.Tasks;
 using ClientApiGateway.Api.Resources;
 using Microsoft.AspNetCore.Authorization;

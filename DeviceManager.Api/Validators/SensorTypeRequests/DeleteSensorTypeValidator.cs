@@ -4,7 +4,7 @@ using FluentValidation;
 
 namespace DeviceManager.Api.Validators.SensorTypeRequests
 {
-    public class DeleteSensorTypeValidator : AbstractValidator<GetSensorTypeRequest>
+    public class DeleteSensorTypeValidator : AbstractValidator<DeleteSensorTypeRequest>
     {
         private readonly IUnitOfWork _unitOfWork;
 

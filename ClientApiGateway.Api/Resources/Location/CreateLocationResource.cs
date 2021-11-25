@@ -1,4 +1,4 @@
-﻿namespace ClientApiGateway.Api.Resources
+﻿namespace ClientApiGateway.Api.Resources.Location
 {
     public record CreateLocationResource
     (

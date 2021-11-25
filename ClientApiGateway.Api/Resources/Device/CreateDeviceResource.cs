@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using DeviceManager.Core.Proto;
 
-namespace ClientApiGateway.Api.Resources
+namespace ClientApiGateway.Api.Resources.Device
 {
     public record CreateDeviceResource
     (

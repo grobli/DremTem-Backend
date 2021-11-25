@@ -22,7 +22,7 @@ namespace DeviceManager.Api.Validators.DeviceRequests
 
             RuleFor(r => r.Id)
                 .MustAsync(async (id, _) => await _unitOfWork.Devices.GetByIdAsync(id) is not null)
-                .WithMessage("Device with {PropertyName} = \"{PropertyValue}\" not found");
+                .WithMessage("Device not found");
 
             // if userId specified then device.userId must match
             Transform(@from: r => r, to: r => new { r.Id, r.UserId })

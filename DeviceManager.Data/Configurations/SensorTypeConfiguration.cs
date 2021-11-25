@@ -42,7 +42,6 @@ namespace DeviceManager.Data.Configurations
 
             builder
                 .Property(st => st.UnitShort)
-                .IsRequired()
                 .HasMaxLength(UnitShortMaxLength);
 
             builder

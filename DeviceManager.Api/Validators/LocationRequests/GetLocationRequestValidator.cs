@@ -22,7 +22,7 @@ namespace DeviceManager.Api.Validators.LocationRequests
 
             RuleFor(r => r.Id)
                 .MustAsync(async (id, _) => await _unitOfWork.Locations.GetByIdAsync(id) is not null)
-                .WithMessage("Location with {PropertyName} = \"{PropertyValue}\" not found");
+                .WithMessage("Location not found");
             
             // if userId specified then location.userId must match
             Transform(@from: r => r, to: r => new { r.Id, r.UserId })

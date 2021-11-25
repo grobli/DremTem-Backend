@@ -54,6 +54,15 @@ namespace DeviceManager.Api.Validators.DeviceRequests
                 ).WithMessage("{PropertyName} with value: \"{PropertyValue}\" not found.")
                 .Unless(r => r.LocationId is null);
 
+            // check if location exists and if does then check if it belongs to the user
+            Transform(from: r => r, to: r => new { r.LocationId, UserId = Guid.Parse(r.UserId) })
+                .MustAsync(async (x, _) =>
+                {
+                    if (x.LocationId is null) return true;
+                    var location = await _unitOfWork.Locations.GetByIdAsync(x.LocationId.Value);
+                    return location is not null && location.UserId == x.UserId;
+                }).WithMessage("Referenced location not found");
+
             RuleFor(r => r.Sensors)
                 .NotEmpty();
 
@@ -72,7 +81,8 @@ namespace DeviceManager.Api.Validators.DeviceRequests
                         .WithMessage("{PropertyName} with value: \"{PropertyValue}\" not found");
                 });
 
-            Transform(@from: r => r, to: r => new { r.Name, UserId = Guid.Parse(r.UserId) })
+            // check if user already has device with this name
+            Transform(from: r => r, to: r => new { r.Name, UserId = Guid.Parse(r.UserId) })
                 .MustAsync(async (key, _) =>
                     await _unitOfWork.Devices.SingleOrDefaultAsync(
                         d => d.Name == key.Name && d.UserId == key.UserId) is null)

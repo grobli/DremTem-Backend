@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
@@ -13,7 +14,10 @@ namespace DeviceManager.Core.Repositories
 
         // Read
         Task<IEnumerable<TEntity>> GetAllAsync();
+
+        [return: MaybeNull]
         IEnumerable<TEntity> Find(Expression<Func<TEntity, bool>> predicate);
+
         Task<TEntity> SingleOrDefaultAsync(Expression<Func<TEntity, bool>> predicate);
 
         // Delete

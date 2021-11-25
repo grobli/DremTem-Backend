@@ -1,7 +1,9 @@
-﻿using DeviceManager.Core;
+﻿using System;
+using DeviceManager.Core;
 using DeviceManager.Core.Proto;
 using DeviceManager.Data.Configurations;
 using FluentValidation;
+using Grpc.Core;
 
 namespace DeviceManager.Api.Validators.DeviceRequests
 {
@@ -17,6 +19,10 @@ namespace DeviceManager.Api.Validators.DeviceRequests
 
         private void SetupRules()
         {
+            RuleFor(r => r.UserId)
+                .MustBeValidGuid()
+                .Unless(r => string.IsNullOrWhiteSpace(r.UserId));
+
             RuleFor(r => r.Id)
                 .MustAsync(async (id, _) => await _unitOfWork.Devices.GetByIdAsync(id) is not null)
                 .WithMessage("Device with {PropertyName}={PropertyValue} not found");
@@ -24,16 +30,14 @@ namespace DeviceManager.Api.Validators.DeviceRequests
             RuleFor(r => r.DisplayName)
                 .MaximumLength(DeviceConfiguration.DisplayNameMaxLenght);
 
-            RuleFor(r => r.LocationId)
-                .MustAsync(async (id, _) =>
-                    // ReSharper disable once PossibleInvalidOperationException
-                    await _unitOfWork.Locations.GetByIdAsync((int)id) is not null
-                ).WithMessage("{PropertyName} with value: \"{PropertyValue}\" not found.")
-                .Unless(r => r.LocationId is null);
-
-            RuleFor(r => r.UserId)
-                .MustBeValidGuid()
-                .Unless(r => string.IsNullOrWhiteSpace(r.UserId));
+            // check if location exists and if does then check if it belongs to the user
+            Transform(from: r => r, to: r => new { r.LocationId, r.UserId })
+                .MustAsync(async (x, _) =>
+                {
+                    if (x.LocationId is null || string.IsNullOrWhiteSpace(x.UserId)) return true;
+                    var location = await _unitOfWork.Locations.GetByIdAsync(x.LocationId.Value);
+                    return location is not null && location.UserId.ToString() == x.UserId;
+                }).WithMessage("Referenced location not found");
 
             // if userId specified then device.userId must match
             Transform(from: r => r, to: r => new { r.Id, r.UserId })

@@ -2,7 +2,7 @@
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
-using ClientApiGateway.Api.Resources;
+using ClientApiGateway.Api.Resources.Device;
 using DeviceManager.Core.Proto;
 using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
@@ -46,7 +46,6 @@ namespace ClientApiGateway.Api.Controllers
                 IncludeLocation = includeLocation,
                 IncludeSensors = includeSensors
             };
-
             try
             {
                 var devices = new List<DeviceResourceExtended>();
@@ -76,7 +75,6 @@ namespace ClientApiGateway.Api.Controllers
                 IncludeLocation = includeLocation,
                 IncludeSensors = includeSensors
             };
-
             try
             {
                 var devices = new List<DeviceResourceExtended>();
@@ -108,7 +106,6 @@ namespace ClientApiGateway.Api.Controllers
                 IncludeSensors = includeSensors,
                 UserId = User.IsInRole(DefaultRoles.SuperUser) ? null : UserId
             };
-
             try
             {
                 return Ok(await _deviceService.GetDeviceAsync(request));
@@ -125,7 +122,6 @@ namespace ClientApiGateway.Api.Controllers
         {
             var request = _mapper.Map<CreateDeviceResource, CreateDeviceRequest>(resource);
             request.UserId = UserId;
-
             try
             {
                 var createdDevice = await _deviceService.CreateDeviceAsync(request);
@@ -144,7 +140,6 @@ namespace ClientApiGateway.Api.Controllers
             var request = _mapper.Map<UpdateDeviceResource, UpdateDeviceRequest>(resource);
             request.Id = id;
             request.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
             try
             {
                 return Ok(await _deviceService.UpdateDeviceAsync(request));
@@ -164,7 +159,6 @@ namespace ClientApiGateway.Api.Controllers
                 Id = id,
                 UserId = User.IsInRole(DefaultRoles.SuperUser) ? null : UserId
             };
-
             try
             {
                 return Ok(await _deviceService.GenerateTokenAsync(request));

@@ -1,4 +1,4 @@
-﻿namespace ClientApiGateway.Api.Resources
+﻿namespace ClientApiGateway.Api.Resources.Device
 {
     public record UpdateDeviceResource
     (

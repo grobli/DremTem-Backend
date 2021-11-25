@@ -1,4 +1,5 @@
-﻿using DeviceManager.Core;
+﻿using System;
+using DeviceManager.Core;
 using DeviceManager.Core.Proto;
 using DeviceManager.Data.Configurations;
 using FluentValidation;
@@ -24,17 +25,22 @@ namespace DeviceManager.Api.Validators.SensorRequests
             RuleFor(r => r.DisplayName)
                 .MaximumLength(SensorConfiguration.DisplayNameMaxLength);
 
-            RuleFor(r => r.DeviceId)
-                .NotNull()
-                .MustAsync(async (id, _) => await _unitOfWork.Devices.GetByIdAsync(id) is not null)
-                .WithMessage("Device with {PropertyName} = \"{PropertyValue}\" not found.");
+            // check if referenced device exists and if it does then check if it belongs to the user
+            Transform(from: r => r, to: r => new { r.DeviceId, r.UserId })
+                .MustAsync(async (x, _) =>
+                {
+                    var device = await _unitOfWork.Devices.GetByIdAsync(x.DeviceId);
+                    if (device is null) return false;
+                    if (string.IsNullOrWhiteSpace(x.UserId)) return true;
+                    return device.UserId.ToString() == x.UserId;
+                }).WithMessage("referenced device not found");
 
             RuleFor(r => r.TypeId)
                 .NotNull()
                 .MustAsync(async (id, _) => await _unitOfWork.Sensors.GetByIdAsync(id) is not null)
-                .WithMessage("SensorType with {PropertyName} = \"{PropertyValue}\" not found.");
+                .WithMessage("referenced sensor type not found.");
 
-            // device cannot have two sensors with the same name
+            // target device cannot have two sensors with the same name
             Transform(from: r => r, to: r => new { r.Name, r.DeviceId })
                 .MustAsync(async (x, _) =>
                     await _unitOfWork.Sensors

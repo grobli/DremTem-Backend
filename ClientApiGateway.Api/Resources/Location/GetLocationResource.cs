@@ -2,7 +2,7 @@
 using DeviceManager.Core.Proto;
 using Google.Protobuf.WellKnownTypes;
 
-namespace ClientApiGateway.Api.Resources
+namespace ClientApiGateway.Api.Resources.Location
 {
     public class GetLocationResource
     {
