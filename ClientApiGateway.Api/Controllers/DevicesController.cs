@@ -139,7 +139,7 @@ namespace ClientApiGateway.Api.Controllers
         {
             var request = _mapper.Map<UpdateDeviceResource, UpdateDeviceRequest>(resource);
             request.Id = id;
-            request.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            request.UserId = UserId;
             try
             {
                 return Ok(await _deviceService.UpdateDeviceAsync(request));

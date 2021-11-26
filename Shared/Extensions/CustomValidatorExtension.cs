@@ -1,14 +1,14 @@
-﻿using System;
-using FluentValidation;
+﻿using FluentValidation;
+using static System.Guid;
 
-namespace DeviceManager.Api.Validators
+namespace Shared.Extensions
 {
-    public static class CustomValidators
+    public static class CustomValidatorExtension
     {
-        public static IRuleBuilderOptions<T, string> MustBeValidGuid<T>(this IRuleBuilder<T, string> ruleBuilder)
+        public static IRuleBuilderOptions<T, string> Guid<T>(this IRuleBuilder<T, string> ruleBuilder)
         {
             return ruleBuilder
-                .Must(str => Guid.TryParse(str, out _))
+                .Must(str => TryParse(str, out _))
                 .WithMessage("{PropertyName} must be a valid GUID string");
         }
 

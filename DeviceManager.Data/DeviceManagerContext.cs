@@ -1,9 +1,7 @@
-﻿using System;
-using DeviceManager.Core.Models;
+﻿using DeviceManager.Core.Models;
 using DeviceManager.Data.Configurations;
-using DeviceManager.Data.Extensions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Shared.Extensions;
 
 namespace DeviceManager.Data
 {

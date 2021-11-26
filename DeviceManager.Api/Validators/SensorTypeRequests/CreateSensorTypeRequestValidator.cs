@@ -2,6 +2,7 @@
 using DeviceManager.Core.Proto;
 using DeviceManager.Data.Configurations;
 using FluentValidation;
+using Shared.Extensions;
 
 namespace DeviceManager.Api.Validators.SensorTypeRequests
 {

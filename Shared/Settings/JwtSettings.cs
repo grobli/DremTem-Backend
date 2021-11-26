@@ -1,4 +1,4 @@
-﻿namespace UserIdentity.Core.Settings
+﻿namespace Shared.Settings
 {
     public class JwtSettings
     {

@@ -3,6 +3,7 @@ using DeviceManager.Core;
 using DeviceManager.Core.Proto;
 using DeviceManager.Data.Configurations;
 using FluentValidation;
+using Shared.Extensions;
 
 namespace DeviceManager.Api.Validators.LocationRequests
 {
@@ -19,7 +20,7 @@ namespace DeviceManager.Api.Validators.LocationRequests
         private void SetupRules()
         {
             RuleFor(r => r.UserId)
-                .MustBeValidGuid();
+                .Guid();
 
             RuleFor(r => r.Name)
                 .NotEmpty()

@@ -1,5 +1,4 @@
-﻿using System;
-using DeviceManager.Core;
+﻿using DeviceManager.Core;
 using DeviceManager.Core.Proto;
 using DeviceManager.Data.Configurations;
 using FluentValidation;

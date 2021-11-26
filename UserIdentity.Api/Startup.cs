@@ -8,11 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Shared.Settings;
 using UserIdentity.Api.Services;
 using UserIdentity.Api.Services.Rpc;
 using UserIdentity.Api.Validators;
 using UserIdentity.Core.Models.Auth;
-using UserIdentity.Core.Settings;
 using UserIdentity.Data;
 
 namespace UserIdentity.Api

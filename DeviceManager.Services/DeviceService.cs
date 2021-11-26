@@ -1,20 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using DeviceManager.Core;
 using DeviceManager.Core.Models;
 using DeviceManager.Core.Services;
+using DeviceManager.Data.Validators;
+using FluentValidation;
 
 namespace DeviceManager.Services
 {
     public class DeviceService : IDeviceService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IValidator<Device> _validator;
 
         public DeviceService(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
+            _validator = new DeviceValidator(_unitOfWork);
         }
 
         public async Task<IEnumerable<Device>> GetAllDevices(Guid? userId = null)
@@ -57,12 +63,15 @@ namespace DeviceManager.Services
             return await _unitOfWork.Devices.GetWithEverythingByIdAsync(deviceId);
         }
 
+        /** <exception cref="ValidationException">device model is not valid</exception> */
         public async Task<Device> CreateDevice(Device newDevice, IEnumerable<Sensor> sensors)
         {
+            await _validator.ValidateAndThrowAsync(newDevice);
+
             var now = DateTime.UtcNow;
             newDevice.Created = now;
 
-            newDevice.MacAddress = newDevice.MacAddress.ToLower();
+            newDevice.MacAddress = newDevice.MacAddress;
 
             await _unitOfWork.Devices.AddAsync(newDevice);
             await _unitOfWork.CommitAsync();
@@ -78,17 +87,47 @@ namespace DeviceManager.Services
             return newDevice;
         }
 
-        public async Task UpdateDevice(Device deviceToBeUpdated, Device device)
+        /** <exception cref="ValidationException">device model is not valid</exception> */
+        public async Task UpdateDevice([NotNull] Device deviceToBeUpdated, [NotNull] Device device)
         {
+            var backup = new Device
+            {
+                LastModified = deviceToBeUpdated.LastModified,
+                DisplayName = deviceToBeUpdated.DisplayName,
+                Online = deviceToBeUpdated.Online,
+                Model = deviceToBeUpdated.Model,
+                Manufacturer = deviceToBeUpdated.Manufacturer,
+                LocationId = deviceToBeUpdated.LocationId
+            };
+
             deviceToBeUpdated.LastModified = DateTime.UtcNow;
-            
             deviceToBeUpdated.DisplayName = device.DisplayName;
             deviceToBeUpdated.Online = device.Online;
             deviceToBeUpdated.Model = device.Model;
             deviceToBeUpdated.Manufacturer = device.Manufacturer;
             deviceToBeUpdated.LocationId = device.LocationId;
 
+            try
+            {
+                await _validator.ValidateAndThrowAsync(deviceToBeUpdated);
+            }
+            catch (ValidationException)
+            {
+                Restore();
+                throw;
+            }
+
             await _unitOfWork.CommitAsync();
+
+            void Restore()
+            {
+                deviceToBeUpdated.LastModified = backup.LastModified;
+                deviceToBeUpdated.DisplayName = backup.DisplayName;
+                deviceToBeUpdated.Online = backup.Online;
+                deviceToBeUpdated.Model = backup.Model;
+                deviceToBeUpdated.Manufacturer = backup.Manufacturer;
+                deviceToBeUpdated.LocationId = backup.LocationId;
+            }
         }
 
         public async Task UpdateDeviceLastSeen(Device device)

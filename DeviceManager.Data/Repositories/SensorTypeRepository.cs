@@ -2,6 +2,7 @@
 using DeviceManager.Core.Models;
 using DeviceManager.Core.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Shared.Repositories;
 
 namespace DeviceManager.Data.Repositories
 {

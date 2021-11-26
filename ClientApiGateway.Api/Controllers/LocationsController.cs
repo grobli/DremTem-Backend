@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
-using ClientApiGateway.Api.Resources;
 using ClientApiGateway.Api.Resources.Location;
 using DeviceManager.Core.Proto;
 using Grpc.Core;

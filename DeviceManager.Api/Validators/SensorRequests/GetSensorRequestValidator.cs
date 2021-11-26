@@ -1,6 +1,7 @@
 ﻿using DeviceManager.Core;
 using DeviceManager.Core.Proto;
 using FluentValidation;
+using Shared.Extensions;
 
 namespace DeviceManager.Api.Validators.SensorRequests
 {
@@ -17,7 +18,7 @@ namespace DeviceManager.Api.Validators.SensorRequests
         private void SetupRules()
         {
             RuleFor(r => r.UserId)
-                .MustBeValidGuid()
+                .Guid()
                 .Unless(r => string.IsNullOrWhiteSpace(r.UserId));
 
             RuleFor(r => r.Id)

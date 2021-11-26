@@ -1,8 +1,8 @@
-﻿using System;
-using DeviceManager.Core;
+﻿using DeviceManager.Core;
 using DeviceManager.Core.Proto;
 using DeviceManager.Data.Configurations;
 using FluentValidation;
+using Shared.Extensions;
 
 namespace DeviceManager.Api.Validators.LocationRequests
 {
@@ -20,7 +20,7 @@ namespace DeviceManager.Api.Validators.LocationRequests
         {
             RuleFor(r => r.UserId)
                 .NotEmpty()
-                .MustBeValidGuid();
+                .Guid();
 
             RuleFor(r => r.Id)
                 .MustAsync(async (id, _) => await _unitOfWork.Locations.GetByIdAsync(id) is not null)

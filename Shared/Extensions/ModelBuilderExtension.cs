@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace DeviceManager.Data.Extensions
+namespace Shared.Extensions
 {
     public static class ModelBuilderExtension
     {

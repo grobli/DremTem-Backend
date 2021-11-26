@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
-namespace DeviceManager.Core.Repositories
+namespace Shared.Repositories
 {
     public interface IRepository<TEntity> where TEntity : class
     {
@@ -16,7 +16,7 @@ namespace DeviceManager.Core.Repositories
         Task<IEnumerable<TEntity>> GetAllAsync();
 
         [return: MaybeNull]
-        IEnumerable<TEntity> Find(Expression<Func<TEntity, bool>> predicate);
+        Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate);
 
         Task<TEntity> SingleOrDefaultAsync(Expression<Func<TEntity, bool>> predicate);
 

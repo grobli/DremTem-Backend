@@ -1,5 +1,6 @@
 ﻿using DeviceManager.Core.Proto;
 using FluentValidation;
+using Shared.Extensions;
 
 namespace DeviceManager.Api.Validators.LocationRequests
 {
@@ -8,7 +9,7 @@ namespace DeviceManager.Api.Validators.LocationRequests
         public GetAllLocationsRequestValidator()
         {
             RuleFor(r => r.UserId)
-                .MustBeValidGuid()
+                .Guid()
                 .Unless(r => string.IsNullOrWhiteSpace(r.UserId));
         }   
     }

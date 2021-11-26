@@ -6,9 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 using DeviceManager.Core.Models;
 using DeviceManager.Core.Services;
-using DeviceManager.Core.Settings;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Shared.Settings;
 using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
 
 namespace DeviceManager.Services

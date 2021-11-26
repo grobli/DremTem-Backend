@@ -76,7 +76,8 @@ namespace DeviceManager.Api.RpcServices
             }
         }
 
-        public override async Task<DeviceResourceExtended> GetDevice(GetDeviceRequest request, ServerCallContext context)
+        public override async Task<DeviceResourceExtended> GetDevice(GetDeviceRequest request,
+            ServerCallContext context)
         {
             var validationResult = await _getDeviceValidator.ValidateAsync(request);
             if (!validationResult.IsValid)
@@ -106,13 +107,19 @@ namespace DeviceManager.Api.RpcServices
             }
 
             var newDevice = _mapper.Map<CreateDeviceRequest, Device>(request);
-
             var sensors = request.Sensors
                 .Select(s => _mapper.Map<CreateDeviceSensorResource, Sensor>(s));
 
-            var createdDevice = await _deviceService.CreateDevice(newDevice, sensors);
+            try
+            {
+                var createdDevice = await _deviceService.CreateDevice(newDevice, sensors);
 
-            return await Task.FromResult(_mapper.Map<Device, DeviceResource>(createdDevice));
+                return await Task.FromResult(_mapper.Map<Device, DeviceResource>(createdDevice));
+            }
+            catch (ValidationException e)
+            {
+                throw new RpcException(new Status(StatusCode.InvalidArgument, e.Message, e));
+            }
         }
 
         public override async Task<DeviceResource> UpdateDevice(UpdateDeviceRequest request, ServerCallContext context)
@@ -125,10 +132,17 @@ namespace DeviceManager.Api.RpcServices
             }
 
             var device = await _deviceService.GetDevice(request.Id);
-            await _deviceService
-                .UpdateDevice(device, _mapper.Map<UpdateDeviceRequest, Device>(request));
 
-            return await Task.FromResult(_mapper.Map<Device, DeviceResource>(device));
+            try
+            {
+                await _deviceService
+                    .UpdateDevice(device, _mapper.Map<UpdateDeviceRequest, Device>(request));
+                return await Task.FromResult(_mapper.Map<Device, DeviceResource>(device));
+            }
+            catch (ValidationException e)
+            {
+                throw new RpcException(new Status(StatusCode.InvalidArgument, e.Message, e));
+            }
         }
 
         public override Task<Empty> DeleteDevice(DeleteDeviceRequest request, ServerCallContext context)

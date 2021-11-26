@@ -1,12 +1,6 @@
 ﻿using DeviceManager.Api.RpcServices;
-using DeviceManager.Api.Validators;
-using DeviceManager.Api.Validators.DeviceRequests;
-using DeviceManager.Api.Validators.LocationRequests;
-using DeviceManager.Api.Validators.SensorRequests;
-using DeviceManager.Api.Validators.SensorTypeRequests;
 using DeviceManager.Core;
 using DeviceManager.Core.Services;
-using DeviceManager.Core.Settings;
 using DeviceManager.Data;
 using DeviceManager.Services;
 using FluentValidation;
@@ -17,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Shared.Settings;
 
 namespace DeviceManager.Api
 {

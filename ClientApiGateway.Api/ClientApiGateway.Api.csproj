@@ -13,7 +13,12 @@
 
     <ItemGroup>
       <ProjectReference Include="..\DeviceManager.Core\DeviceManager.Core.csproj" />
+      <ProjectReference Include="..\Shared\Shared.csproj" />
       <ProjectReference Include="..\UserIdentity.Core\UserIdentity.Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Extensions" />
     </ItemGroup>
 
 </Project>

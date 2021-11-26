@@ -4,9 +4,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using UserIdentity.Core.Settings;
+using Shared.Settings;
 
-namespace ClientApiGateway.Api.Extensions
+namespace Shared.Extensions
 {
     public static class AuthExtension
     {
