@@ -56,7 +56,7 @@ namespace DeviceManager.Api.RpcServices
             }
 
             var userId = request.Parameters?.UserId() ?? Guid.Empty;
-            var sensors = _sensorService.GetAllSensors(userId);
+            var sensors = _sensorService.GetAllSensorsQuery(userId);
             if (request.Parameters != null &&
                 request.Parameters.IncludeFieldsSet(Entity.SensorType).Contains(Entity.SensorType))
             {
@@ -85,7 +85,7 @@ namespace DeviceManager.Api.RpcServices
             }
 
             var userId = request.Parameters?.UserId() ?? Guid.Empty;
-            var sensorQuery = _sensorService.GetSensor(request.Id, userId);
+            var sensorQuery = _sensorService.GetSensorQuery(request.Id, userId);
             if (request.Parameters != null &&
                 request.Parameters.IncludeFieldsSet(Entity.SensorType).Contains(Entity.SensorType))
             {
@@ -125,7 +125,7 @@ namespace DeviceManager.Api.RpcServices
                     new Status(StatusCode.InvalidArgument, validationResult.Errors.First().ErrorMessage));
             }
 
-            var sensor = await _sensorService.GetSensor(request.Id, request.UserId())
+            var sensor = await _sensorService.GetSensorQuery(request.Id, request.UserId())
                 .SingleOrDefaultAsync(context.CancellationToken);
             if (sensor is null)
             {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using DeviceManager.Core;
 using DeviceManager.Core.Models;
@@ -16,27 +17,29 @@ namespace DeviceManager.Services
             _unitOfWork = unitOfWork;
         }
 
-        public IQueryable<SensorType> GetAllSensorTypes()
+        public IQueryable<SensorType> GetAllSensorTypesQuery()
         {
             return _unitOfWork.SensorTypes.FindAll();
         }
 
-        public IQueryable<SensorType> GetSensorType(int typeId)
+        public IQueryable<SensorType> GetSensorTypeQuery(int typeId)
         {
             return _unitOfWork.SensorTypes.GetSensorTypeById(typeId);
         }
 
-        public async Task<SensorType> CreateSensorTypeAsync(SensorType newSensorType)
+        public async Task<SensorType> CreateSensorTypeAsync(SensorType newSensorType,
+            CancellationToken cancellationToken = default)
         {
             newSensorType.Created = DateTime.UtcNow;
 
-            await _unitOfWork.SensorTypes.AddAsync(newSensorType);
-            await _unitOfWork.CommitAsync();
+            await _unitOfWork.SensorTypes.AddAsync(newSensorType, cancellationToken);
+            await _unitOfWork.CommitAsync(cancellationToken);
 
             return newSensorType;
         }
 
-        public async Task UpdateSensorTypeAsync(SensorType sensorTypeToBeUpdated, SensorType sensorType)
+        public async Task UpdateSensorTypeAsync(SensorType sensorTypeToBeUpdated, SensorType sensorType,
+            CancellationToken cancellationToken = default)
         {
             sensorTypeToBeUpdated.LastModified = DateTime.UtcNow;
 
@@ -47,13 +50,13 @@ namespace DeviceManager.Services
             sensorTypeToBeUpdated.IsDiscrete = sensorType.IsDiscrete;
             sensorTypeToBeUpdated.IsSummable = sensorType.IsSummable;
 
-            await _unitOfWork.CommitAsync();
+            await _unitOfWork.CommitAsync(cancellationToken);
         }
 
-        public async Task DeleteSensorTypeAsync(SensorType sensorType)
+        public async Task DeleteSensorTypeAsync(SensorType sensorType, CancellationToken cancellationToken = default)
         {
             _unitOfWork.SensorTypes.Remove(sensorType);
-            await _unitOfWork.CommitAsync();
+            await _unitOfWork.CommitAsync(cancellationToken);
         }
     }
 }

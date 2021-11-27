@@ -62,7 +62,7 @@ namespace DeviceManager.Api.RpcServices
             }
 
             var userId = request.Parameters?.UserId() ?? Guid.Empty;
-            var devices = _deviceService.GetAllDevices(userId);
+            var devices = _deviceService.GetAllDevicesQuery(userId);
             if (request.Parameters != null)
                 devices = request.Parameters.IncludeFieldsSet(Entity.Location, Entity.Sensor)
                     .Aggregate(devices, (current, field) => field switch
@@ -95,7 +95,7 @@ namespace DeviceManager.Api.RpcServices
             }
 
             var userId = request.Parameters?.UserId() ?? Guid.Empty;
-            var deviceQuery = _deviceService.GetDevice(request.Id, userId);
+            var deviceQuery = _deviceService.GetDeviceQuery(request.Id, userId);
             if (request.Parameters != null)
                 deviceQuery = request.Parameters.IncludeFieldsSet(Entity.Location, Entity.Sensor)
                     .Aggregate(deviceQuery, (current, field) => field switch
@@ -147,7 +147,7 @@ namespace DeviceManager.Api.RpcServices
                     new Status(StatusCode.InvalidArgument, validationResult.Errors.First().ErrorMessage));
             }
 
-            var device = await _deviceService.GetDevice(request.Id, request.UserId()).SingleOrDefaultAsync();
+            var device = await _deviceService.GetDeviceQuery(request.Id, request.UserId()).SingleOrDefaultAsync();
             if (device is null)
             {
                 throw new RpcException(new Status(StatusCode.NotFound, "Not found"));
@@ -174,7 +174,7 @@ namespace DeviceManager.Api.RpcServices
 
         public override async Task<Empty> Ping(PingRequest request, ServerCallContext context)
         {
-            var device = await _deviceService.GetDevice(request.Id).SingleOrDefaultAsync(context.CancellationToken);
+            var device = await _deviceService.GetDeviceQuery(request.Id).SingleOrDefaultAsync(context.CancellationToken);
             if (device is null)
             {
                 throw new RpcException(new Status(StatusCode.NotFound, "Not found"));
@@ -194,7 +194,7 @@ namespace DeviceManager.Api.RpcServices
                     new Status(StatusCode.InvalidArgument, validationResult.Errors.First().ErrorMessage));
             }
 
-            var device = await _deviceService.GetDevice(request.Id, request.UserId())
+            var device = await _deviceService.GetDeviceQuery(request.Id, request.UserId())
                 .SingleOrDefaultAsync(context.CancellationToken);
             if (device is null)
             {

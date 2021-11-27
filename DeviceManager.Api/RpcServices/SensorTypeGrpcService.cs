@@ -58,7 +58,7 @@ namespace DeviceManager.Api.RpcServices
                     new Status(StatusCode.InvalidArgument, validationResult.Errors.First().ErrorMessage));
             }
 
-            var types = _typeService.GetAllSensorTypes();
+            var types = _typeService.GetAllSensorTypesQuery();
             var pagedList = await PagedList<SensorType>.ToPagedListAsync(types, request.PageNumber, request.PageSize,
                 context.CancellationToken);
 
@@ -83,7 +83,7 @@ namespace DeviceManager.Api.RpcServices
                     new Status(StatusCode.InvalidArgument, validationResult.Errors.First().ErrorMessage));
             }
 
-            var type = await _typeService.GetSensorType(request.Id).SingleOrDefaultAsync(context.CancellationToken);
+            var type = await _typeService.GetSensorTypeQuery(request.Id).SingleOrDefaultAsync(context.CancellationToken);
             if (type is null)
             {
                 throw new RpcException(new Status(StatusCode.NotFound, "Not found"));
@@ -119,7 +119,7 @@ namespace DeviceManager.Api.RpcServices
                     new Status(StatusCode.InvalidArgument, validationResult.Errors.First().ErrorMessage));
             }
 
-            var type = await _typeService.GetSensorType(request.Id).SingleOrDefaultAsync(context.CancellationToken);
+            var type = await _typeService.GetSensorTypeQuery(request.Id).SingleOrDefaultAsync(context.CancellationToken);
             if (type is null)
             {
                 throw new RpcException(new Status(StatusCode.NotFound, "Not found"));
@@ -140,7 +140,7 @@ namespace DeviceManager.Api.RpcServices
                     new Status(StatusCode.InvalidArgument, validationResult.Errors.First().ErrorMessage));
             }
 
-            var type = await _typeService.GetSensorType(request.Id).SingleOrDefaultAsync(context.CancellationToken);
+            var type = await _typeService.GetSensorTypeQuery(request.Id).SingleOrDefaultAsync(context.CancellationToken);
             if (type is null)
             {
                 throw new RpcException(new Status(StatusCode.NotFound, "Not found"));

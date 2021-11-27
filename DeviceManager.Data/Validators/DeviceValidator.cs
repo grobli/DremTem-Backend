@@ -39,7 +39,7 @@ namespace DeviceManager.Data.Validators
             Transform(d => d, d => d)
                 .MustAsync(async (d, _) =>
                     await _unitOfWork.Devices.SingleOrDefaultAsync(
-                        dev => dev.Id != d.Id && dev.Name == d.Name && dev.UserId == d.UserId) is null)
+                        dev => dev.Id != d.Id && dev.Name == d.Name && dev.UserId == d.UserId, _) is null)
                 .WithMessage("User cannot have two devices with the same name");
         }
 
@@ -68,7 +68,7 @@ namespace DeviceManager.Data.Validators
                     {
                         if (string.IsNullOrWhiteSpace(d.MacAddress)) return true;
                         var device = await _unitOfWork.Devices.SingleOrDefaultAsync(
-                            dev => dev.Id != d.Id && dev.MacAddress == d.MacAddress);
+                            dev => dev.Id != d.Id && dev.MacAddress == d.MacAddress, _);
                         return device is null;
                     }
                 )

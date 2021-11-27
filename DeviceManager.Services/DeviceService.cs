@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using DeviceManager.Core;
 using DeviceManager.Core.Models;
@@ -22,42 +23,44 @@ namespace DeviceManager.Services
             _unitOfWork = unitOfWork;
         }
 
-        public IQueryable<Device> GetAllDevices(Guid userId = default)
+        public IQueryable<Device> GetAllDevicesQuery(Guid userId = default)
         {
             return _unitOfWork.Devices.GetDevices(userId);
         }
 
-        public IQueryable<Device> GetDevice(int deviceId, Guid userId = default)
+        public IQueryable<Device> GetDeviceQuery(int deviceId, Guid userId = default)
         {
             return _unitOfWork.Devices.GetDeviceById(deviceId, userId);
         }
 
         /** <exception cref="ValidationException">device model is not valid</exception> */
-        public async Task<Device> CreateDeviceAsync(Device newDevice, IEnumerable<Sensor> sensors)
+        public async Task<Device> CreateDeviceAsync(Device newDevice, IEnumerable<Sensor> sensors,
+            CancellationToken cancellationToken = default)
         {
-            await Validator.ValidateAndThrowAsync(newDevice);
+            await Validator.ValidateAndThrowAsync(newDevice, cancellationToken);
 
             var now = DateTime.UtcNow;
             newDevice.Created = now;
 
             newDevice.MacAddress = newDevice.MacAddress;
 
-            await _unitOfWork.Devices.AddAsync(newDevice);
-            await _unitOfWork.CommitAsync();
+            await _unitOfWork.Devices.AddAsync(newDevice, cancellationToken);
+            await _unitOfWork.CommitAsync(cancellationToken);
 
             await _unitOfWork.Sensors.AddRangeAsync(sensors.Select(s =>
             {
                 s.DeviceId = newDevice.Id;
                 s.Created = now;
                 return s;
-            }));
-            await _unitOfWork.CommitAsync();
+            }), cancellationToken);
+            await _unitOfWork.CommitAsync(cancellationToken);
 
             return newDevice;
         }
 
         /** <exception cref="ValidationException">device model is not valid</exception> */
-        public async Task UpdateDeviceAsync([NotNull] Device deviceToBeUpdated, [NotNull] Device device)
+        public async Task UpdateDeviceAsync([NotNull] Device deviceToBeUpdated, [NotNull] Device device,
+            CancellationToken cancellationToken = default)
         {
             var backup = deviceToBeUpdated with { };
 
@@ -71,7 +74,7 @@ namespace DeviceManager.Services
 
             try
             {
-                await Validator.ValidateAndThrowAsync(deviceToBeUpdated);
+                await Validator.ValidateAndThrowAsync(deviceToBeUpdated, cancellationToken);
             }
             catch (ValidationException)
             {
@@ -79,7 +82,7 @@ namespace DeviceManager.Services
                 throw;
             }
 
-            await _unitOfWork.CommitAsync();
+            await _unitOfWork.CommitAsync(cancellationToken);
 
             void Restore()
             {
@@ -93,17 +96,18 @@ namespace DeviceManager.Services
             }
         }
 
-        public async Task UpdateDeviceLastSeenAsync(Device device)
+        public async Task UpdateDeviceLastSeenAsync(Device device,
+            CancellationToken cancellationToken = default)
         {
             device.LastSeen = DateTime.UtcNow;
-            await _unitOfWork.CommitAsync();
+            await _unitOfWork.CommitAsync(cancellationToken);
         }
 
 
-        public async Task DeleteDeviceAsync(Device device)
+        public async Task DeleteDeviceAsync(Device device, CancellationToken cancellationToken = default)
         {
             _unitOfWork.Devices.Remove(device);
-            await _unitOfWork.CommitAsync();
+            await _unitOfWork.CommitAsync(cancellationToken);
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using DeviceManager.Core;
-using DeviceManager.Core.Proto;
+﻿using DeviceManager.Core.Proto;
 using DeviceManager.Data.Configurations;
 using FluentValidation;
 using Shared.Extensions;
@@ -8,11 +7,8 @@ namespace DeviceManager.Api.Validators.LocationRequests
 {
     public class UpdateLocationRequestValidator : AbstractValidator<UpdateLocationRequest>
     {
-        private readonly IUnitOfWork _unitOfWork;
-
-        public UpdateLocationRequestValidator(IUnitOfWork unitOfWork)
+        public UpdateLocationRequestValidator( )
         {
-            _unitOfWork = unitOfWork;
             SetupRules();
         }
 

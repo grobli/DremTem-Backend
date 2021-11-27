@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using DeviceManager.Core;
 using DeviceManager.Core.Models;
@@ -16,27 +17,29 @@ namespace DeviceManager.Services
             _unitOfWork = unitOfWork;
         }
 
-        public IQueryable<Location> GetAllLocations(Guid userId = default)
+        public IQueryable<Location> GetAllLocationsQuery(Guid userId = default)
         {
             return _unitOfWork.Locations.GetLocations(userId);
         }
 
-        public IQueryable<Location> GetLocation(int locationId, Guid userId = default)
+        public IQueryable<Location> GetLocationQuery(int locationId, Guid userId = default)
         {
             return _unitOfWork.Locations.GetLocationById(locationId, userId);
         }
 
-        public async Task<Location> CreateLocationAsync(Location newLocation)
+        public async Task<Location> CreateLocationAsync(Location newLocation,
+            CancellationToken cancellationToken = default)
         {
             newLocation.Created = DateTime.UtcNow;
 
-            await _unitOfWork.Locations.AddAsync(newLocation);
-            await _unitOfWork.CommitAsync();
+            await _unitOfWork.Locations.AddAsync(newLocation, cancellationToken);
+            await _unitOfWork.CommitAsync(cancellationToken);
 
             return newLocation;
         }
 
-        public async Task UpdateLocationAsync(Location locationToBeUpdated, Location location)
+        public async Task UpdateLocationAsync(Location locationToBeUpdated, Location location,
+            CancellationToken cancellationToken = default)
         {
             locationToBeUpdated.LastModified = DateTime.UtcNow;
 
@@ -44,13 +47,13 @@ namespace DeviceManager.Services
             locationToBeUpdated.Longitude = location.Longitude;
             locationToBeUpdated.DisplayName = location.DisplayName;
 
-            await _unitOfWork.CommitAsync();
+            await _unitOfWork.CommitAsync(cancellationToken);
         }
 
-        public async Task DeleteLocationAsync(Location location)
+        public async Task DeleteLocationAsync(Location location, CancellationToken cancellationToken = default)
         {
             _unitOfWork.Locations.Remove(location);
-            await _unitOfWork.CommitAsync();
+            await _unitOfWork.CommitAsync(cancellationToken);
         }
     }
 }

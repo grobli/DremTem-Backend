@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using DeviceManager.Core;
 using DeviceManager.Core.Repositories;
 using DeviceManager.Data.Repositories;
@@ -23,9 +24,9 @@ namespace DeviceManager.Data
             _context = context;
         }
 
-        public async Task<int> CommitAsync()
+        public async Task<int> CommitAsync(CancellationToken cancellationToken)
         {
-            return await _context.SaveChangesAsync();
+            return await _context.SaveChangesAsync(cancellationToken);
         }
 
         public void Dispose()

@@ -1,5 +1,4 @@
 ﻿using DeviceManager.Core.Proto;
-using Google.Protobuf;
 using Shared;
 
 namespace DeviceManager.Core.Extensions

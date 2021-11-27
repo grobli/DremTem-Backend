@@ -60,7 +60,7 @@ namespace DeviceManager.Api.RpcServices
             }
 
             var userId = request.Parameters?.UserId() ?? Guid.Empty;
-            var locations = _locationService.GetAllLocations(userId);
+            var locations = _locationService.GetAllLocationsQuery(userId);
             if (request.Parameters != null &&
                 request.Parameters.IncludeFieldsSet(Entity.Device).Contains(Entity.Device))
             {
@@ -90,7 +90,7 @@ namespace DeviceManager.Api.RpcServices
             }
 
             var userId = request.Parameters?.UserId() ?? Guid.Empty;
-            var locationQuery = _locationService.GetLocation(request.Id, userId);
+            var locationQuery = _locationService.GetLocationQuery(request.Id, userId);
             if (request.Parameters != null &&
                 request.Parameters.IncludeFieldsSet(Entity.Device).Contains(Entity.Device))
             {
@@ -134,7 +134,7 @@ namespace DeviceManager.Api.RpcServices
                     new Status(StatusCode.InvalidArgument, validationResult.Errors.First().ErrorMessage));
             }
 
-            var location = await _locationService.GetLocation(request.Id, request.UserId())
+            var location = await _locationService.GetLocationQuery(request.Id, request.UserId())
                 .SingleOrDefaultAsync(context.CancellationToken);
             if (location is null)
             {
@@ -155,7 +155,7 @@ namespace DeviceManager.Api.RpcServices
                     new Status(StatusCode.InvalidArgument, validationResult.Errors.First().ErrorMessage));
             }
 
-            var location = await _locationService.GetLocation(request.Id, request.UserId())
+            var location = await _locationService.GetLocationQuery(request.Id, request.UserId())
                 .SingleOrDefaultAsync(context.CancellationToken);
             if (location is null)
             {
