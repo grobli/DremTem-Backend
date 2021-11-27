@@ -33,13 +33,14 @@ namespace DeviceManager.Api
             services.AddValidatorsFromAssembly(typeof(Startup).Assembly);
 
             var dataAssemblyName = typeof(DeviceManagerContext).Assembly.GetName().Name;
-            services.AddDbContext<IDeviceManagerContext, DeviceManagerContext>(opt =>
+            services.AddDbContext<DeviceManagerContext>(opt =>
                 opt.UseNpgsql(Configuration.GetConnectionString("Default"),
                         x => x.MigrationsAssembly(dataAssemblyName))
                     .UseSnakeCaseNamingConvention()
             );
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IDeviceManagerContext, DeviceManagerContext>();
             services.AddTransient<IDeviceService, DeviceService>();
             services.AddTransient<ILocationService, LocationService>();
             services.AddTransient<ISensorService, SensorService>();

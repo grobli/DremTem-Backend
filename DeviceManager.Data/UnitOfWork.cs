@@ -8,7 +8,7 @@ namespace DeviceManager.Data
 {
     public class UnitOfWork : IUnitOfWork
     {
-        private readonly DeviceManagerContext _context;
+        private readonly IDeviceManagerContext _context;
         private DeviceRepository _deviceRepository;
         private LocationRepository _locationRepository;
         private SensorRepository _sensorRepository;
@@ -19,7 +19,7 @@ namespace DeviceManager.Data
         public ISensorRepository Sensors => _sensorRepository ??= new SensorRepository(_context);
         public ISensorTypeRepository SensorTypes => _typeRepository ??= new SensorTypeRepository(_context);
 
-        public UnitOfWork(DeviceManagerContext context)
+        public UnitOfWork(IDeviceManagerContext context)
         {
             _context = context;
         }
