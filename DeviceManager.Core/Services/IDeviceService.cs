@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using DeviceManager.Core.Models;
 
@@ -7,20 +8,12 @@ namespace DeviceManager.Core.Services
 {
     public interface IDeviceService
     {
-        Task<IEnumerable<Device>> GetAllDevices(Guid? userId = null);
-        Task<IEnumerable<Device>> GetAllDevicesWithLocation(Guid? userId = null);
-        Task<IEnumerable<Device>> GetAllDevicesWithSensors(Guid? userId = null);
-        Task<IEnumerable<Device>> GetAllDevicesWithAll(Guid? userId = null);
+        IQueryable<Device> GetAllDevices(Guid userId = default);
+        IQueryable<Device> GetDevice(int deviceId, Guid userId = default);
 
-        Task<Device> GetDevice(int deviceId);
-        Task<Device> GetDeviceWithLocation(int deviceId);
-        Task<Device> GetDeviceWithSensors(int deviceId);
-        Task<Device> GetDeviceWithAll(int deviceId);
-
-
-        Task<Device> CreateDevice(Device newDevice, IEnumerable<Sensor> sensors);
-        Task UpdateDevice(Device deviceToBeUpdated, Device device);
-        Task UpdateDeviceLastSeen(Device device);
-        Task DeleteDevice(Device device);
+        Task<Device> CreateDeviceAsync(Device newDevice, IEnumerable<Sensor> sensors);
+        Task UpdateDeviceAsync(Device deviceToBeUpdated, Device device);
+        Task UpdateDeviceLastSeenAsync(Device device);
+        Task DeleteDeviceAsync(Device device);
     }
 }

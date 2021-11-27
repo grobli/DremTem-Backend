@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using DeviceManager.Core.Models;
 
@@ -6,12 +7,10 @@ namespace DeviceManager.Core.Services
 {
     public interface ISensorTypeService
     {
-        Task<IEnumerable<SensorType>> GetAllSensorTypes();
-
-        Task<SensorType> GetSensorType(int typeId);
-
-        Task<SensorType> CreateSensorType(SensorType newSensorType);
-        Task UpdateSensorType(SensorType sensorTypeToBeUpdated, SensorType sensorType);
-        Task DeleteSensorType(SensorType sensorType);
+        IQueryable<SensorType> GetAllSensorTypes();
+        IQueryable<SensorType> GetSensorType(int typeId);
+        Task<SensorType> CreateSensorTypeAsync(SensorType newSensorType);
+        Task UpdateSensorTypeAsync(SensorType sensorTypeToBeUpdated, SensorType sensorType);
+        Task DeleteSensorTypeAsync(SensorType sensorType);
     }
 }

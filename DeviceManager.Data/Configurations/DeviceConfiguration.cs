@@ -19,7 +19,8 @@ namespace DeviceManager.Data.Configurations
                 .HasKey(d => d.Id);
 
             builder
-                .HasAlternateKey(d => d.MacAddress);
+                .HasIndex(d => d.MacAddress)
+                .IsUnique();
 
             builder
                 .HasAlternateKey(d => new { d.Name, d.UserId });
@@ -66,7 +67,6 @@ namespace DeviceManager.Data.Configurations
 
             builder
                 .Property(d => d.MacAddress)
-                .IsRequired()
                 .HasMaxLength(MacAddressMaxLength);
 
             builder

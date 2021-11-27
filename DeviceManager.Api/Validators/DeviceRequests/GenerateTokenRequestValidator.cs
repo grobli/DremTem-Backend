@@ -1,6 +1,7 @@
 ﻿using DeviceManager.Core;
 using DeviceManager.Core.Proto;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using Shared.Extensions;
 
 namespace DeviceManager.Api.Validators.DeviceRequests
@@ -18,20 +19,13 @@ namespace DeviceManager.Api.Validators.DeviceRequests
         private void SetupRules()
         {
             RuleFor(r => r.UserId)
-                .Guid()
-                .Unless(r => string.IsNullOrWhiteSpace(r.UserId));
+                .NotEmpty()
+                .Guid();
 
             RuleFor(r => r.Id)
-                .MustAsync(async (id, _) => await _unitOfWork.Devices.GetByIdAsync(id) is not null)
+                .MustAsync(async (id, _) =>
+                    await _unitOfWork.Devices.GetDeviceById(id).SingleOrDefaultAsync(_) is not null)
                 .WithMessage("Device with {PropertyName} = \"{PropertyValue}\" not found");
-
-            // if userId specified then device.userId must match
-            Transform(@from: r => r, to: r => new { r.Id, r.UserId })
-                .MustAsync(async (x, _) =>
-                    string.IsNullOrWhiteSpace(x.UserId) ||
-                    await _unitOfWork.Devices
-                        .SingleOrDefaultAsync(d => d.Id == x.Id && d.UserId.ToString() == x.UserId) is not null
-                ).WithMessage("Device not found");
         }
     }
 }

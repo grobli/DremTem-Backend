@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text.Json;
+using DeviceManager.Core.Proto;
+using Shared;
 
 namespace DeviceManager.Core.Models
 {
@@ -16,5 +19,28 @@ namespace DeviceManager.Core.Models
         public DateTime Created { get; set; }
 
         public override string ToString() => JsonSerializer.Serialize(this);
+    }
+
+    public class SensorParameters : QueryStringParameters
+    {
+        private readonly List<Entity> _fieldsToInclude = new();
+        private bool _includeType;
+
+        public bool IncludeType
+        {
+            get => _includeType;
+            set
+            {
+                if (value) _fieldsToInclude.Add(Entity.SensorType);
+                _includeType = value;
+            }
+        }
+
+        public IReadOnlyCollection<Entity> FieldsToInclude() => _fieldsToInclude;
+    }
+
+    public class SensorPagedParameters : SensorParameters
+    {
+        public PageQueryStringParameters Page { get; } = new();
     }
 }

@@ -10,7 +10,7 @@ message DeviceResource {
   string Name = 2;
   google.protobuf.StringValue DisplayName = 3;
   bool Online = 4;
-  string MacAddress = 5;
+  google.protobuf.StringValue MacAddress = 5;
   google.protobuf.StringValue Model = 6;
   google.protobuf.StringValue Manufacturer = 7;
   google.protobuf.Timestamp LastSeen = 8;
@@ -25,7 +25,7 @@ message DeviceResourceExtended {
   string Name = 2;
   google.protobuf.StringValue DisplayName = 3;
   bool Online = 4;
-  string MacAddress = 5;
+  google.protobuf.StringValue MacAddress = 5;
   google.protobuf.StringValue Model = 6;
   google.protobuf.StringValue Manufacturer = 7;
   google.protobuf.Timestamp LastSeen = 8;
@@ -79,7 +79,7 @@ message SensorResource {
   google.protobuf.Timestamp LastModified = 6;
   google.protobuf.Timestamp Created = 7;
 
-  SensorTypeResource Type = 32;
+  SensorTypeResource Type = 16;
 }
 
 message CreateDeviceSensorResource {
@@ -101,3 +101,45 @@ message SensorTypeResource {
   google.protobuf.Timestamp LastModified = 10;
   google.protobuf.Timestamp Created = 11;
 }
+
+enum Entity {
+  NONE = 0;
+  DEVICE = 1;
+  LOCATION = 2;
+  SENSOR = 3;
+  SENSOR_TYPE = 4;
+}
+
+message GetRequestParameters {
+  google.protobuf.StringValue UserId = 1;
+  repeated Entity IncludeFields = 2;
+}
+
+message GenericGetRequest {
+  int32 Id = 1;
+  GetRequestParameters Parameters = 2;
+}
+
+message GenericGetManyRequest {
+  GetRequestParameters Parameters = 1;
+
+  // pagination parameters
+
+  int32 PageSize = 3;
+  int32 PageNumber = 4;
+}
+
+message PaginationMetaData {
+  int32 TotalCount = 1;
+  int32 PageSize = 2;
+  int32 CurrentPage = 3;
+  int32 TotalPages = 4;
+  bool HasNext = 5;
+  bool HasPrevious = 6;
+}
+
+message GenericDeleteRequest {
+  int32 Id = 1;
+  string UserId = 2;
+}
+

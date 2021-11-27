@@ -8,48 +8,27 @@ import "Protos/sharedDefinitions.proto";
 option csharp_namespace = "DeviceManager.Core.Proto";
 
 service DeviceGrpcService {
-  rpc GetAllDevices (GetAllDevicesRequest) returns (stream DeviceResourceExtended);
-  rpc GetDevice (GetDeviceRequest) returns (DeviceResourceExtended);
+  rpc GetAllDevices (GenericGetManyRequest) returns (GetAllDevicesResponse);
+  rpc GetDevice (GenericGetRequest) returns (DeviceResourceExtended);
 
   rpc CreateDevice (CreateDeviceRequest) returns (DeviceResource);
   rpc UpdateDevice (UpdateDeviceRequest) returns (DeviceResource);
-  rpc DeleteDevice (DeleteDeviceRequest) returns (google.protobuf.Empty);
+  rpc DeleteDevice (GenericDeleteRequest) returns (google.protobuf.Empty);
 
   rpc Ping (PingRequest) returns (google.protobuf.Empty);
   rpc GenerateToken (GenerateTokenRequest) returns (GenerateTokenResponse);
-  rpc GetDeviceByToken (GetDeviceByTokenRequest) returns (DeviceResourceExtended);
 }
 
-message GetAllDevicesRequest {
-  bool IncludeLocation = 1;
-  bool IncludeSensors = 2;
-  // (optional) filter by user ID
-  google.protobuf.StringValue UserId = 3;
+message GetAllDevicesResponse {
+  repeated DeviceResourceExtended Devices = 1;
+  PaginationMetaData MetaData = 2;
 }
-
-message GetDeviceRequest {
-  int32 Id = 1;
-
-  bool IncludeLocation = 2;
-  bool IncludeSensors = 3;
-
-  // (optional) filter by user ID
-  google.protobuf.StringValue UserId = 4;
-}
-
-
-message DeleteDeviceRequest {
-  int32 Id = 1;
-  // (optional) limit access to user - if device does not belong to the user -> action will fail
-  google.protobuf.StringValue UserId = 4;
-}
-
 
 message CreateDeviceRequest {
   string Name = 1;
   google.protobuf.StringValue DisplayName = 2;
   bool Online = 3;
-  string MacAddress = 4;
+  google.protobuf.StringValue MacAddress = 4;
   google.protobuf.StringValue Model = 5;
   google.protobuf.StringValue Manufacturer = 6;
   google.protobuf.Int32Value LocationId = 7;
@@ -68,9 +47,10 @@ message UpdateDeviceRequest {
   google.protobuf.StringValue Model = 5;
   google.protobuf.StringValue Manufacturer = 6;
   google.protobuf.Int32Value LocationId = 7;
+  google.protobuf.StringValue MacAddress = 8;
 
-  // userId to limit access to resource
-  google.protobuf.StringValue UserId = 16;
+  // allow only owner of the device to delete it
+  string UserId = 16;
 }
 
 message PingRequest {
@@ -80,7 +60,7 @@ message PingRequest {
 message GenerateTokenRequest {
   int32 Id = 1;
 
-  // userId to limit access to resource
+  // allow only owner of the device to generate the token
   google.protobuf.StringValue UserId = 2;
 }
 
@@ -88,9 +68,4 @@ message GenerateTokenResponse {
   int32 Id = 1;
   string Token = 2;
 }
-
-message GetDeviceByTokenRequest {
-  string Token = 1;
-}
-
 

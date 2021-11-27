@@ -2,6 +2,8 @@
 using DeviceManager.Core.Proto;
 using DeviceManager.Data.Configurations;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
+using Shared.Extensions;
 
 namespace DeviceManager.Api.Validators.SensorRequests
 {
@@ -17,6 +19,10 @@ namespace DeviceManager.Api.Validators.SensorRequests
 
         private void SetupRules()
         {
+            RuleFor(r => r.UserId)
+                .NotEmpty()
+                .Guid();
+
             RuleFor(r => r.Name)
                 .NotEmpty()
                 .MaximumLength(SensorConfiguration.NameMaxLength);
@@ -24,26 +30,17 @@ namespace DeviceManager.Api.Validators.SensorRequests
             RuleFor(r => r.DisplayName)
                 .MaximumLength(SensorConfiguration.DisplayNameMaxLength);
 
-            // check if referenced device exists and if it does then check if it belongs to the user
-            Transform(from: r => r, to: r => new { r.DeviceId, r.UserId })
-                .MustAsync(async (x, _) =>
-                {
-                    var device = await _unitOfWork.Devices.GetByIdAsync(x.DeviceId);
-                    if (device is null) return false;
-                    if (string.IsNullOrWhiteSpace(x.UserId)) return true;
-                    return device.UserId.ToString() == x.UserId;
-                }).WithMessage("referenced device not found");
-
             RuleFor(r => r.TypeId)
                 .NotNull()
-                .MustAsync(async (id, _) => await _unitOfWork.Sensors.GetByIdAsync(id) is not null)
+                .MustAsync(async (id, _) =>
+                    await _unitOfWork.SensorTypes.GetSensorTypeById(id).SingleOrDefaultAsync(_) is not null)
                 .WithMessage("referenced sensor type not found.");
 
             // target device cannot have two sensors with the same name
             Transform(from: r => r, to: r => new { r.Name, r.DeviceId })
                 .MustAsync(async (x, _) =>
                     await _unitOfWork.Sensors
-                        .SingleOrDefaultAsync(s => s.Name == x.Name && s.DeviceId == x.DeviceId) is null)
+                        .SingleOrDefaultAsync(s => s.Name == x.Name && s.DeviceId == x.DeviceId, _) is null)
                 .WithMessage("device cannot have two sensors with the same name");
         }
     }

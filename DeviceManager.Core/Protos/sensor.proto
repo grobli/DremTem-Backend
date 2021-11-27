@@ -7,27 +7,17 @@ import "Protos/sharedDefinitions.proto";
 option csharp_namespace = "DeviceManager.Core.Proto";
 
 service SensorGrpcService {
-  rpc GetAllSensors (GetAllSensorsRequest) returns (stream SensorResource);
-  rpc GetSensor (GetSensorRequest) returns (SensorResource);
+  rpc GetAllSensors (GenericGetManyRequest) returns (GetAllSensorsResponse);
+  rpc GetSensor (GenericGetRequest) returns (SensorResource);
 
   rpc AddSensor (CreateSensorRequest) returns (SensorResource);
   rpc UpdateSensor (UpdateSensorRequest) returns (SensorResource);
-  rpc DeleteSensor (DeleteSensorRequest) returns (SensorResource);
+  rpc DeleteSensor (GenericDeleteRequest) returns (SensorResource);
 }
 
-message GetAllSensorsRequest {
-  bool IncludeType = 1;
-
-  // (optional) filter by user ID
-  google.protobuf.StringValue UserId = 2;
-}
-
-message GetSensorRequest {
-  int32 Id = 1;
-
-  bool IncludeType = 2;
-  // (optional) limit access to user - if sensor does not belong to the user -> action will fail
-  google.protobuf.StringValue UserId = 3;
+message GetAllSensorsResponse {
+  repeated SensorResource Sensors = 1;
+  PaginationMetaData MetaData = 2;
 }
 
 message CreateSensorRequest {
@@ -36,7 +26,7 @@ message CreateSensorRequest {
   google.protobuf.StringValue DisplayName = 3;
   int32 TypeId = 4;
 
-  // (optional) limit access to user - if sensor does not belong to the user -> action will fail
+  // allow only owner of the device to add sensor to it
   google.protobuf.StringValue UserId = 8;
 }
 
@@ -46,13 +36,6 @@ message UpdateSensorRequest {
   google.protobuf.StringValue DisplayName = 3;
   int32 TypeId = 4;
 
-  // (optional) limit access to user - if sensor does not belong to the user -> action will fail
-  google.protobuf.StringValue UserId = 8;
-}
-
-message DeleteSensorRequest {
-  int32 Id = 1;
-
-  // (optional) limit access to user - if sensor does not belong to the user -> action will fail
-  google.protobuf.StringValue UserId = 2;
+  // allow only owner of the sensor to update it
+  string UserId = 8;
 }

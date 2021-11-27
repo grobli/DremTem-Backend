@@ -1,8 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Security.Claims;
+using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using ClientApiGateway.Api.Resources.Sensor;
+using DeviceManager.Core.Models;
 using DeviceManager.Core.Proto;
 using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
@@ -36,46 +39,39 @@ namespace ClientApiGateway.Api.Controllers
 
         // GET: api/v1/Sensors?detailed=true
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<SensorResource>>> GetAllSensors([FromQuery] bool detailed)
+        public async Task<ActionResult<IEnumerable<SensorResource>>> GetAllSensors(
+            [FromQuery] SensorPagedParameters parameters, CancellationToken token)
         {
-            var request = new GetAllSensorsRequest
-            {
-                UserId = UserId,
-                IncludeType = detailed
-            };
-            try
-            {
-                var sensors = new List<SensorResource>();
-                var call = _sensorService.GetAllSensors(request);
-                await foreach (var sensor in call.ResponseStream.ReadAllAsync())
-                {
-                    sensors.Add(sensor);
-                }
-
-                return Ok(sensors);
-            }
-            catch (RpcException e)
-            {
-                return HandleRpcException(e);
-            }
+            return await GetSensors(parameters, true, token);
         }
 
         // GET: api/v1/Sensors/all?detailed=true
         [Authorize(Roles = DefaultRoles.SuperUser)]
         [HttpGet("all")]
-        public async Task<ActionResult<IEnumerable<SensorResource>>> GetSensorOfAllUsers([FromQuery] bool detailed)
+        public async Task<ActionResult<IEnumerable<SensorResource>>> GetSensorOfAllUsers(
+            [FromQuery] SensorPagedParameters parameters, CancellationToken token)
         {
-            var request = new GetAllSensorsRequest { IncludeType = detailed };
+            return await GetSensors(parameters, false, token);
+        }
+
+        private async Task<ActionResult<IEnumerable<SensorResource>>> GetSensors(
+            [FromQuery] SensorPagedParameters parameters, bool limitToUser, CancellationToken token)
+        {
+            var request = new GenericGetManyRequest
+            {
+                Parameters = new GetRequestParameters
+                {
+                    UserId = limitToUser ? UserId : null,
+                    IncludeFields = { parameters.FieldsToInclude() }
+                },
+                PageNumber = parameters.Page.Number,
+                PageSize = parameters.Page.Size
+            };
             try
             {
-                var sensors = new List<SensorResource>();
-                var call = _sensorService.GetAllSensors(request);
-                await foreach (var sensor in call.ResponseStream.ReadAllAsync())
-                {
-                    sensors.Add(sensor);
-                }
-
-                return Ok(sensors);
+                var result = await _sensorService.GetAllSensorsAsync(request, cancellationToken: token);
+                Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(result.MetaData));
+                return Ok(result.Sensors);
             }
             catch (RpcException e)
             {
@@ -85,17 +81,21 @@ namespace ClientApiGateway.Api.Controllers
 
         // GET: api/v1/Sensors/42?detailed=true
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<SensorResource>> GetSensor(int id, [FromQuery] bool detailed)
+        public async Task<ActionResult<SensorResource>> GetSensor(int id, [FromQuery] SensorParameters parameters,
+            CancellationToken token)
         {
-            var request = new GetSensorRequest
+            var request = new GenericGetRequest
             {
                 Id = id,
-                IncludeType = detailed,
-                UserId = User.IsInRole(DefaultRoles.SuperUser) ? null : UserId
+                Parameters = new GetRequestParameters
+                {
+                    UserId = User.IsInRole(DefaultRoles.SuperUser) ? null : UserId,
+                    IncludeFields = { parameters.FieldsToInclude() }
+                }
             };
             try
             {
-                return Ok(await _sensorService.GetSensorAsync(request));
+                return Ok(await _sensorService.GetSensorAsync(request, cancellationToken: token));
             }
             catch (RpcException e)
             {
@@ -105,13 +105,13 @@ namespace ClientApiGateway.Api.Controllers
 
         // POST: api/v1/Sensors
         [HttpPost]
-        public async Task<ActionResult<SensorResource>> AddSensor(SaveSensorResource resource)
+        public async Task<ActionResult<SensorResource>> AddSensor(SaveSensorResource resource, CancellationToken token)
         {
             var request = _mapper.Map<SaveSensorResource, CreateSensorRequest>(resource);
             request.UserId = User.IsInRole(DefaultRoles.SuperUser) ? null : UserId;
             try
             {
-                var createdSensor = await _sensorService.AddSensorAsync(request);
+                var createdSensor = await _sensorService.AddSensorAsync(request, cancellationToken: token);
                 return Created($"api/v1/Sensors/{createdSensor.Id}", createdSensor);
             }
             catch (RpcException e)
@@ -122,13 +122,14 @@ namespace ClientApiGateway.Api.Controllers
 
         // PUT: api/v1/Sensors/42
         [HttpPut("{id:int}")]
-        public async Task<ActionResult<SensorResource>> UpdateSensor(SaveSensorResource resource, int id)
+        public async Task<ActionResult<SensorResource>> UpdateSensor(SaveSensorResource resource, int id,
+            CancellationToken token)
         {
             var request = _mapper.Map<SaveSensorResource, UpdateSensorRequest>(resource);
             request.UserId = User.IsInRole(DefaultRoles.SuperUser) ? null : UserId;
             try
             {
-                return Ok(await _sensorService.UpdateSensorAsync(request));
+                return Ok(await _sensorService.UpdateSensorAsync(request, cancellationToken: token));
             }
             catch (RpcException e)
             {

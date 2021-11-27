@@ -2,6 +2,8 @@
 using DeviceManager.Core.Proto;
 using DeviceManager.Data.Configurations;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
+using Shared.Extensions;
 
 namespace DeviceManager.Api.Validators.SensorRequests
 {
@@ -17,16 +19,17 @@ namespace DeviceManager.Api.Validators.SensorRequests
 
         private void SetupRules()
         {
-            RuleFor(r => r.Id)
-                .MustAsync(async (id, _) => await _unitOfWork.Sensors.GetByIdAsync(id) is not null)
-                .WithMessage("Sensor with {PropertyName} = \"{PropertyValue}\" not found");
+            RuleFor(r => r.UserId)
+                .NotEmpty()
+                .Guid();
 
             RuleFor(r => r.DisplayName)
                 .MaximumLength(SensorConfiguration.DisplayNameMaxLength);
 
             RuleFor(r => r.TypeId)
                 .NotNull()
-                .MustAsync(async (id, _) => await _unitOfWork.Sensors.GetByIdAsync(id) is not null)
+                .MustAsync(async (id, _) =>
+                    await _unitOfWork.SensorTypes.GetSensorTypeById(id).SingleOrDefaultAsync(_) is not null)
                 .WithMessage("SensorType with {PropertyName} = \"{PropertyValue}\" not found.");
         }
     }

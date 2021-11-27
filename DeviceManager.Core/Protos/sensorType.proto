@@ -8,20 +8,17 @@ import "Protos/sharedDefinitions.proto";
 option csharp_namespace = "DeviceManager.Core.Proto";
 
 service SensorTypeGrpcService {
-  rpc GetAllSensorTypes (GetAllSensorTypesRequest) returns (stream SensorTypeResource);
-  rpc GetSensorType (GetSensorTypeRequest) returns (SensorTypeResource);
+  rpc GetAllSensorTypes (GenericGetManyRequest) returns (GetAllSensorTypesResponse);
+  rpc GetSensorType (GenericGetRequest) returns (SensorTypeResource);
 
   rpc CreateSensorType (CreateSensorTypeRequest) returns (SensorTypeResource);
   rpc UpdateSensorType (UpdateSensorTypeRequest) returns (SensorTypeResource);
-  rpc DeleteSensorType (DeleteSensorTypeRequest) returns (google.protobuf.Empty);
+  rpc DeleteSensorType (GenericDeleteRequest) returns (google.protobuf.Empty);
 }
 
-
-
-message GetAllSensorTypesRequest {}
-
-message GetSensorTypeRequest {
-  int32 Id = 1;
+message GetAllSensorTypesResponse {
+  repeated SensorTypeResource SensorTypes = 1;
+  PaginationMetaData MetaData = 2;
 }
 
 message CreateSensorTypeRequest {
@@ -44,8 +41,4 @@ message UpdateSensorTypeRequest {
   google.protobuf.StringValue UnitSymbol = 6;
   bool IsDiscrete = 7;
   bool IsSummable = 8;
-}
-
-message DeleteSensorTypeRequest {
-  int32 Id = 1;
 }

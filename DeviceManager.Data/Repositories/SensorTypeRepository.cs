@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using DeviceManager.Core.Models;
 using DeviceManager.Core.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -14,10 +15,11 @@ namespace DeviceManager.Data.Repositories
         {
         }
 
-        public async Task<SensorType> GetByIdAsync(int typeId)
+        public IQueryable<SensorType> GetSensorTypeById(int typeId)
         {
-            return await DeviceManagerContext.SensorTypes
-                .SingleOrDefaultAsync(st => st.Id == typeId);
+            return DeviceManagerContext.SensorTypes
+                .Where(st => st.Id == typeId)
+                .Take(1);
         }
     }
 }

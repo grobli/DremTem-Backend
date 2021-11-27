@@ -2,6 +2,7 @@
 using DeviceManager.Core.Models;
 using DeviceManager.Data.Configurations;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using Shared.Extensions;
 
 namespace DeviceManager.Data.Validators
@@ -57,19 +58,20 @@ namespace DeviceManager.Data.Validators
         private void SetupMacAddressRules()
         {
             RuleFor(d => d.MacAddress)
-                .NotEmpty()
                 .MaximumLength(DeviceConfiguration.MacAddressMaxLength)
-                .MacAddress();
+                .MacAddress()
+                .Unless(d => string.IsNullOrWhiteSpace(d.MacAddress));
 
             // device mac address must be unique in whole system
             Transform(d => d, d => d)
                 .MustAsync(async (d, _) =>
                     {
+                        if (string.IsNullOrWhiteSpace(d.MacAddress)) return true;
                         var device = await _unitOfWork.Devices.SingleOrDefaultAsync(
                             dev => dev.Id != d.Id && dev.MacAddress == d.MacAddress);
                         return device is null;
                     }
-                   )
+                )
                 .WithMessage("Device with this mac address is already registered in the system");
         }
 
@@ -92,7 +94,8 @@ namespace DeviceManager.Data.Validators
                 .MustAsync(async (d, _) =>
                 {
                     if (d.LocationId is null) return true;
-                    var location = await _unitOfWork.Locations.GetByIdAsync(d.LocationId.Value);
+                    var location = await _unitOfWork.Locations.GetLocationById(d.LocationId.Value)
+                        .SingleOrDefaultAsync(_);
                     return location is not null && location.UserId == d.UserId;
                 }).WithMessage("referenced location must exist and be owned by the same user who owns the device");
         }

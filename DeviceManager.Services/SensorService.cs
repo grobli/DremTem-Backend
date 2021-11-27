@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using DeviceManager.Core;
 using DeviceManager.Core.Models;
@@ -16,33 +16,17 @@ namespace DeviceManager.Services
             _unitOfWork = unitOfWork;
         }
 
-
-        public async Task<IEnumerable<Sensor>> GetAllSensors(Guid? userId = null)
+        public IQueryable<Sensor> GetAllSensors(Guid userId)
         {
-            return await _unitOfWork.Sensors.GetAllAsync(userId);
+            return _unitOfWork.Sensors.GetSensors(userId);
         }
 
-        public async Task<IEnumerable<Sensor>> GetAllSensorsWithType(Guid? userId = null)
+        public IQueryable<Sensor> GetSensor(int sensorId, Guid userId)
         {
-            return await _unitOfWork.Sensors.GetAllWithSensorTypeAsync(userId);
+            return _unitOfWork.Sensors.GetSensorById(sensorId, userId);
         }
 
-        public async Task<Sensor> GetSensor(int sensorId)
-        {
-            return await _unitOfWork.Sensors.GetByIdAsync(sensorId);
-        }
-
-        public async Task<Sensor> GetSensorWithType(int sensorId)
-        {
-            return await _unitOfWork.Sensors.GetWithSensorTypeByIdAsync(sensorId);
-        }
-
-        public async Task<Sensor> GetSensorWithDevice(int sensorId)
-        {
-            return await _unitOfWork.Sensors.GetWithDeviceByIdAsync(sensorId);
-        }
-
-        public async Task<Sensor> CreateSensor(Sensor newSensor)
+        public async Task<Sensor> CreateSensorAsync(Sensor newSensor)
         {
             newSensor.Created = DateTime.UtcNow;
 
@@ -52,7 +36,7 @@ namespace DeviceManager.Services
             return newSensor;
         }
 
-        public async Task UpdateSensor(Sensor sensorToBeUpdated, Sensor sensor)
+        public async Task UpdateSensorAsync(Sensor sensorToBeUpdated, Sensor sensor)
         {
             sensorToBeUpdated.LastModified = DateTime.UtcNow;
 
@@ -62,7 +46,7 @@ namespace DeviceManager.Services
             await _unitOfWork.CommitAsync();
         }
 
-        public async Task DeleteSensor(Sensor sensor)
+        public async Task DeleteSensorAsync(Sensor sensor)
         {
             _unitOfWork.Sensors.Remove(sensor);
             await _unitOfWork.CommitAsync();

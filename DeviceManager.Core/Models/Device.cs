@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using DeviceManager.Core.Proto;
+using Shared;
 
 namespace DeviceManager.Core.Models
 {
@@ -18,7 +20,7 @@ namespace DeviceManager.Core.Models
         public string MacAddress
         {
             get => _macAddress;
-            set => _macAddress = NormalizeMacAddress(value);
+            set => _macAddress = value is null ? null : NormalizeMacAddress(value);
         }
 
         public string Model { get; set; }
@@ -42,5 +44,39 @@ namespace DeviceManager.Core.Models
                     .GroupBy(x => x.Index, x => x.Character)
                     .Select(x => string.Concat(x)));
         }
+    }
+
+    public class DeviceParameters : QueryStringParameters
+    {
+        private readonly List<Entity> _fieldsToInclude = new();
+        private bool _includeLocation;
+        private bool _includeSensors;
+
+        public bool IncludeLocation
+        {
+            get => _includeLocation;
+            set
+            {
+                if (value) _fieldsToInclude.Add(Entity.Location);
+                _includeLocation = value;
+            }
+        }
+
+        public bool IncludeSensors
+        {
+            get => _includeSensors;
+            set
+            {
+                if (value) _fieldsToInclude.Add(Entity.Sensor);
+                _includeSensors = value;
+            }
+        }
+
+        public IReadOnlyCollection<Entity> FieldsToInclude() => _fieldsToInclude;
+    }
+
+    public class DevicePagedParameters : DeviceParameters
+    {
+        public PageQueryStringParameters Page { get; }= new();
     }
 }

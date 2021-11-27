@@ -17,8 +17,4 @@
       <ProjectReference Include="..\UserIdentity.Core\UserIdentity.Core.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Extensions" />
-    </ItemGroup>
-
 </Project>

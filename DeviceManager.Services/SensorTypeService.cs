@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using DeviceManager.Core;
 using DeviceManager.Core.Models;
@@ -16,17 +16,17 @@ namespace DeviceManager.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<IEnumerable<SensorType>> GetAllSensorTypes()
+        public IQueryable<SensorType> GetAllSensorTypes()
         {
-            return await _unitOfWork.SensorTypes.GetAllAsync();
+            return _unitOfWork.SensorTypes.FindAll();
         }
 
-        public async Task<SensorType> GetSensorType(int typeId)
+        public IQueryable<SensorType> GetSensorType(int typeId)
         {
-            return await _unitOfWork.SensorTypes.GetByIdAsync(typeId);
+            return _unitOfWork.SensorTypes.GetSensorTypeById(typeId);
         }
 
-        public async Task<SensorType> CreateSensorType(SensorType newSensorType)
+        public async Task<SensorType> CreateSensorTypeAsync(SensorType newSensorType)
         {
             newSensorType.Created = DateTime.UtcNow;
 
@@ -36,7 +36,7 @@ namespace DeviceManager.Services
             return newSensorType;
         }
 
-        public async Task UpdateSensorType(SensorType sensorTypeToBeUpdated, SensorType sensorType)
+        public async Task UpdateSensorTypeAsync(SensorType sensorTypeToBeUpdated, SensorType sensorType)
         {
             sensorTypeToBeUpdated.LastModified = DateTime.UtcNow;
 
@@ -50,7 +50,7 @@ namespace DeviceManager.Services
             await _unitOfWork.CommitAsync();
         }
 
-        public async Task DeleteSensorType(SensorType sensorType)
+        public async Task DeleteSensorTypeAsync(SensorType sensorType)
         {
             _unitOfWork.SensorTypes.Remove(sensorType);
             await _unitOfWork.CommitAsync();

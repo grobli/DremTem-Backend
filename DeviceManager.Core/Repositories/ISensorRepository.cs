@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Threading.Tasks;
+using System.Linq;
 using DeviceManager.Core.Models;
 using Shared.Repositories;
 
@@ -9,16 +7,7 @@ namespace DeviceManager.Core.Repositories
 {
     public interface ISensorRepository : IRepository<Sensor>
     {
-        Task<IEnumerable<Sensor>> GetAllAsync(Guid? userId = null);
-        Task<IEnumerable<Sensor>> GetAllWithSensorTypeAsync(Guid? userId = null);
-
-        [return: MaybeNull]
-        Task<Sensor> GetByIdAsync(int sensorId);
-
-        [return: MaybeNull]
-        Task<Sensor> GetWithSensorTypeByIdAsync(int sensorId);
-
-        [return: MaybeNull]
-        Task<Sensor> GetWithDeviceByIdAsync(int sensorId);
+        IQueryable<Sensor> GetSensors(Guid userId = default);
+        IQueryable<Sensor> GetSensorById(int sensorId, Guid userId = default);
     }
 }

@@ -26,6 +26,7 @@ namespace ClientApiGateway.Api.Mapping
 
             // sensor
             CreateMap<SaveSensorResource, CreateSensorRequest>();
+            CreateMap<SaveSensorResource, UpdateSensorRequest>();
 
             // sensor type
             CreateMap<UpdateSensorTypeResource, UpdateSensorTypeRequest>();

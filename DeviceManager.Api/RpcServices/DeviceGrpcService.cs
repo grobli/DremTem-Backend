@@ -2,13 +2,16 @@
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using DeviceManager.Core.Extensions;
 using DeviceManager.Core.Models;
 using DeviceManager.Core.Proto;
 using DeviceManager.Core.Services;
 using FluentValidation;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Shared;
 
 namespace DeviceManager.Api.RpcServices
 {
@@ -20,9 +23,9 @@ namespace DeviceManager.Api.RpcServices
         private readonly IMapper _mapper;
 
         private readonly IValidator<CreateDeviceRequest> _createDeviceValidator;
-        private readonly IValidator<GetAllDevicesRequest> _getAllDevicesValidator;
+        private readonly IValidator<GenericGetManyRequest> _getManyValidator;
         private readonly IValidator<UpdateDeviceRequest> _updateDeviceValidator;
-        private readonly IValidator<GetDeviceRequest> _getDeviceValidator;
+        private readonly IValidator<GenericGetRequest> _getValidator;
         private readonly IValidator<GenerateTokenRequest> _generateTokenValidator;
 
         public DeviceGrpcService(
@@ -31,9 +34,9 @@ namespace DeviceManager.Api.RpcServices
             IDeviceTokenService tokenService,
             IMapper mapper,
             IValidator<CreateDeviceRequest> createDeviceValidator,
-            IValidator<GetAllDevicesRequest> getAllDevicesValidator,
+            IValidator<GenericGetManyRequest> getManyValidator,
             IValidator<UpdateDeviceRequest> updateDeviceValidator,
-            IValidator<GetDeviceRequest> getDeviceValidator,
+            IValidator<GenericGetRequest> getValidator,
             IValidator<GenerateTokenRequest> generateTokenValidator)
         {
             _logger = logger;
@@ -42,57 +45,71 @@ namespace DeviceManager.Api.RpcServices
             _mapper = mapper;
 
             _createDeviceValidator = createDeviceValidator;
-            _getAllDevicesValidator = getAllDevicesValidator;
+            _getManyValidator = getManyValidator;
             _updateDeviceValidator = updateDeviceValidator;
-            _getDeviceValidator = getDeviceValidator;
+            _getValidator = getValidator;
             _generateTokenValidator = generateTokenValidator;
         }
 
-        public override async Task GetAllDevices(GetAllDevicesRequest request,
-            IServerStreamWriter<DeviceResourceExtended> responseStream, ServerCallContext context)
-        {
-            var validationResult = await _getAllDevicesValidator.ValidateAsync(request);
-            if (!validationResult.IsValid)
-            {
-                throw new RpcException(
-                    new Status(StatusCode.InvalidArgument, validationResult.Errors.First().ErrorMessage));
-            }
-
-            Guid? userId = string.IsNullOrWhiteSpace(request.UserId)
-                ? null
-                : Guid.Parse(request.UserId);
-
-            var devices = (request.IncludeLocation, request.IncludeSensors) switch
-            {
-                (true, true) => await _deviceService.GetAllDevicesWithAll(userId),
-                (true, false) => await _deviceService.GetAllDevicesWithLocation(userId),
-                (false, true) => await _deviceService.GetAllDevicesWithSensors(userId),
-                _ => await _deviceService.GetAllDevices(userId)
-            };
-
-            foreach (var device in devices)
-            {
-                await responseStream.WriteAsync(_mapper.Map<Device, DeviceResourceExtended>(device));
-            }
-        }
-
-        public override async Task<DeviceResourceExtended> GetDevice(GetDeviceRequest request,
+        public override async Task<GetAllDevicesResponse> GetAllDevices(GenericGetManyRequest request,
             ServerCallContext context)
         {
-            var validationResult = await _getDeviceValidator.ValidateAsync(request);
+            var validationResult = await _getManyValidator.ValidateAsync(request);
             if (!validationResult.IsValid)
             {
                 throw new RpcException(
                     new Status(StatusCode.InvalidArgument, validationResult.Errors.First().ErrorMessage));
             }
 
-            var device = (request.IncludeLocation, request.IncludeSensors) switch
+            var userId = request.Parameters?.UserId() ?? Guid.Empty;
+            var devices = _deviceService.GetAllDevices(userId);
+            if (request.Parameters != null)
+                devices = request.Parameters.IncludeFieldsSet(Entity.Location, Entity.Sensor)
+                    .Aggregate(devices, (current, field) => field switch
+                    {
+                        Entity.Location => current.Include(d => d.Location),
+                        Entity.Sensor => current.Include(d => d.Sensors),
+                        _ => current
+                    });
+
+            var pagedList = await PagedList<Device>.ToPagedListAsync(devices, request.PageNumber,
+                request.PageSize, context.CancellationToken);
+
+            var response = new GetAllDevicesResponse
             {
-                (true, true) => await _deviceService.GetDeviceWithAll(request.Id),
-                (true, false) => await _deviceService.GetDeviceWithLocation(request.Id),
-                (false, true) => await _deviceService.GetDeviceWithSensors(request.Id),
-                _ => await _deviceService.GetDevice(request.Id)
+                Devices = { pagedList.Select(d => _mapper.Map<Device, DeviceResourceExtended>(d)) },
+                MetaData = new PaginationMetaData().FromPagedList(pagedList)
             };
+
+            return await Task.FromResult(response);
+        }
+
+        public override async Task<DeviceResourceExtended> GetDevice(GenericGetRequest request,
+            ServerCallContext context)
+        {
+            var validationResult = await _getValidator.ValidateAsync(request);
+            if (!validationResult.IsValid)
+            {
+                throw new RpcException(
+                    new Status(StatusCode.InvalidArgument, validationResult.Errors.First().ErrorMessage));
+            }
+
+            var userId = request.Parameters?.UserId() ?? Guid.Empty;
+            var deviceQuery = _deviceService.GetDevice(request.Id, userId);
+            if (request.Parameters != null)
+                deviceQuery = request.Parameters.IncludeFieldsSet(Entity.Location, Entity.Sensor)
+                    .Aggregate(deviceQuery, (current, field) => field switch
+                    {
+                        Entity.Location => current.Include(d => d.Location),
+                        Entity.Sensor => current.Include(d => d.Sensors),
+                        _ => current
+                    });
+
+            var device = await deviceQuery.SingleOrDefaultAsync(context.CancellationToken);
+            if (device is null)
+            {
+                throw new RpcException(new Status(StatusCode.NotFound, "Not found"));
+            }
 
             return await Task.FromResult(_mapper.Map<Device, DeviceResourceExtended>(device));
         }
@@ -112,8 +129,7 @@ namespace DeviceManager.Api.RpcServices
 
             try
             {
-                var createdDevice = await _deviceService.CreateDevice(newDevice, sensors);
-
+                var createdDevice = await _deviceService.CreateDeviceAsync(newDevice, sensors);
                 return await Task.FromResult(_mapper.Map<Device, DeviceResource>(createdDevice));
             }
             catch (ValidationException e)
@@ -131,12 +147,16 @@ namespace DeviceManager.Api.RpcServices
                     new Status(StatusCode.InvalidArgument, validationResult.Errors.First().ErrorMessage));
             }
 
-            var device = await _deviceService.GetDevice(request.Id);
+            var device = await _deviceService.GetDevice(request.Id, request.UserId()).SingleOrDefaultAsync();
+            if (device is null)
+            {
+                throw new RpcException(new Status(StatusCode.NotFound, "Not found"));
+            }
 
             try
             {
                 await _deviceService
-                    .UpdateDevice(device, _mapper.Map<UpdateDeviceRequest, Device>(request));
+                    .UpdateDeviceAsync(device, _mapper.Map<UpdateDeviceRequest, Device>(request));
                 return await Task.FromResult(_mapper.Map<Device, DeviceResource>(device));
             }
             catch (ValidationException e)
@@ -145,7 +165,7 @@ namespace DeviceManager.Api.RpcServices
             }
         }
 
-        public override Task<Empty> DeleteDevice(DeleteDeviceRequest request, ServerCallContext context)
+        public override Task<Empty> DeleteDevice(GenericDeleteRequest request, ServerCallContext context)
         {
             /* TODO: Tutaj trochę skomplikowane bo trzeba nie tylko usunąć samo urządzenie ale również sensory
              TODO: i dane zebrane z sensorów w innym serwisie (bo nastąpi desynchronizacja danych AAAAAAAA) */
@@ -154,36 +174,38 @@ namespace DeviceManager.Api.RpcServices
 
         public override async Task<Empty> Ping(PingRequest request, ServerCallContext context)
         {
-            var device = await _deviceService.GetDevice(request.Id);
+            var device = await _deviceService.GetDevice(request.Id).SingleOrDefaultAsync(context.CancellationToken);
             if (device is null)
             {
-                throw new RpcException(new Status(StatusCode.NotFound,
-                    $"Device with Id = {request.Id} not found"));
+                throw new RpcException(new Status(StatusCode.NotFound, "Not found"));
             }
 
-            await _deviceService.UpdateDeviceLastSeen(device);
-
+            await _deviceService.UpdateDeviceLastSeenAsync(device);
             return await Task.FromResult(new Empty());
         }
 
         public override async Task<GenerateTokenResponse> GenerateToken(GenerateTokenRequest request,
             ServerCallContext context)
         {
-            var validationResult = await _generateTokenValidator.ValidateAsync(request);
+            var validationResult = await _generateTokenValidator.ValidateAsync(request, context.CancellationToken);
             if (!validationResult.IsValid)
             {
                 throw new RpcException(
                     new Status(StatusCode.InvalidArgument, validationResult.Errors.First().ErrorMessage));
             }
 
-            var device = await _deviceService.GetDevice(request.Id);
-            var response = new GenerateTokenResponse
+            var device = await _deviceService.GetDevice(request.Id, request.UserId())
+                .SingleOrDefaultAsync(context.CancellationToken);
+            if (device is null)
+            {
+                throw new RpcException(new Status(StatusCode.NotFound, "Not found"));
+            }
+
+            return await Task.FromResult(new GenerateTokenResponse
             {
                 Id = device.Id,
-                Token = await _tokenService.GenerateTokenAsync(device)
-            };
-
-            return await Task.FromResult(response);
+                Token = await _tokenService.GenerateTokenAsync(device, context.CancellationToken)
+            });
         }
     }
 }

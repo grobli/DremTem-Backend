@@ -1,13 +1,16 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using DeviceManager.Core.Extensions;
 using DeviceManager.Core.Models;
 using DeviceManager.Core.Proto;
 using DeviceManager.Core.Services;
 using FluentValidation;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Shared;
 
 namespace DeviceManager.Api.RpcServices
 {
@@ -18,60 +21,81 @@ namespace DeviceManager.Api.RpcServices
         private readonly IMapper _mapper;
 
         // validators
-        private readonly IValidator<GetSensorTypeRequest> _getTypeValidator;
-        private readonly IValidator<CreateSensorTypeRequest> _createTypeValidator;
-        private readonly IValidator<UpdateSensorTypeRequest> _updateTypeValidator;
-        private readonly IValidator<DeleteSensorTypeRequest> _deleteTypeValidator;
+        private readonly IValidator<GenericGetManyRequest> _getAllValidator;
+        private readonly IValidator<GenericGetRequest> _getValidator;
+        private readonly IValidator<CreateSensorTypeRequest> _createValidator;
+        private readonly IValidator<UpdateSensorTypeRequest> _updateValidator;
+        private readonly IValidator<GenericDeleteRequest> _deleteValidator;
 
         public SensorTypeGrpcService(
             ILogger<SensorTypeGrpcService> logger,
             ISensorTypeService typeService,
             IMapper mapper,
-            IValidator<CreateSensorTypeRequest> createTypeValidator,
-            IValidator<GetSensorTypeRequest> getTypeValidator,
-            IValidator<UpdateSensorTypeRequest> updateTypeValidator,
-            IValidator<DeleteSensorTypeRequest> deleteTypeValidator)
+            IValidator<CreateSensorTypeRequest> createValidator,
+            IValidator<GenericGetManyRequest> getAllValidator,
+            IValidator<GenericGetRequest> getValidator,
+            IValidator<UpdateSensorTypeRequest> updateValidator,
+            IValidator<GenericDeleteRequest> deleteValidator)
         {
             _logger = logger;
             _typeService = typeService;
             _mapper = mapper;
 
-            _createTypeValidator = createTypeValidator;
-            _getTypeValidator = getTypeValidator;
-            _updateTypeValidator = updateTypeValidator;
-            _deleteTypeValidator = deleteTypeValidator;
+            _createValidator = createValidator;
+            _getValidator = getValidator;
+            _getAllValidator = getAllValidator;
+            _updateValidator = updateValidator;
+            _deleteValidator = deleteValidator;
         }
 
-        public override async Task GetAllSensorTypes(GetAllSensorTypesRequest request,
-            IServerStreamWriter<SensorTypeResource> responseStream, ServerCallContext context)
-        {
-            var sensorTypes = await _typeService.GetAllSensorTypes();
-
-            foreach (var type in sensorTypes)
-            {
-                await responseStream.WriteAsync(_mapper.Map<SensorType, SensorTypeResource>(type));
-            }
-        }
-
-        public override async Task<SensorTypeResource> GetSensorType(GetSensorTypeRequest request,
+        public override async Task<GetAllSensorTypesResponse> GetAllSensorTypes(GenericGetManyRequest request,
             ServerCallContext context)
         {
-            var validationResult = await _getTypeValidator.ValidateAsync(request);
+            var validationResult = await _getAllValidator.ValidateAsync(request, context.CancellationToken);
             if (!validationResult.IsValid)
             {
                 throw new RpcException(
                     new Status(StatusCode.InvalidArgument, validationResult.Errors.First().ErrorMessage));
             }
 
-            var sensorType = await _typeService.GetSensorType(request.Id);
+            var types = _typeService.GetAllSensorTypes();
+            var pagedList = await PagedList<SensorType>.ToPagedListAsync(types, request.PageNumber, request.PageSize,
+                context.CancellationToken);
 
-            return await Task.FromResult(_mapper.Map<SensorType, SensorTypeResource>(sensorType));
+            var response = new GetAllSensorTypesResponse()
+            {
+                SensorTypes =
+                {
+                    pagedList.Select(t => _mapper.Map<SensorType, SensorTypeResource>(t))
+                },
+                MetaData = new PaginationMetaData().FromPagedList(pagedList)
+            };
+            return await Task.FromResult(response);
+        }
+
+        public override async Task<SensorTypeResource> GetSensorType(GenericGetRequest request,
+            ServerCallContext context)
+        {
+            var validationResult = await _getValidator.ValidateAsync(request, context.CancellationToken);
+            if (!validationResult.IsValid)
+            {
+                throw new RpcException(
+                    new Status(StatusCode.InvalidArgument, validationResult.Errors.First().ErrorMessage));
+            }
+
+            var type = await _typeService.GetSensorType(request.Id).SingleOrDefaultAsync(context.CancellationToken);
+            if (type is null)
+            {
+                throw new RpcException(new Status(StatusCode.NotFound, "Not found"));
+            }
+
+            return await Task.FromResult(_mapper.Map<SensorType, SensorTypeResource>(type));
         }
 
         public override async Task<SensorTypeResource> CreateSensorType(CreateSensorTypeRequest request,
             ServerCallContext context)
         {
-            var validationResult = await _createTypeValidator.ValidateAsync(request);
+            var validationResult = await _createValidator.ValidateAsync(request);
             if (!validationResult.IsValid)
             {
                 throw new RpcException(
@@ -80,7 +104,7 @@ namespace DeviceManager.Api.RpcServices
 
             var newType = _mapper.Map<CreateSensorTypeRequest, SensorType>(request);
 
-            var createdType = await _typeService.CreateSensorType(newType);
+            var createdType = await _typeService.CreateSensorTypeAsync(newType);
 
             return await Task.FromResult(_mapper.Map<SensorType, SensorTypeResource>(createdType));
         }
@@ -88,31 +112,41 @@ namespace DeviceManager.Api.RpcServices
         public override async Task<SensorTypeResource> UpdateSensorType(UpdateSensorTypeRequest request,
             ServerCallContext context)
         {
-            var validationResult = await _updateTypeValidator.ValidateAsync(request);
+            var validationResult = await _updateValidator.ValidateAsync(request);
             if (!validationResult.IsValid)
             {
                 throw new RpcException(
                     new Status(StatusCode.InvalidArgument, validationResult.Errors.First().ErrorMessage));
             }
 
-            var type = await _typeService.GetSensorType(request.Id);
+            var type = await _typeService.GetSensorType(request.Id).SingleOrDefaultAsync(context.CancellationToken);
+            if (type is null)
+            {
+                throw new RpcException(new Status(StatusCode.NotFound, "Not found"));
+            }
+
             await _typeService
-                .UpdateSensorType(type, _mapper.Map<UpdateSensorTypeRequest, SensorType>(request));
+                .UpdateSensorTypeAsync(type, _mapper.Map<UpdateSensorTypeRequest, SensorType>(request));
 
             return await Task.FromResult(_mapper.Map<SensorType, SensorTypeResource>(type));
         }
 
-        public override async Task<Empty> DeleteSensorType(DeleteSensorTypeRequest request, ServerCallContext context)
+        public override async Task<Empty> DeleteSensorType(GenericDeleteRequest request, ServerCallContext context)
         {
-            var validationResult = await _deleteTypeValidator.ValidateAsync(request);
+            var validationResult = await _deleteValidator.ValidateAsync(request);
             if (!validationResult.IsValid)
             {
                 throw new RpcException(
                     new Status(StatusCode.InvalidArgument, validationResult.Errors.First().ErrorMessage));
             }
 
-            var type = await _typeService.GetSensorType(request.Id);
-            await _typeService.DeleteSensorType(type);
+            var type = await _typeService.GetSensorType(request.Id).SingleOrDefaultAsync(context.CancellationToken);
+            if (type is null)
+            {
+                throw new RpcException(new Status(StatusCode.NotFound, "Not found"));
+            }
+
+            await _typeService.DeleteSensorTypeAsync(type);
 
             return await Task.FromResult(new Empty());
         }

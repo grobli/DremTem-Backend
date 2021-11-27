@@ -1,7 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Security.Claims;
+using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using ClientApiGateway.Api.Resources.SensorType;
+using DeviceManager.Core.Models;
 using DeviceManager.Core.Proto;
 using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
@@ -21,6 +25,8 @@ namespace ClientApiGateway.Api.Controllers
         private readonly SensorTypeGrpcService.SensorTypeGrpcServiceClient _typeService;
         private readonly IMapper _mapper;
 
+        private string UserId => User.FindFirstValue(ClaimTypes.NameIdentifier);
+
         public SensorTypesController(
             ILogger<SensorTypesController> logger,
             SensorTypeGrpcService.SensorTypeGrpcServiceClient typeService,
@@ -33,19 +39,23 @@ namespace ClientApiGateway.Api.Controllers
 
         // GET: api/v1/SensorTypes
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<SensorTypeResource>>> GetAllSensorTypes()
+        public async Task<ActionResult<IEnumerable<SensorTypeResource>>> GetAllSensorTypes(
+            [FromQuery] SensorTypePagedParameters parameters, CancellationToken token)
         {
-            var request = new GetAllSensorTypesRequest();
+            var request = new GenericGetManyRequest
+            {
+                Parameters = new GetRequestParameters
+                {
+                    IncludeFields = { parameters.FieldsToInclude() }
+                },
+                PageNumber = parameters.Page.Number,
+                PageSize = parameters.Page.Size
+            };
             try
             {
-                var sensorTypes = new List<SensorTypeResource>();
-                var call = _typeService.GetAllSensorTypes(request);
-                await foreach (var sensorType in call.ResponseStream.ReadAllAsync())
-                {
-                    sensorTypes.Add(sensorType);
-                }
-
-                return Ok(sensorTypes);
+                var result = await _typeService.GetAllSensorTypesAsync(request, cancellationToken: token);
+                Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(result.MetaData));
+                return Ok(result.SensorTypes);
             }
             catch (RpcException e)
             {
@@ -55,12 +65,16 @@ namespace ClientApiGateway.Api.Controllers
 
         // GET: api/v1/SensorTypes/42
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<SensorTypeResource>> GetSensorType(int id)
+        public async Task<ActionResult<SensorTypeResource>> GetSensorType(int id,
+            [FromQuery] SensorTypeParameters parameters, CancellationToken token)
         {
-            var request = new GetSensorTypeRequest { Id = id };
+            var request = new GenericGetRequest
+            {
+                Id = id
+            };
             try
             {
-                return Ok(await _typeService.GetSensorTypeAsync(request));
+                return Ok(await _typeService.GetSensorTypeAsync(request, cancellationToken: token));
             }
             catch (RpcException e)
             {
@@ -71,11 +85,12 @@ namespace ClientApiGateway.Api.Controllers
         // POST: api/v1/SensorTypes
         [Authorize(Roles = DefaultRoles.SuperUser)]
         [HttpPost]
-        public async Task<ActionResult<SensorTypeResource>> CreateSensorType(CreateSensorTypeRequest request)
+        public async Task<ActionResult<SensorTypeResource>> CreateSensorType(CreateSensorTypeRequest request,
+            CancellationToken token)
         {
             try
             {
-                var createdType = await _typeService.CreateSensorTypeAsync(request);
+                var createdType = await _typeService.CreateSensorTypeAsync(request, cancellationToken: token);
                 return Created($"api/v1/Sensors/{createdType.Id}", createdType);
             }
             catch (RpcException e)
@@ -87,13 +102,14 @@ namespace ClientApiGateway.Api.Controllers
         // PUT: api/v1/SensorTypes/42
         [Authorize(Roles = DefaultRoles.SuperUser)]
         [HttpPut("{id:int}")]
-        public async Task<ActionResult<SensorTypeResource>> UpdateSensorType(UpdateSensorTypeResource resource, int id)
+        public async Task<ActionResult<SensorTypeResource>> UpdateSensorType(UpdateSensorTypeResource resource, int id,
+            CancellationToken token)
         {
             var request = _mapper.Map<UpdateSensorTypeResource, UpdateSensorTypeRequest>(resource);
             request.Id = id;
             try
             {
-                return Ok(await _typeService.UpdateSensorTypeAsync(request));
+                return Ok(await _typeService.UpdateSensorTypeAsync(request, cancellationToken: token));
             }
             catch (RpcException e)
             {
@@ -104,12 +120,12 @@ namespace ClientApiGateway.Api.Controllers
         // DELETE: api/v1/SensorTypes/42
         [Authorize(Roles = DefaultRoles.SuperUser)]
         [HttpDelete("{id:int}")]
-        public async Task<ActionResult<SensorTypeResource>> DeleteSensorType(int id)
+        public async Task<ActionResult<SensorTypeResource>> DeleteSensorType(int id, CancellationToken token)
         {
-            var request = new DeleteSensorTypeRequest { Id = id };
+            var request = new GenericDeleteRequest { Id = id, UserId = UserId };
             try
             {
-                return Ok(await _typeService.DeleteSensorTypeAsync(request));
+                return Ok(await _typeService.DeleteSensorTypeAsync(request, cancellationToken: token));
             }
             catch (RpcException e)
             {

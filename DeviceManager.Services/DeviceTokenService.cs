@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using DeviceManager.Core.Models;
 using DeviceManager.Core.Services;
@@ -46,9 +47,9 @@ namespace DeviceManager.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public async Task<string> GenerateTokenAsync(Device device)
+        public async Task<string> GenerateTokenAsync(Device device, CancellationToken cancellationToken)
         {
-            return await Task.Run(() => GenerateToken(device));
+            return await Task.Run(() => GenerateToken(device), cancellationToken);
         }
     }
 }

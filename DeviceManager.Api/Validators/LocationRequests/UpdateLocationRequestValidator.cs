@@ -22,10 +22,6 @@ namespace DeviceManager.Api.Validators.LocationRequests
                 .NotEmpty()
                 .Guid();
 
-            RuleFor(r => r.Id)
-                .MustAsync(async (id, _) => await _unitOfWork.Locations.GetByIdAsync(id) is not null)
-                .WithMessage("Location with {PropertyName} = \"{PropertyValue}\" not found");
-
             RuleFor(r => r.DisplayName)
                 .MaximumLength(LocationConfiguration.DisplayNameMaxLength);
 
@@ -38,14 +34,6 @@ namespace DeviceManager.Api.Validators.LocationRequests
                 .NotNull()
                 .Unless(r => r.Latitude is null)
                 .WithMessage("Both Latitude and Longitude must be set simultaneously");
-
-            // if userId specified then location.userId must match
-            Transform(@from: r => r, to: r => new { r.Id, r.UserId })
-                .MustAsync(async (x, _) =>
-                    string.IsNullOrWhiteSpace(x.UserId) ||
-                    await _unitOfWork.Locations
-                        .SingleOrDefaultAsync(l => l.Id == x.Id && l.UserId.ToString() == x.UserId) is not null
-                ).WithMessage("Location not found");
         }
     }
 }

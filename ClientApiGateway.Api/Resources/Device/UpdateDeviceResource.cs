@@ -6,6 +6,7 @@
         bool Online,
         string Model,
         string Manufacturer,
+        string MacAddress,
         int? LocationId
     );
 }

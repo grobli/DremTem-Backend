@@ -57,5 +57,23 @@ namespace DeviceManager.Data.Repositories
                 .Include(l => l.Devices)
                 .SingleOrDefaultAsync(l => l.Id == locationId);
         }
+
+        public IQueryable<Location> GetLocations(Guid userId)
+        {
+            var locations = userId == Guid.Empty
+                ? DeviceManagerContext.Locations
+                : DeviceManagerContext.Locations.Where(l => l.UserId == userId);
+
+            return locations.OrderBy(l => l.Name);
+        }
+
+        public IQueryable<Location> GetLocationById(int locationId, Guid userId)
+        {
+            var locations = userId == Guid.Empty
+                ? DeviceManagerContext.Locations
+                : DeviceManagerContext.Locations.Where(d => d.UserId == userId);
+
+            return locations.Where(l => l.Id == locationId).Take(1);
+        }
     }
 }

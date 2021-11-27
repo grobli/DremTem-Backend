@@ -17,7 +17,7 @@ namespace SensorData.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
-
+            
             builder.ConvertDateTimesToUtc();
 
             builder.ApplyConfiguration(new ReadingConfiguration());

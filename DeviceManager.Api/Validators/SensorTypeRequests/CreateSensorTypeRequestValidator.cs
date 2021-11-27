@@ -23,7 +23,7 @@ namespace DeviceManager.Api.Validators.SensorTypeRequests
                 .MaximumLength(SensorTypeConfiguration.NameMaxLength)
                 .PascalCase()
                 .MustAsync(async (name, _) =>
-                    await _unitOfWork.SensorTypes.SingleOrDefaultAsync(st => st.Name == name) is null)
+                    await _unitOfWork.SensorTypes.SingleOrDefaultAsync(st => st.Name == name, _) is null)
                 .WithMessage("SensorType must have unique Name");
 
             RuleFor(r => r.DataType)

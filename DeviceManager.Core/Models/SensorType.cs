@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using DeviceManager.Core.Proto;
+using Shared;
 
 namespace DeviceManager.Core.Models
 {
@@ -19,5 +21,14 @@ namespace DeviceManager.Core.Models
         public IEnumerable<Sensor> Sensors { get; set; }
 
         public override string ToString() => JsonSerializer.Serialize(this);
+    }
+
+    public class SensorTypeParameters : QueryStringParameters
+    {
+    }
+
+    public class SensorTypePagedParameters : SensorParameters
+    {
+        public PageQueryStringParameters Page { get; } = new();
     }
 }
