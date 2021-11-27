@@ -19,6 +19,7 @@ namespace DeviceManager.Api.RpcServices
     {
         private readonly ILogger<DeviceGrpcService> _logger;
         private readonly IDeviceService _deviceService;
+        private readonly ISensorService _sensorService;
         private readonly IDeviceTokenService _tokenService;
         private readonly IMapper _mapper;
 
@@ -37,7 +38,8 @@ namespace DeviceManager.Api.RpcServices
             IValidator<GenericGetManyRequest> getManyValidator,
             IValidator<UpdateDeviceRequest> updateDeviceValidator,
             IValidator<GenericGetRequest> getValidator,
-            IValidator<GenerateTokenRequest> generateTokenValidator)
+            IValidator<GenerateTokenRequest> generateTokenValidator,
+            ISensorService sensorService)
         {
             _logger = logger;
             _deviceService = deviceService;
@@ -49,6 +51,7 @@ namespace DeviceManager.Api.RpcServices
             _updateDeviceValidator = updateDeviceValidator;
             _getValidator = getValidator;
             _generateTokenValidator = generateTokenValidator;
+            _sensorService = sensorService;
         }
 
         public override async Task<GetAllDevicesResponse> GetAllDevices(GenericGetManyRequest request,
@@ -125,11 +128,14 @@ namespace DeviceManager.Api.RpcServices
 
             var newDevice = _mapper.Map<CreateDeviceRequest, Device>(request);
             var sensors = request.Sensors
-                .Select(s => _mapper.Map<CreateDeviceSensorResource, Sensor>(s));
-
+                .Select(s => _mapper.Map<CreateDeviceSensorResource, Sensor>(s))
+                .ToList();
             try
             {
-                var createdDevice = await _deviceService.CreateDeviceAsync(newDevice, sensors);
+                var createdDevice = await _deviceService.CreateDeviceAsync(newDevice);
+                foreach (var sensor in sensors) sensor.DeviceId = createdDevice.Id;
+                await _sensorService.CreateSensorsRangeAsync(sensors, context.CancellationToken);
+
                 return await Task.FromResult(_mapper.Map<Device, DeviceResource>(createdDevice));
             }
             catch (ValidationException e)
@@ -174,7 +180,8 @@ namespace DeviceManager.Api.RpcServices
 
         public override async Task<Empty> Ping(PingRequest request, ServerCallContext context)
         {
-            var device = await _deviceService.GetDeviceQuery(request.Id).SingleOrDefaultAsync(context.CancellationToken);
+            var device = await _deviceService.GetDeviceQuery(request.Id)
+                .SingleOrDefaultAsync(context.CancellationToken);
             if (device is null)
             {
                 throw new RpcException(new Status(StatusCode.NotFound, "Not found"));

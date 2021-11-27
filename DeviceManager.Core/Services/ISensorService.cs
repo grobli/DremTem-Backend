@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,6 +12,10 @@ namespace DeviceManager.Core.Services
         IQueryable<Sensor> GetAllSensorsQuery(Guid userId);
         IQueryable<Sensor> GetSensorQuery(int sensorId, Guid userId);
         Task<Sensor> CreateSensorAsync(Sensor newSensor, CancellationToken cancellationToken = default);
+
+        Task<IEnumerable<Sensor>> CreateSensorsRangeAsync(IEnumerable<Sensor> newSensors,
+            CancellationToken cancellationToken = default);
+
         Task UpdateSensorAsync(Sensor sensorToBeUpdated, Sensor sensor, CancellationToken cancellationToken = default);
         Task DeleteSensorAsync(Sensor sensor, CancellationToken cancellationToken = default);
     }

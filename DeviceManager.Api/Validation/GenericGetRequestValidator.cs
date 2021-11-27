@@ -1,7 +1,7 @@
 ﻿using DeviceManager.Core.Proto;
 using FluentValidation;
 
-namespace DeviceManager.Api.Validators
+namespace DeviceManager.Api.Validation
 {
     public class GenericGetRequestValidator : AbstractValidator<GenericGetRequest>
     {

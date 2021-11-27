@@ -5,7 +5,7 @@ using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Shared.Extensions;
 
-namespace DeviceManager.Data.Validators
+namespace DeviceManager.Data.Validation
 {
     public class DeviceValidator : AbstractValidator<Device>
     {
@@ -37,9 +37,9 @@ namespace DeviceManager.Data.Validators
 
             // User cannot have two devices with the same name
             Transform(d => d, d => d)
-                .MustAsync(async (d, _) =>
+                .MustAsync(async (d, ct) =>
                     await _unitOfWork.Devices.SingleOrDefaultAsync(
-                        dev => dev.Id != d.Id && dev.Name == d.Name && dev.UserId == d.UserId, _) is null)
+                        dev => dev.Id != d.Id && dev.Name == d.Name && dev.UserId == d.UserId, ct) is null)
                 .WithMessage("User cannot have two devices with the same name");
         }
 
@@ -64,11 +64,11 @@ namespace DeviceManager.Data.Validators
 
             // device mac address must be unique in whole system
             Transform(d => d, d => d)
-                .MustAsync(async (d, _) =>
+                .MustAsync(async (d, ct) =>
                     {
                         if (string.IsNullOrWhiteSpace(d.MacAddress)) return true;
                         var device = await _unitOfWork.Devices.SingleOrDefaultAsync(
-                            dev => dev.Id != d.Id && dev.MacAddress == d.MacAddress, _);
+                            dev => dev.Id != d.Id && dev.MacAddress == d.MacAddress, ct);
                         return device is null;
                     }
                 )
@@ -91,11 +91,11 @@ namespace DeviceManager.Data.Validators
         {
             // referenced location must exist and be owned by the same user who owns the device
             Transform(d => d, d => d)
-                .MustAsync(async (d, _) =>
+                .MustAsync(async (d, ct) =>
                 {
                     if (d.LocationId is null) return true;
                     var location = await _unitOfWork.Locations.GetLocationById(d.LocationId.Value)
-                        .SingleOrDefaultAsync(_);
+                        .SingleOrDefaultAsync(ct);
                     return location is not null && location.UserId == d.UserId;
                 }).WithMessage("referenced location must exist and be owned by the same user who owns the device");
         }

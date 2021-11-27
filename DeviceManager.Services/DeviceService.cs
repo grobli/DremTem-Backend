@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using DeviceManager.Core;
 using DeviceManager.Core.Models;
 using DeviceManager.Core.Services;
-using DeviceManager.Data.Validators;
+using DeviceManager.Data.Validation;
 using FluentValidation;
 
 namespace DeviceManager.Services
@@ -34,25 +34,13 @@ namespace DeviceManager.Services
         }
 
         /** <exception cref="ValidationException">device model is not valid</exception> */
-        public async Task<Device> CreateDeviceAsync(Device newDevice, IEnumerable<Sensor> sensors,
-            CancellationToken cancellationToken = default)
+        public async Task<Device> CreateDeviceAsync(Device newDevice, CancellationToken cancellationToken = default)
         {
+            newDevice.Created = DateTime.UtcNow;
+
             await Validator.ValidateAndThrowAsync(newDevice, cancellationToken);
 
-            var now = DateTime.UtcNow;
-            newDevice.Created = now;
-
-            newDevice.MacAddress = newDevice.MacAddress;
-
             await _unitOfWork.Devices.AddAsync(newDevice, cancellationToken);
-            await _unitOfWork.CommitAsync(cancellationToken);
-
-            await _unitOfWork.Sensors.AddRangeAsync(sensors.Select(s =>
-            {
-                s.DeviceId = newDevice.Id;
-                s.Created = now;
-                return s;
-            }), cancellationToken);
             await _unitOfWork.CommitAsync(cancellationToken);
 
             return newDevice;
@@ -72,14 +60,11 @@ namespace DeviceManager.Services
             deviceToBeUpdated.LocationId = device.LocationId;
             deviceToBeUpdated.MacAddress = device.MacAddress;
 
-            try
-            {
-                await Validator.ValidateAndThrowAsync(deviceToBeUpdated, cancellationToken);
-            }
-            catch (ValidationException)
+            var validationResult = await Validator.ValidateAsync(deviceToBeUpdated, cancellationToken);
+            if (!validationResult.IsValid)
             {
                 Restore();
-                throw;
+                throw new ValidationException(validationResult.Errors);
             }
 
             await _unitOfWork.CommitAsync(cancellationToken);

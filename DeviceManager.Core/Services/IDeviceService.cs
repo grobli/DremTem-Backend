@@ -12,8 +12,7 @@ namespace DeviceManager.Core.Services
         IQueryable<Device> GetAllDevicesQuery(Guid userId = default);
         IQueryable<Device> GetDeviceQuery(int deviceId, Guid userId = default);
 
-        Task<Device> CreateDeviceAsync(Device newDevice, IEnumerable<Sensor> sensors,
-            CancellationToken cancellationToken = default);
+        Task<Device> CreateDeviceAsync(Device newDevice, CancellationToken cancellationToken = default);
 
         Task UpdateDeviceAsync(Device deviceToBeUpdated, Device device, CancellationToken cancellationToken = default);
         Task UpdateDeviceLastSeenAsync(Device device, CancellationToken cancellationToken = default);

@@ -2,7 +2,7 @@
 using FluentValidation;
 using Shared.Extensions;
 
-namespace DeviceManager.Api.Validators
+namespace DeviceManager.Api.Validation
 {
     public class GetRequestParametersValidator : AbstractValidator<GetRequestParameters>
     {

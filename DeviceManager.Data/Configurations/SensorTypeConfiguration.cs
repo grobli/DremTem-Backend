@@ -8,7 +8,6 @@ namespace DeviceManager.Data.Configurations
     {
         public const int DateTimePrecision = 0;
         public const int NameMaxLength = 40;
-        public const int DataTypeMaxLength = 100;
         public const int UnitMaxLength = 64;
         public const int UnitShortMaxLength = 32;
         public const int UnitSymbolMaxLength = 16;
@@ -29,11 +28,6 @@ namespace DeviceManager.Data.Configurations
                 .Property(st => st.Name)
                 .IsRequired()
                 .HasMaxLength(NameMaxLength);
-
-            builder
-                .Property(st => st.DataType)
-                .IsRequired()
-                .HasMaxLength(DataTypeMaxLength);
 
             builder
                 .Property(st => st.Unit)
