@@ -55,7 +55,7 @@ namespace DeviceManager.Api.Handlers.Device
 
             var response = new GetAllDevicesResponse
             {
-                Devices = { pagedList.Select(d => _mapper.Map<Core.Models.Device, DeviceDtoExtended>(d)) },
+                Devices = { pagedList.Select(d => _mapper.Map<Core.Models.Device, DeviceExtendedDto>(d)) },
                 MetaData = new PaginationMetaData().FromPagedList(pagedList)
             };
 

@@ -15,7 +15,7 @@ using DeviceManager.Core.Models;
 
 namespace DeviceManager.Api.Handlers.LocationHandlers
 {
-    public class GetLocationHandler : IRequestHandler<GetLocationQuery, LocationDtoExtended>
+    public class GetLocationHandler : IRequestHandler<GetLocationQuery, LocationExtendedDto>
     {
         private readonly ILocationService _locationService;
         private readonly IMapper _mapper;
@@ -29,7 +29,7 @@ namespace DeviceManager.Api.Handlers.LocationHandlers
             _mapper = mapper;
         }
 
-        public async Task<LocationDtoExtended> Handle(GetLocationQuery request, CancellationToken cancellationToken)
+        public async Task<LocationExtendedDto> Handle(GetLocationQuery request, CancellationToken cancellationToken)
         {
             var query = request.QueryParameters;
             var validationResult = await _validator.ValidateAsync(query, cancellationToken);
@@ -54,7 +54,7 @@ namespace DeviceManager.Api.Handlers.LocationHandlers
                     new Status(StatusCode.NotFound, "Not found"));
             }
 
-            return _mapper.Map<Location, LocationDtoExtended>(location);
+            return _mapper.Map<Location, LocationExtendedDto>(location);
         }
     }
 }

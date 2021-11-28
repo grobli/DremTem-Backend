@@ -28,7 +28,7 @@ namespace DeviceManager.Api.RpcServices
             return result;
         }
 
-        public override async Task<LocationDtoExtended> GetLocation(GenericGetRequest request,
+        public override async Task<LocationExtendedDto> GetLocation(GenericGetRequest request,
             ServerCallContext context)
         {
             var query = new GetLocationQuery(request);

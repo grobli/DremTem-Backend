@@ -3,7 +3,7 @@ using MediatR;
 
 namespace DeviceManager.Api.Queries
 {
-    public class GetDeviceQuery : IRequest<DeviceDtoExtended>
+    public class GetDeviceQuery : IRequest<DeviceExtendedDto>
     {
         public GenericGetRequest QueryParameters { get; }
 

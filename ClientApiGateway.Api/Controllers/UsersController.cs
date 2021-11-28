@@ -78,7 +78,7 @@ namespace ClientApiGateway.Api.Controllers
         {
             try
             {
-                return Ok(await _userService.GetUserByEmailAsync(new GetUserByEmailRequest() { Email = email }));
+                return Ok(await _userService.GetUserByEmailAsync(new GetUserByEmailRequest { Email = email }));
             }
             catch (RpcException e)
             {
@@ -93,7 +93,7 @@ namespace ClientApiGateway.Api.Controllers
             try
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                return Ok(await _userService.GetUserByIdAsync(new GetUserByIdRequest() { Id = userId }));
+                return Ok(await _userService.GetUserByIdAsync(new GetUserByIdRequest { Id = userId }));
             }
             catch (RpcException e)
             {

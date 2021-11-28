@@ -21,7 +21,7 @@ namespace ClientApiGateway.Api.Mapping
             // location
             CreateMap<CreateLocationResource, CreateLocationRequest>();
             CreateMap<LocationDto, GetLocationResource>();
-            CreateMap<LocationDtoExtended, GetLocationResource>();
+            CreateMap<LocationExtendedDto, GetLocationResource>();
             CreateMap<UpdateLocationResource, UpdateLocationRequest>();
 
             // sensor

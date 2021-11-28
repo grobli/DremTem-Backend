@@ -40,7 +40,7 @@ namespace ClientApiGateway.Api.Controllers
 
         // GET: api/v1/Devices?pageNumber=1&pageSize=3&includeLocation=true&includeSensors=false
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<DeviceDtoExtended>>> GetAllDevices(
+        public async Task<ActionResult<IEnumerable<DeviceExtendedDto>>> GetAllDevices(
             [FromQuery] DevicePagedParameters parameters, CancellationToken token)
         {
             return await GetAllDevices(parameters, true, token);
@@ -49,13 +49,13 @@ namespace ClientApiGateway.Api.Controllers
         // GET: api/v1/Devices/all?includeLocation=true&includeSensors=false
         [Authorize(Roles = DefaultRoles.SuperUser)]
         [HttpGet("all")]
-        public async Task<ActionResult<IEnumerable<DeviceDtoExtended>>> GetAllDevicesOfAllUsers(
+        public async Task<ActionResult<IEnumerable<DeviceExtendedDto>>> GetAllDevicesOfAllUsers(
             [FromQuery] DevicePagedParameters parameters, CancellationToken token)
         {
             return await GetAllDevices(parameters, false, token);
         }
 
-        private async Task<ActionResult<IEnumerable<DeviceDtoExtended>>> GetAllDevices(
+        private async Task<ActionResult<IEnumerable<DeviceExtendedDto>>> GetAllDevices(
             [FromQuery] DevicePagedParameters parameters, bool limitToUser, CancellationToken token)
         {
             var request = new GenericGetManyRequest
@@ -82,7 +82,7 @@ namespace ClientApiGateway.Api.Controllers
 
         // GET: api/v1/Devices/42?includeLocation=true
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<DeviceDtoExtended>> GetDevice(int id,
+        public async Task<ActionResult<DeviceExtendedDto>> GetDevice(int id,
             [FromQuery] DeviceParameters parameters, CancellationToken token)
         {
             var request = new GenericGetRequest

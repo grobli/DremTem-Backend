@@ -54,7 +54,7 @@ namespace DeviceManager.Api.Handlers.LocationHandlers
 
             var response = new GetAllLocationsResponse
             {
-                Locations = { pagedList.Select(l => _mapper.Map<Location, LocationDtoExtended>(l)) },
+                Locations = { pagedList.Select(l => _mapper.Map<Location, LocationExtendedDto>(l)) },
                 MetaData = new PaginationMetaData().FromPagedList(pagedList)
             };
 

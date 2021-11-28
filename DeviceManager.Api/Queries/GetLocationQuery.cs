@@ -3,7 +3,7 @@ using MediatR;
 
 namespace DeviceManager.Api.Queries
 {
-    public class GetLocationQuery : IRequest<LocationDtoExtended>
+    public class GetLocationQuery : IRequest<LocationExtendedDto>
     {
         public GenericGetRequest QueryParameters { get; }
 

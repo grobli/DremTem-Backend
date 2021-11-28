@@ -96,7 +96,7 @@ namespace ClientApiGateway.Api.Controllers
             try
             {
                 var response = await _locationService.GetLocationAsync(request, cancellationToken: token);
-                var location = _mapper.Map<LocationDtoExtended, GetLocationResource>(response);
+                var location = _mapper.Map<LocationExtendedDto, GetLocationResource>(response);
                 if (parameters.IncludeDevices) location.Devices = null;
                 return Ok(location);
             }

@@ -14,7 +14,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DeviceManager.Api.Handlers.DeviceHandlers
 {
-    public class GetDeviceHandler : IRequestHandler<GetDeviceQuery, DeviceDtoExtended>
+    public class GetDeviceHandler : IRequestHandler<GetDeviceQuery, DeviceExtendedDto>
     {
         private readonly IValidator<GenericGetRequest> _validator;
         private readonly IMapper _mapper;
@@ -27,7 +27,7 @@ namespace DeviceManager.Api.Handlers.DeviceHandlers
             _deviceService = deviceService;
         }
 
-        public async Task<DeviceDtoExtended> Handle(GetDeviceQuery request, CancellationToken cancellationToken)
+        public async Task<DeviceExtendedDto> Handle(GetDeviceQuery request, CancellationToken cancellationToken)
         {
             var query = request.QueryParameters;
             var validationResult = await _validator.ValidateAsync(query, cancellationToken);
@@ -54,7 +54,7 @@ namespace DeviceManager.Api.Handlers.DeviceHandlers
                 throw new RpcException(new Status(StatusCode.NotFound, "Not found"));
             }
 
-            return _mapper.Map<Core.Models.Device, DeviceDtoExtended>(device);
+            return _mapper.Map<Core.Models.Device, DeviceExtendedDto>(device);
         }
     }
 }

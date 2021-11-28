@@ -20,7 +20,7 @@ message DeviceDto {
   string UserId = 12;
 }
 
-message DeviceDtoExtended {
+message DeviceExtendedDto {
   int32 Id = 1;
   string Name = 2;
   google.protobuf.StringValue DisplayName = 3;
@@ -53,7 +53,7 @@ message LocationDto {
 }
 
 
-message LocationDtoExtended {
+message LocationExtendedDto {
   int32 Id = 1;
   string Name = 2;
   string UserId = 3;

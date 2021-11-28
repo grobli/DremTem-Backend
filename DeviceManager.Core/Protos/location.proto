@@ -9,7 +9,7 @@ option csharp_namespace = "DeviceManager.Core.Proto";
 
 service LocationGrpcService {
   rpc GetAllLocations (GenericGetManyRequest) returns (GetAllLocationsResponse);
-  rpc GetLocation (GenericGetRequest) returns (LocationDtoExtended);
+  rpc GetLocation (GenericGetRequest) returns (LocationExtendedDto);
 
   rpc CreateLocation (CreateLocationRequest) returns (LocationDto);
   rpc UpdateLocation (UpdateLocationRequest) returns (LocationDto);
@@ -17,7 +17,7 @@ service LocationGrpcService {
 }
 
 message GetAllLocationsResponse {
-  repeated LocationDtoExtended Locations = 1;
+  repeated LocationExtendedDto Locations = 1;
   PaginationMetaData MetaData = 2;
 }
 

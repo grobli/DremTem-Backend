@@ -10,7 +10,6 @@ namespace DeviceManager.Api.Mapping
     {
         public MappingProfile()
         {
-            // TODO: Fix Mappers!!!
             //---------- Domain to Resource/Request ----------
             CreateMap<Device, DeviceDto>()
                 .ForMember(
@@ -39,7 +38,7 @@ namespace DeviceManager.Api.Mapping
                     dest => dest.UserId,
                     opt => opt.MapFrom(src => src.UserId.ToString()));
 
-            CreateMap<Device, DeviceDtoExtended>()
+            CreateMap<Device, DeviceExtendedDto>()
                 .ForMember(
                     dest => dest.Created,
                     opt => opt.MapFrom(src => Timestamp.FromDateTime(src.Created)))
@@ -102,7 +101,7 @@ namespace DeviceManager.Api.Mapping
                         opt.MapFrom(src => Timestamp.FromDateTime(src.LastModified.Value));
                     });
 
-            CreateMap<Location, LocationDtoExtended>()
+            CreateMap<Location, LocationExtendedDto>()
                 .ForMember(
                     dest => dest.Created,
                     opt => opt.MapFrom(src => Timestamp.FromDateTime(src.Created)))

@@ -3,7 +3,6 @@
     public record UpdateSensorTypeResource
     (
         string Name,
-        string DataType,
         string Unit,
         string UnitShort,
         string UnitSymbol,

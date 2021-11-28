@@ -28,7 +28,7 @@ namespace DeviceManager.Api.RpcServices
             return result;
         }
 
-        public override async Task<DeviceDtoExtended> GetDevice(GenericGetRequest request,
+        public override async Task<DeviceExtendedDto> GetDevice(GenericGetRequest request,
             ServerCallContext context)
         {
             var query = new GetDeviceQuery(request);
