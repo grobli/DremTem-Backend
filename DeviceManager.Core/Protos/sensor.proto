@@ -8,15 +8,15 @@ option csharp_namespace = "DeviceManager.Core.Proto";
 
 service SensorGrpcService {
   rpc GetAllSensors (GenericGetManyRequest) returns (GetAllSensorsResponse);
-  rpc GetSensor (GenericGetRequest) returns (SensorResource);
+  rpc GetSensor (GenericGetRequest) returns (SensorDto);
 
-  rpc AddSensor (CreateSensorRequest) returns (SensorResource);
-  rpc UpdateSensor (UpdateSensorRequest) returns (SensorResource);
-  rpc DeleteSensor (GenericDeleteRequest) returns (SensorResource);
+  rpc AddSensor (CreateSensorRequest) returns (SensorDto);
+  rpc UpdateSensor (UpdateSensorRequest) returns (SensorDto);
+  rpc DeleteSensor (GenericDeleteRequest) returns (SensorDto);
 }
 
 message GetAllSensorsResponse {
-  repeated SensorResource Sensors = 1;
+  repeated SensorDto Sensors = 1;
   PaginationMetaData MetaData = 2;
 }
 

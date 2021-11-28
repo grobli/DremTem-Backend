@@ -10,9 +10,8 @@ namespace DeviceManager.Api.Mapping
     {
         public MappingProfile()
         {
-            // TODO: Fix Mappers!!!
             //---------- Domain to Resource/Request ----------
-            CreateMap<Device, DeviceResource>()
+            CreateMap<Device, DeviceDto>()
                 .ForMember(
                     dest => dest.Created,
                     opt => opt.MapFrom(src => Timestamp.FromDateTime(src.Created)))
@@ -39,7 +38,7 @@ namespace DeviceManager.Api.Mapping
                     dest => dest.UserId,
                     opt => opt.MapFrom(src => src.UserId.ToString()));
 
-            CreateMap<Device, DeviceResourceExtended>()
+            CreateMap<Device, DeviceExtendedDto>()
                 .ForMember(
                     dest => dest.Created,
                     opt => opt.MapFrom(src => Timestamp.FromDateTime(src.Created)))
@@ -66,7 +65,7 @@ namespace DeviceManager.Api.Mapping
                     dest => dest.UserId,
                     opt => opt.MapFrom(src => src.UserId.ToString()));
 
-            CreateMap<Sensor, SensorResource>()
+            CreateMap<Sensor, SensorDto>()
                 .ForMember(
                     dest => dest.Created,
                     opt => opt.MapFrom(src => Timestamp.FromDateTime(src.Created)))
@@ -78,7 +77,7 @@ namespace DeviceManager.Api.Mapping
                         opt.MapFrom(src => Timestamp.FromDateTime(src.LastModified.Value));
                     });
 
-            CreateMap<SensorType, SensorTypeResource>()
+            CreateMap<SensorType, SensorTypeDto>()
                 .ForMember(
                     dest => dest.Created,
                     opt => opt.MapFrom(src => Timestamp.FromDateTime(src.Created)))
@@ -90,7 +89,7 @@ namespace DeviceManager.Api.Mapping
                         opt.MapFrom(src => Timestamp.FromDateTime(src.LastModified.Value));
                     });
 
-            CreateMap<Location, LocationResource>()
+            CreateMap<Location, LocationDto>()
                 .ForMember(
                     dest => dest.Created,
                     opt => opt.MapFrom(src => Timestamp.FromDateTime(src.Created)))
@@ -102,7 +101,7 @@ namespace DeviceManager.Api.Mapping
                         opt.MapFrom(src => Timestamp.FromDateTime(src.LastModified.Value));
                     });
 
-            CreateMap<Location, LocationResourceExtended>()
+            CreateMap<Location, LocationExtendedDto>()
                 .ForMember(
                     dest => dest.Created,
                     opt => opt.MapFrom(src => Timestamp.FromDateTime(src.Created)))

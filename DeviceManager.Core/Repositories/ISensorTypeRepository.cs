@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Linq;
 using DeviceManager.Core.Models;
 using Shared.Repositories;
 

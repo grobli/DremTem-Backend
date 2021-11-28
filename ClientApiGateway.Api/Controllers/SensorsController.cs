@@ -39,7 +39,7 @@ namespace ClientApiGateway.Api.Controllers
 
         // GET: api/v1/Sensors?detailed=true
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<SensorResource>>> GetAllSensors(
+        public async Task<ActionResult<IEnumerable<SensorDto>>> GetAllSensors(
             [FromQuery] SensorPagedParameters parameters, CancellationToken token)
         {
             return await GetSensors(parameters, true, token);
@@ -48,13 +48,13 @@ namespace ClientApiGateway.Api.Controllers
         // GET: api/v1/Sensors/all?detailed=true
         [Authorize(Roles = DefaultRoles.SuperUser)]
         [HttpGet("all")]
-        public async Task<ActionResult<IEnumerable<SensorResource>>> GetSensorOfAllUsers(
+        public async Task<ActionResult<IEnumerable<SensorDto>>> GetSensorOfAllUsers(
             [FromQuery] SensorPagedParameters parameters, CancellationToken token)
         {
             return await GetSensors(parameters, false, token);
         }
 
-        private async Task<ActionResult<IEnumerable<SensorResource>>> GetSensors(
+        private async Task<ActionResult<IEnumerable<SensorDto>>> GetSensors(
             [FromQuery] SensorPagedParameters parameters, bool limitToUser, CancellationToken token)
         {
             var request = new GenericGetManyRequest
@@ -81,7 +81,7 @@ namespace ClientApiGateway.Api.Controllers
 
         // GET: api/v1/Sensors/42?detailed=true
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<SensorResource>> GetSensor(int id, [FromQuery] SensorParameters parameters,
+        public async Task<ActionResult<SensorDto>> GetSensor(int id, [FromQuery] SensorParameters parameters,
             CancellationToken token)
         {
             var request = new GenericGetRequest
@@ -105,7 +105,7 @@ namespace ClientApiGateway.Api.Controllers
 
         // POST: api/v1/Sensors
         [HttpPost]
-        public async Task<ActionResult<SensorResource>> AddSensor(SaveSensorResource resource, CancellationToken token)
+        public async Task<ActionResult<SensorDto>> AddSensor(SaveSensorResource resource, CancellationToken token)
         {
             var request = _mapper.Map<SaveSensorResource, CreateSensorRequest>(resource);
             request.UserId = User.IsInRole(DefaultRoles.SuperUser) ? null : UserId;
@@ -122,7 +122,7 @@ namespace ClientApiGateway.Api.Controllers
 
         // PUT: api/v1/Sensors/42
         [HttpPut("{id:int}")]
-        public async Task<ActionResult<SensorResource>> UpdateSensor(SaveSensorResource resource, int id,
+        public async Task<ActionResult<SensorDto>> UpdateSensor(SaveSensorResource resource, int id,
             CancellationToken token)
         {
             var request = _mapper.Map<SaveSensorResource, UpdateSensorRequest>(resource);

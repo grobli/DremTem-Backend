@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using DeviceManager.Core.Repositories;
 
@@ -11,6 +12,6 @@ namespace DeviceManager.Core
         ISensorRepository Sensors { get; }
         ISensorTypeRepository SensorTypes { get; }
 
-        Task<int> CommitAsync();
+        Task<int> CommitAsync(CancellationToken cancellationToken);
     }
 }

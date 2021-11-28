@@ -213,12 +213,6 @@ namespace DeviceManager.Data.Migrations
                         .HasColumnType("timestamp(0) without time zone")
                         .HasColumnName("created");
 
-                    b.Property<string>("DataType")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("data_type");
-
                     b.Property<bool>("IsDiscrete")
                         .HasColumnType("boolean")
                         .HasColumnName("is_discrete");

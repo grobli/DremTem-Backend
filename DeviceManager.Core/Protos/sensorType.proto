@@ -9,36 +9,33 @@ option csharp_namespace = "DeviceManager.Core.Proto";
 
 service SensorTypeGrpcService {
   rpc GetAllSensorTypes (GenericGetManyRequest) returns (GetAllSensorTypesResponse);
-  rpc GetSensorType (GenericGetRequest) returns (SensorTypeResource);
+  rpc GetSensorType (GenericGetRequest) returns (SensorTypeDto);
 
-  rpc CreateSensorType (CreateSensorTypeRequest) returns (SensorTypeResource);
-  rpc UpdateSensorType (UpdateSensorTypeRequest) returns (SensorTypeResource);
+  rpc CreateSensorType (CreateSensorTypeRequest) returns (SensorTypeDto);
+  rpc UpdateSensorType (UpdateSensorTypeRequest) returns (SensorTypeDto);
   rpc DeleteSensorType (GenericDeleteRequest) returns (google.protobuf.Empty);
 }
 
 message GetAllSensorTypesResponse {
-  repeated SensorTypeResource SensorTypes = 1;
+  repeated SensorTypeDto SensorTypes = 1;
   PaginationMetaData MetaData = 2;
 }
 
 message CreateSensorTypeRequest {
   string Name = 1;
-  string DataType = 2;
+  string Unit = 2;
+  string UnitShort = 3;
+  google.protobuf.StringValue UnitSymbol = 4;
+  bool IsDiscrete = 5;
+  bool IsSummable = 6;
+}
+
+message UpdateSensorTypeRequest {
+  int32 Id = 1;
+  string Name = 2;
   string Unit = 3;
   string UnitShort = 4;
   google.protobuf.StringValue UnitSymbol = 5;
   bool IsDiscrete = 6;
   bool IsSummable = 7;
-}
-
-message UpdateSensorTypeRequest {
-  int32 Id = 1;
-
-  string Name = 2;
-  string DataType = 3;
-  string Unit = 4;
-  string UnitShort = 5;
-  google.protobuf.StringValue UnitSymbol = 6;
-  bool IsDiscrete = 7;
-  bool IsSummable = 8;
 }

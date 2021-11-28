@@ -1,11 +1,12 @@
-﻿using DeviceManager.Core.Models;
+﻿using DeviceManager.Core;
+using DeviceManager.Core.Models;
 using DeviceManager.Data.Configurations;
 using Microsoft.EntityFrameworkCore;
 using Shared.Extensions;
 
 namespace DeviceManager.Data
 {
-    public class DeviceManagerContext : DbContext
+    public class DeviceManagerContext : DbContext, IDeviceManagerContext
     {
         public DbSet<Device> Devices { get; set; }
         public DbSet<Location> Locations { get; set; }

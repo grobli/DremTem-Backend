@@ -39,7 +39,7 @@ namespace ClientApiGateway.Api.Controllers
 
         // GET: api/v1/SensorTypes
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<SensorTypeResource>>> GetAllSensorTypes(
+        public async Task<ActionResult<IEnumerable<SensorTypeDto>>> GetAllSensorTypes(
             [FromQuery] SensorTypePagedParameters parameters, CancellationToken token)
         {
             var request = new GenericGetManyRequest
@@ -65,7 +65,7 @@ namespace ClientApiGateway.Api.Controllers
 
         // GET: api/v1/SensorTypes/42
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<SensorTypeResource>> GetSensorType(int id,
+        public async Task<ActionResult<SensorTypeDto>> GetSensorType(int id,
             [FromQuery] SensorTypeParameters parameters, CancellationToken token)
         {
             var request = new GenericGetRequest
@@ -85,7 +85,7 @@ namespace ClientApiGateway.Api.Controllers
         // POST: api/v1/SensorTypes
         [Authorize(Roles = DefaultRoles.SuperUser)]
         [HttpPost]
-        public async Task<ActionResult<SensorTypeResource>> CreateSensorType(CreateSensorTypeRequest request,
+        public async Task<ActionResult<SensorTypeDto>> CreateSensorType(CreateSensorTypeRequest request,
             CancellationToken token)
         {
             try
@@ -102,7 +102,7 @@ namespace ClientApiGateway.Api.Controllers
         // PUT: api/v1/SensorTypes/42
         [Authorize(Roles = DefaultRoles.SuperUser)]
         [HttpPut("{id:int}")]
-        public async Task<ActionResult<SensorTypeResource>> UpdateSensorType(UpdateSensorTypeResource resource, int id,
+        public async Task<ActionResult<SensorTypeDto>> UpdateSensorType(UpdateSensorTypeResource resource, int id,
             CancellationToken token)
         {
             var request = _mapper.Map<UpdateSensorTypeResource, UpdateSensorTypeRequest>(resource);
@@ -120,7 +120,7 @@ namespace ClientApiGateway.Api.Controllers
         // DELETE: api/v1/SensorTypes/42
         [Authorize(Roles = DefaultRoles.SuperUser)]
         [HttpDelete("{id:int}")]
-        public async Task<ActionResult<SensorTypeResource>> DeleteSensorType(int id, CancellationToken token)
+        public async Task<ActionResult<SensorTypeDto>> DeleteSensorType(int id, CancellationToken token)
         {
             var request = new GenericDeleteRequest { Id = id, UserId = UserId };
             try
