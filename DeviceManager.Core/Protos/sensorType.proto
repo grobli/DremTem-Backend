@@ -9,15 +9,15 @@ option csharp_namespace = "DeviceManager.Core.Proto";
 
 service SensorTypeGrpcService {
   rpc GetAllSensorTypes (GenericGetManyRequest) returns (GetAllSensorTypesResponse);
-  rpc GetSensorType (GenericGetRequest) returns (SensorTypeResource);
+  rpc GetSensorType (GenericGetRequest) returns (SensorTypeDto);
 
-  rpc CreateSensorType (CreateSensorTypeRequest) returns (SensorTypeResource);
-  rpc UpdateSensorType (UpdateSensorTypeRequest) returns (SensorTypeResource);
+  rpc CreateSensorType (CreateSensorTypeRequest) returns (SensorTypeDto);
+  rpc UpdateSensorType (UpdateSensorTypeRequest) returns (SensorTypeDto);
   rpc DeleteSensorType (GenericDeleteRequest) returns (google.protobuf.Empty);
 }
 
 message GetAllSensorTypesResponse {
-  repeated SensorTypeResource SensorTypes = 1;
+  repeated SensorTypeDto SensorTypes = 1;
   PaginationMetaData MetaData = 2;
 }
 

@@ -4,6 +4,7 @@ using DeviceManager.Core.Services;
 using DeviceManager.Data;
 using DeviceManager.Services;
 using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -46,7 +47,7 @@ namespace DeviceManager.Api
             services.AddTransient<ISensorService, SensorService>();
             services.AddTransient<ISensorTypeService, SensorTypeService>();
             services.AddTransient<IDeviceTokenService, DeviceTokenService>();
-
+            services.AddMediatR(typeof(Startup));
             services.AddAutoMapper(typeof(Startup));
 
             services.Configure<JwtSettings>(Configuration.GetSection("Jwt"));

@@ -6,7 +6,6 @@ using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using UserIdentity.Api.Validators;
 using UserIdentity.Core.Models.Auth;
 using UserIdentity.Core.Proto;
 

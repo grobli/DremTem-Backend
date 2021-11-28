@@ -13,6 +13,6 @@ namespace ClientApiGateway.Api.Resources.Location
         public Timestamp LastModified { get; set; }
         public float? Latitude { get; set; }
         public float? Longitude { get; set; }
-        public IEnumerable<DeviceResource> Devices { get; set; }
+        public IEnumerable<DeviceDto> Devices { get; set; }
     };
 }

@@ -9,10 +9,10 @@ option csharp_namespace = "DeviceManager.Core.Proto";
 
 service DeviceGrpcService {
   rpc GetAllDevices (GenericGetManyRequest) returns (GetAllDevicesResponse);
-  rpc GetDevice (GenericGetRequest) returns (DeviceResourceExtended);
+  rpc GetDevice (GenericGetRequest) returns (DeviceDtoExtended);
 
-  rpc CreateDevice (CreateDeviceRequest) returns (DeviceResource);
-  rpc UpdateDevice (UpdateDeviceRequest) returns (DeviceResource);
+  rpc CreateDevice (CreateDeviceRequest) returns (DeviceDto);
+  rpc UpdateDevice (UpdateDeviceRequest) returns (DeviceDto);
   rpc DeleteDevice (GenericDeleteRequest) returns (google.protobuf.Empty);
 
   rpc Ping (PingRequest) returns (google.protobuf.Empty);
@@ -20,7 +20,7 @@ service DeviceGrpcService {
 }
 
 message GetAllDevicesResponse {
-  repeated DeviceResourceExtended Devices = 1;
+  repeated DeviceDtoExtended Devices = 1;
   PaginationMetaData MetaData = 2;
 }
 

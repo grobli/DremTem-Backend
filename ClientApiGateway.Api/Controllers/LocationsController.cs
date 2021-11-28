@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using UserIdentity.Core.Models.Auth;
 using static ClientApiGateway.Api.Handlers.RpcExceptionHandler;
-using LocationResource = DeviceManager.Core.Proto.LocationResource;
 
 namespace ClientApiGateway.Api.Controllers
 {
@@ -97,7 +96,7 @@ namespace ClientApiGateway.Api.Controllers
             try
             {
                 var response = await _locationService.GetLocationAsync(request, cancellationToken: token);
-                var location = _mapper.Map<LocationResourceExtended, GetLocationResource>(response);
+                var location = _mapper.Map<LocationDtoExtended, GetLocationResource>(response);
                 if (parameters.IncludeDevices) location.Devices = null;
                 return Ok(location);
             }
@@ -109,7 +108,7 @@ namespace ClientApiGateway.Api.Controllers
 
         // POST: api/v1/Locations
         [HttpPost]
-        public async Task<ActionResult<LocationResource>> CreateLocation(CreateLocationResource resource,
+        public async Task<ActionResult<LocationDto>> CreateLocation(CreateLocationResource resource,
             CancellationToken token)
         {
             var request = _mapper.Map<CreateLocationResource, CreateLocationRequest>(resource);
@@ -127,7 +126,7 @@ namespace ClientApiGateway.Api.Controllers
 
         // PUT: api/v1/Locations/42
         [HttpPut("{id:int}")]
-        public async Task<ActionResult<LocationResource>> UpdateLocation(UpdateLocationResource resource, int id,
+        public async Task<ActionResult<LocationDto>> UpdateLocation(UpdateLocationResource resource, int id,
             CancellationToken token)
         {
             var request = _mapper.Map<UpdateLocationResource, UpdateLocationRequest>(resource);
@@ -145,7 +144,7 @@ namespace ClientApiGateway.Api.Controllers
 
         // DELETE: api/v1/Locations/42
         [HttpDelete("{id:int}")]
-        public async Task<ActionResult<LocationResource>> DeleteLocation(int id, CancellationToken token)
+        public async Task<ActionResult<LocationDto>> DeleteLocation(int id, CancellationToken token)
         {
             var request = new GenericDeleteRequest { Id = id, UserId = UserId };
             try
