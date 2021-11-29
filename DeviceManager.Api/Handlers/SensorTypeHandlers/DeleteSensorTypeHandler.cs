@@ -1,33 +1,34 @@
 ﻿using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using AutoMapper;
 using DeviceManager.Api.Commands;
+using DeviceManager.Core.Messages;
 using DeviceManager.Core.Proto;
 using DeviceManager.Core.Services;
+using EasyNetQ;
 using FluentValidation;
-using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace DeviceManager.Api.Handlers.SensorTypeHandlers
 {
-    public class DeleteSensorTypeHandler : IRequestHandler<DeleteSensorTypeCommand, Empty>
+    public class DeleteSensorTypeHandler : IRequestHandler<DeleteSensorTypeCommand, DeleteSensorTypeResponse>
     {
         private readonly ISensorTypeService _typeService;
-        private readonly IMapper _mapper;
         private readonly IValidator<GenericDeleteRequest> _validator;
+        private readonly IBus _bus;
 
-        public DeleteSensorTypeHandler(ISensorTypeService typeService, IMapper mapper,
-            IValidator<GenericDeleteRequest> validator)
+        public DeleteSensorTypeHandler(ISensorTypeService typeService, IValidator<GenericDeleteRequest> validator,
+            IBus bus)
         {
             _typeService = typeService;
-            _mapper = mapper;
             _validator = validator;
+            _bus = bus;
         }
 
-        public async Task<Empty> Handle(DeleteSensorTypeCommand request, CancellationToken cancellationToken)
+        public async Task<DeleteSensorTypeResponse> Handle(DeleteSensorTypeCommand request,
+            CancellationToken cancellationToken)
         {
             var validationResult = await _validator.ValidateAsync(request.Body, cancellationToken);
             if (!validationResult.IsValid)
@@ -43,9 +44,11 @@ namespace DeviceManager.Api.Handlers.SensorTypeHandlers
                 throw new RpcException(new Status(StatusCode.NotFound, "Not found"));
             }
 
+            var response = new DeleteSensorTypeResponse { DeletedSensorTypeId = type.Id };
             await _typeService.DeleteSensorTypeAsync(type, cancellationToken);
-
-            return new Empty();
+            var message = new DeletedSensorTypeMessage(response.DeletedSensorTypeId);
+            await _bus.PubSub.PublishAsync(message, cancellationToken);
+            return response;
         }
     }
 }

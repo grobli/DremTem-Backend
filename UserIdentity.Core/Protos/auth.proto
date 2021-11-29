@@ -20,7 +20,6 @@ message UserSignUpRequest{
 
   google.protobuf.StringValue FirstName = 3;
   google.protobuf.StringValue LastName = 4;
-
 }
 
 message UserLoginRequest {

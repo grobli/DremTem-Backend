@@ -1,126 +1,47 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
-using FluentValidation;
+﻿using System.Threading.Tasks;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using UserIdentity.Core.Models.Auth;
+using MediatR;
+using Microsoft.Extensions.Logging;
+using UserIdentity.Api.Commands;
 using UserIdentity.Core.Proto;
 
 namespace UserIdentity.Api.Services.Rpc
 {
     public class AuthService : UserAuthGrpcService.UserAuthGrpcServiceBase
     {
-        private readonly UserManager<User> _userManager;
-        private readonly RoleManager<Role> _roleManager;
-        private readonly IMapper _mapper;
-        private readonly JwtService _jwt;
+        private readonly ILogger<AuthService> _logger;
+        private readonly IMediator _mediator;
 
-        private readonly IValidator<UserSignUpRequest> _userSignUpValidator;
-
-
-        public AuthService(
-            UserManager<User> userManager,
-            RoleManager<Role> roleManager,
-            IMapper mapper,
-            JwtService jwt,
-            IValidator<UserSignUpRequest> userSignUpValidator)
+        public AuthService(IMediator mediator, ILogger<AuthService> logger)
         {
-            _userManager = userManager;
-            _roleManager = roleManager;
-            _mapper = mapper;
-            _jwt = jwt;
-
-            _userSignUpValidator = userSignUpValidator;
+            _mediator = mediator;
+            _logger = logger;
         }
 
         public override async Task<Empty> SignUp(UserSignUpRequest request, ServerCallContext context)
         {
-            var validationResult = await _userSignUpValidator.ValidateAsync(request);
-            if (!validationResult.IsValid)
-            {
-                throw new RpcException(new Status(StatusCode.InvalidArgument,
-                    validationResult.Errors.First().ErrorMessage));
-            }
-
-            var user = _mapper.Map<UserSignUpRequest, User>(request);
-
-            var userCreateResult = await _userManager.CreateAsync(user, request.Password);
-            if (!userCreateResult.Succeeded)
-            {
-                throw new RpcException(new Status(StatusCode.Internal, userCreateResult.Errors.First().Description));
-            }
-
-            var roleResult = await _userManager.AddToRoleAsync(user, DefaultRoles.BaseUser);
-            if (!roleResult.Succeeded)
-            {
-                throw new RpcException(new Status(StatusCode.Internal, roleResult.Errors.First().Description));
-            }
-
-            return await Task.FromResult(new Empty());
+            var command = new SignUpCommand(request);
+            return await _mediator.Send(command, context.CancellationToken);
         }
 
         public override async Task<UserLoginResponse> SignIn(UserLoginRequest request, ServerCallContext context)
         {
-            var user = await _userManager.Users.SingleOrDefaultAsync(u => u.UserName == request.Email);
-            if (user is null)
-            {
-                throw new RpcException(new Status(StatusCode.NotFound, "User not found"));
-            }
-
-            var userIsLockedOut = await _userManager.IsLockedOutAsync(user);
-            if (userIsLockedOut)
-            {
-                throw new RpcException(new Status(StatusCode.Unauthenticated,
-                    $"User has been locked out due to exceeded limit of login attempts until: {user.LockoutEnd}"));
-            }
-
-            var userSignInResult = await _userManager.CheckPasswordAsync(user, request.Password);
-            if (!userSignInResult)
-            {
-                await _userManager.AccessFailedAsync(user);
-                throw new RpcException(new Status(StatusCode.Unauthenticated, "Email or password incorrect"));
-            }
-
-            var roles = await _userManager.GetRolesAsync(user);
-            return await Task.FromResult(new UserLoginResponse
-            {
-                JwtToken = _jwt.GenerateJwt(user, roles)
-            });
+            var command = new LoginCommand(request);
+            var result = await _mediator.Send(command, context.CancellationToken);
+            return result;
         }
 
         public override async Task<Empty> CreateRole(CreateRoleRequest request, ServerCallContext context)
         {
-            if (string.IsNullOrWhiteSpace(request.RoleName))
-            {
-                throw new RpcException(new Status(StatusCode.InvalidArgument, "Role name should be provided"));
-            }
-
-            var newRole = new Role { Name = request.RoleName };
-
-            var roleResult = await _roleManager.CreateAsync(newRole);
-
-            if (roleResult.Succeeded)
-            {
-                return await Task.FromResult(new Empty());
-            }
-
-            throw new RpcException(new Status(StatusCode.Internal, roleResult.Errors.First().ToString()));
+            var command = new CreateRoleCommand(request);
+            return await _mediator.Send(command, context.CancellationToken);
         }
 
         public override async Task<Empty> AddUserToRole(AddUserToRoleRequest request, ServerCallContext context)
         {
-            var user = await _userManager.Users.SingleOrDefaultAsync(u => u.UserName == request.Email);
-            var result = await _userManager.AddToRoleAsync(user, request.RoleName);
-
-            if (result.Succeeded)
-            {
-                return await Task.FromResult(new Empty());
-            }
-
-            throw new RpcException(new Status(StatusCode.Internal, result.Errors.First().ToString()));
+            var command = new AddUserToRoleCommand(request);
+            return await _mediator.Send(command, context.CancellationToken);
         }
     }
 }

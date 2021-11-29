@@ -6,7 +6,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Shared.Settings;
+using Shared.Configs;
 using UserIdentity.Core.Models.Auth;
 using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
 
@@ -14,11 +14,11 @@ namespace UserIdentity.Api.Services
 {
     public class JwtService
     {
-        private readonly JwtSettings _jwtSettings;
+        private readonly JwtConfig _jwtConfig;
 
-        public JwtService(IOptions<JwtSettings> jwtSettings)
+        public JwtService(IOptions<JwtConfig> jwtSettings)
         {
-            _jwtSettings = jwtSettings.Value;
+            _jwtConfig = jwtSettings.Value;
         }
 
         public string GenerateJwt(User user, IEnumerable<string> roles)
@@ -34,13 +34,13 @@ namespace UserIdentity.Api.Services
             var roleClaims = roles.Select(r => new Claim(ClaimTypes.Role, r));
             claims.AddRange(roleClaims);
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Secret));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfig.Secret));
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            var expires = DateTime.Now.AddDays(Convert.ToDouble(_jwtSettings.ExpirationInDays));
+            var expires = DateTime.Now.AddDays(Convert.ToDouble(_jwtConfig.ExpirationInDays));
 
             var token = new JwtSecurityToken(
-                _jwtSettings.Issuer,
-                _jwtSettings.Issuer,
+                _jwtConfig.Issuer,
+                _jwtConfig.Issuer,
                 claims,
                 expires: expires,
                 signingCredentials: credentials

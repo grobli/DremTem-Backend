@@ -1,8 +1,12 @@
-﻿using DeviceManager.Api.RpcServices;
+﻿using System.Reflection;
+using DeviceManager.Api.Consumers;
+using DeviceManager.Api.RpcServices;
 using DeviceManager.Core;
 using DeviceManager.Core.Services;
 using DeviceManager.Data;
 using DeviceManager.Services;
+using EasyNetQ;
+using EasyNetQ.AutoSubscribe;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
@@ -12,7 +16,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Shared.Settings;
+using Shared;
+using Shared.Configs;
+using Shared.Extensions;
 
 namespace DeviceManager.Api
 {
@@ -40,6 +46,8 @@ namespace DeviceManager.Api
                     .UseSnakeCaseNamingConvention()
             );
 
+            services.AddConsul();
+
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IDeviceManagerContext, DeviceManagerContext>();
             services.AddTransient<IDeviceService, DeviceService>();
@@ -50,17 +58,35 @@ namespace DeviceManager.Api
             services.AddMediatR(typeof(Startup));
             services.AddAutoMapper(typeof(Startup));
 
-            services.Configure<JwtSettings>(Configuration.GetSection("Jwt"));
+            // messaging
+            services.AddSingleton<IBus>(RabbitHutch.CreateBus(Configuration["MessageBroker:ConnectionString"]));
+            services.AddSingleton<MessageDispatcher>();
+            services.AddSingleton<AutoSubscriber>(provider =>
+                new AutoSubscriber(provider.GetRequiredService<IBus>(), "DeviceManager")
+                {
+                    AutoSubscriberMessageDispatcher = provider.GetRequiredService<MessageDispatcher>()
+                });
+
+            // message handlers
+            services.AddScoped<UserMessageConsumer>();
+
+            services.Configure<JwtConfig>(Configuration.GetSection("Jwt"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, DeviceManagerContext dbContext)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, DeviceManagerContext dbContext,
+            IBus bus, IHostApplicationLifetime lifetime)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
                 dbContext.Database.Migrate();
             }
+
+            app.ApplicationServices.GetRequiredService<AutoSubscriber>()
+                .SubscribeAsync(Assembly.GetExecutingAssembly().GetTypes());
+
+            app.RegisterWithConsul(lifetime);
 
             app.UseRouting();
 

@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using AutoMapper;
 using DeviceManager.Api.Commands;
 using DeviceManager.Core.Proto;
 using DeviceManager.Core.Services;
@@ -17,14 +16,11 @@ namespace DeviceManager.Api.Handlers.LocationHandlers
     public class DeleteLocationHandler : IRequestHandler<DeleteLocationCommand, Empty>
     {
         private readonly ILocationService _locationService;
-        private readonly IMapper _mapper;
         private readonly IValidator<GenericDeleteRequest> _validator;
 
-        public DeleteLocationHandler(ILocationService locationService, IMapper mapper,
-            IValidator<GenericDeleteRequest> validator)
+        public DeleteLocationHandler(ILocationService locationService, IValidator<GenericDeleteRequest> validator)
         {
             _locationService = locationService;
-            _mapper = mapper;
             _validator = validator;
         }
 

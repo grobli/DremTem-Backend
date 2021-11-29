@@ -2,7 +2,6 @@
 using DeviceManager.Api.Commands;
 using DeviceManager.Api.Queries;
 using DeviceManager.Core.Proto;
-using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -52,7 +51,8 @@ namespace DeviceManager.Api.RpcServices
             return result;
         }
 
-        public override async Task<Empty> DeleteSensorType(GenericDeleteRequest request, ServerCallContext context)
+        public override async Task<DeleteSensorTypeResponse> DeleteSensorType(GenericDeleteRequest request,
+            ServerCallContext context)
         {
             var command = new DeleteSensorTypeCommand(request);
             var result = await _mediator.Send(command, context.CancellationToken);

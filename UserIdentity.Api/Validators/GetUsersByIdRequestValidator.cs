@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Shared.Extensions;
 using UserIdentity.Core.Proto;
 
 namespace UserIdentity.Api.Validators
@@ -9,7 +10,7 @@ namespace UserIdentity.Api.Validators
         {
             RuleFor(r => r.Id)
                 .NotEmpty()
-                .MustBeValidGuid();
+                .Guid();
         }
     }
 }

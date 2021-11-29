@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Shared.Extensions;
 using UserIdentity.Core.Proto;
 using UserIdentity.Data.Configurations;
 
@@ -10,7 +11,7 @@ namespace UserIdentity.Api.Validators
         {
             RuleFor(r => r.Id)
                 .NotEmpty()
-                .MustBeValidGuid();
+                .Guid();
 
             RuleFor(r => r.FirstName)
                 .MaximumLength(UserConfiguration.FirstNameMaxLength);

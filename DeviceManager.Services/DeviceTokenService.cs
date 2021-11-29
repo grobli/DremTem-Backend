@@ -9,7 +9,7 @@ using DeviceManager.Core.Models;
 using DeviceManager.Core.Services;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Shared.Settings;
+using Shared.Configs;
 using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
 
 namespace DeviceManager.Services
@@ -17,11 +17,11 @@ namespace DeviceManager.Services
     public class DeviceTokenService : IDeviceTokenService
 
     {
-        private readonly JwtSettings _settings;
+        private readonly JwtConfig _config;
 
-        public DeviceTokenService(IOptions<JwtSettings> jwtSettings)
+        public DeviceTokenService(IOptions<JwtConfig> jwtSettings)
         {
-            _settings = jwtSettings.Value;
+            _config = jwtSettings.Value;
         }
 
         public string GenerateToken(Device device)
@@ -32,13 +32,13 @@ namespace DeviceManager.Services
                 new(ClaimTypes.NameIdentifier, device.Id.ToString())
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.Secret));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config.Secret));
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            var expires = DateTime.Now.AddDays(Convert.ToDouble(_settings.ExpirationInDays));
+            var expires = DateTime.Now.AddDays(Convert.ToDouble(_config.ExpirationInDays));
 
             var token = new JwtSecurityToken(
-                _settings.Issuer,
-                _settings.Issuer,
+                _config.Issuer,
+                _config.Issuer,
                 claims,
                 expires: expires,
                 signingCredentials: credentials
