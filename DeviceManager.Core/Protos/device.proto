@@ -11,9 +11,9 @@ service DeviceGrpcService {
   rpc GetAllDevices (GenericGetManyRequest) returns (GetAllDevicesResponse);
   rpc GetDevice (GenericGetRequest) returns (DeviceExtendedDto);
 
-  rpc CreateDevice (CreateDeviceRequest) returns (DeviceDto);
+  rpc CreateDevice (CreateDeviceRequest) returns (DeviceExtendedDto);
   rpc UpdateDevice (UpdateDeviceRequest) returns (DeviceDto);
-  rpc DeleteDevice (GenericDeleteRequest) returns (google.protobuf.Empty);
+  rpc DeleteDevice (GenericDeleteRequest) returns (DeleteDeviceResponse);
 
   rpc Ping (PingRequest) returns (google.protobuf.Empty);
   rpc GenerateToken (GenerateTokenRequest) returns (GenerateTokenResponse);
@@ -67,5 +67,10 @@ message GenerateTokenRequest {
 message GenerateTokenResponse {
   int32 Id = 1;
   string Token = 2;
+}
+
+message DeleteDeviceResponse {
+  int32 DeletedDeviceId = 1;
+  repeated int32 DeletedSensorIds = 2;
 }
 

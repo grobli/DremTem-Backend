@@ -3,32 +3,37 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using DeviceManager.Api.Commands;
+using DeviceManager.Core.Messages;
 using DeviceManager.Core.Models;
 using DeviceManager.Core.Proto;
 using DeviceManager.Core.Services;
+using EasyNetQ;
 using FluentValidation;
 using Grpc.Core;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace DeviceManager.Api.Handlers.DeviceHandlers
 {
-    public class CreateDeviceHandler : IRequestHandler<CreateDeviceCommand, DeviceDto>
+    public class CreateDeviceHandler : IRequestHandler<CreateDeviceCommand, DeviceExtendedDto>
     {
         private readonly IDeviceService _deviceService;
         private readonly ISensorService _sensorService;
         private readonly IMapper _mapper;
         private readonly IValidator<CreateDeviceRequest> _validator;
+        private readonly IBus _bus;
 
         public CreateDeviceHandler(IDeviceService deviceService, ISensorService sensorService, IMapper mapper,
-            IValidator<CreateDeviceRequest> validator)
+            IValidator<CreateDeviceRequest> validator, IBus bus)
         {
             _deviceService = deviceService;
             _sensorService = sensorService;
             _mapper = mapper;
             _validator = validator;
+            _bus = bus;
         }
 
-        public async Task<DeviceDto> Handle(CreateDeviceCommand request, CancellationToken cancellationToken)
+        public async Task<DeviceExtendedDto> Handle(CreateDeviceCommand request, CancellationToken cancellationToken)
         {
             var validationResult = await _validator.ValidateAsync(request.Body, cancellationToken);
             if (!validationResult.IsValid)
@@ -37,7 +42,7 @@ namespace DeviceManager.Api.Handlers.DeviceHandlers
                     new Status(StatusCode.InvalidArgument, validationResult.Errors.First().ErrorMessage));
             }
 
-            var newDevice = _mapper.Map<CreateDeviceRequest, Core.Models.Device>(request.Body);
+            var newDevice = _mapper.Map<CreateDeviceRequest, Device>(request.Body);
             var sensors = request.Body.Sensors
                 .Select(s => _mapper.Map<CreateDeviceSensorResource, Sensor>(s))
                 .ToList();
@@ -47,7 +52,16 @@ namespace DeviceManager.Api.Handlers.DeviceHandlers
                 foreach (var sensor in sensors) sensor.DeviceId = createdDevice.Id;
                 await _sensorService.CreateSensorsRangeAsync(sensors, cancellationToken);
 
-                return _mapper.Map<Core.Models.Device, DeviceDto>(createdDevice);
+                var createdDeviceExtended = await _deviceService.GetDeviceQuery(createdDevice.Id)
+                    .Include(d => d.Location)
+                    .Include(d => d.Sensors)
+                    .SingleOrDefaultAsync(cancellationToken);
+
+                var result = _mapper.Map<Device, DeviceExtendedDto>(createdDeviceExtended);
+                var message = new CreatedDeviceMessage(result);
+                await _bus.PubSub.PublishAsync(message, cancellationToken);
+
+                return result;
             }
             catch (ValidationException e)
             {

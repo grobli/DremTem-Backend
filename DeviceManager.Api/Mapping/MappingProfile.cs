@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using AutoMapper;
+using DeviceManager.Core.Messages;
 using DeviceManager.Core.Models;
 using DeviceManager.Core.Proto;
 using Google.Protobuf.WellKnownTypes;
@@ -144,6 +146,11 @@ namespace DeviceManager.Api.Mapping
             CreateMap<UpdateLocationRequest, Location>();
             CreateMap<CreateSensorTypeRequest, SensorType>();
             CreateMap<UpdateSensorTypeRequest, SensorType>();
+
+            // grpc response -> event message
+            CreateMap<DeleteDeviceResponse, DeletedDeviceMessage>()
+                .ForMember(dest => dest.DeletedSensorIds,
+                    opt => opt.MapFrom(src => src.DeletedSensorIds.ToList()));
         }
     }
 }

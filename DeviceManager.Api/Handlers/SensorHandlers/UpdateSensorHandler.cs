@@ -11,6 +11,8 @@ using Grpc.Core;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using DeviceManager.Core.Extensions;
+using DeviceManager.Core.Messages;
+using EasyNetQ;
 
 namespace DeviceManager.Api.Handlers.SensorHandlers
 {
@@ -19,13 +21,15 @@ namespace DeviceManager.Api.Handlers.SensorHandlers
         private readonly ISensorService _sensorService;
         private readonly IMapper _mapper;
         private readonly IValidator<UpdateSensorRequest> _validator;
+        private readonly IBus _bus;
 
         public UpdateSensorHandler(ISensorService sensorService, IMapper mapper,
-            IValidator<UpdateSensorRequest> validator)
+            IValidator<UpdateSensorRequest> validator, IBus bus)
         {
             _sensorService = sensorService;
             _mapper = mapper;
             _validator = validator;
+            _bus = bus;
         }
 
         public async Task<SensorDto> Handle(UpdateSensorCommand request, CancellationToken cancellationToken)
@@ -44,10 +48,21 @@ namespace DeviceManager.Api.Handlers.SensorHandlers
                 throw new RpcException(new Status(StatusCode.NotFound, "Not found"));
             }
 
-            await _sensorService
-                .UpdateSensorAsync(sensor, _mapper.Map<UpdateSensorRequest, Sensor>(request.Body), cancellationToken);
+            try
+            {
+                await _sensorService
+                    .UpdateSensorAsync(sensor, _mapper.Map<UpdateSensorRequest, Sensor>(request.Body),
+                        cancellationToken);
 
-            return _mapper.Map<Sensor, SensorDto>(sensor);
+                var result = _mapper.Map<Sensor, SensorDto>(sensor);
+                var message = new UpdatedSensorMessage(result);
+                await _bus.PubSub.PublishAsync(message, cancellationToken);
+                return result;
+            }
+            catch (ValidationException e)
+            {
+                throw new RpcException(new Status(StatusCode.InvalidArgument, e.Message, e));
+            }
         }
     }
 }

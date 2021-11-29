@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using DeviceManager.Api.Commands;
 using DeviceManager.Api.Queries;
+using DeviceManager.Core.Messages;
 using DeviceManager.Core.Proto;
 using Grpc.Core;
 using MediatR;
@@ -13,12 +14,9 @@ namespace DeviceManager.Api.RpcServices
         private readonly ILogger<SensorGrpcService> _logger;
         private readonly IMediator _mediator;
 
-        public SensorGrpcService(
-            ILogger<SensorGrpcService> logger, IMediator mediator)
+        public SensorGrpcService(ILogger<SensorGrpcService> logger, IMediator mediator)
         {
             _logger = logger;
-
-
             _mediator = mediator;
         }
 
@@ -51,12 +49,12 @@ namespace DeviceManager.Api.RpcServices
             return result;
         }
 
-        public override Task<SensorDto> DeleteSensor(GenericDeleteRequest request, ServerCallContext context)
+        public override async Task<DeleteSensorResponse> DeleteSensor(GenericDeleteRequest request,
+            ServerCallContext context)
         {
-            /* TODO: Tutaj trochę skomplikowane bo trzeba nie tylko usunąć sam sensor ale również
-          TODO: i dane zebrane z tego sensora w innym serwisie (bo nastąpi desynchronizacja danych AAAAAAAA) */
-
-            return base.DeleteSensor(request, context);
+            var command = new DeleteSensorCommand(request);
+            var result = await _mediator.Send(command, context.CancellationToken);
+            return result;
         }
     }
 }

@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Reflection;
+using EasyNetQ;
+using EasyNetQ.AutoSubscribe;
 using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -8,10 +12,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Shared;
 using Shared.Settings;
 using UserIdentity.Api.Services;
 using UserIdentity.Api.Services.Rpc;
-using UserIdentity.Api.Validators;
 using UserIdentity.Core.Models.Auth;
 using UserIdentity.Data;
 
@@ -33,9 +37,20 @@ namespace UserIdentity.Api
         {
             services.AddGrpc();
 
-            services.AddValidatorsFromAssemblyContaining<UserSignUpRequestValidator>();
+            services.AddValidatorsFromAssembly(typeof(Startup).Assembly);
 
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+            services.AddMediatR(typeof(Startup));
+
+            // messaging
+            services.AddSingleton<IBus>(RabbitHutch.CreateBus(Configuration["MessageBroker:ConnectionString"]));
+            services.AddSingleton<MessageDispatcher>();
+            services.AddSingleton<AutoSubscriber>(provider =>
+                new AutoSubscriber(provider.GetRequiredService<IBus>(), Assembly.GetExecutingAssembly().GetName().Name)
+                {
+                    AutoSubscriberMessageDispatcher = provider.GetRequiredService<MessageDispatcher>()
+                });
 
             var dataAssemblyName = typeof(UserDbContext).Assembly.GetName().Name;
             services.AddDbContext<UserDbContext>(options =>
@@ -57,12 +72,16 @@ namespace UserIdentity.Api
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IBus bus)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            // EasyNetQ
+            app.ApplicationServices.GetRequiredService<AutoSubscriber>()
+                .SubscribeAsync(Assembly.GetExecutingAssembly().GetTypes());
 
             app.UseRouting();
 

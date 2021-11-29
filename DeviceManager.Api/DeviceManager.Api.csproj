@@ -3,6 +3,7 @@
     <ItemGroup>
         <ProjectReference Include="..\DeviceManager.Services\DeviceManager.Services.csproj" />
         <ProjectReference Include="..\DeviceManager.Core\DeviceManager.Core.csproj" />
+        <ProjectReference Include="..\UserIdentity.Core\UserIdentity.Core.csproj" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -12,6 +13,8 @@
 
     <ItemGroup>
         <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.1" />
+        <PackageReference Include="EasyNetQ" Version="6.3.1" />
+        <PackageReference Include="EasyNetQ.DI.Microsoft" Version="6.3.1" />
         <PackageReference Include="FluentValidation" Version="10.3.4" />
         <PackageReference Include="FluentValidation.AspNetCore" Version="10.3.4" />
         <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="10.3.4" />

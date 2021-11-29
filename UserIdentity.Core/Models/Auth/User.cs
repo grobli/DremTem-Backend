@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Identity;
+using Shared;
 
 namespace UserIdentity.Core.Models.Auth
 {
@@ -8,5 +9,10 @@ namespace UserIdentity.Core.Models.Auth
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }
+    }
+
+    public class UserPagedParameters
+    {
+        public PageQueryStringParameters Page { get; } = new();
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -37,9 +38,15 @@ namespace DeviceManager.Api.Handlers.LocationHandlers
 
             var newLocation = _mapper.Map<CreateLocationRequest, Location>(request.Body);
 
-            var createdLocation = await _locationService.CreateLocationAsync(newLocation, cancellationToken);
-
-            return _mapper.Map<Location, LocationDto>(createdLocation);
+            try
+            {
+                var createdLocation = await _locationService.CreateLocationAsync(newLocation, cancellationToken);
+                return _mapper.Map<Location, LocationDto>(createdLocation);
+            }
+            catch (ValidationException e)
+            {
+                throw new RpcException(new Status(StatusCode.InvalidArgument, e.Message, e));
+            }
         }
     }
 }

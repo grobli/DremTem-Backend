@@ -12,7 +12,7 @@ service SensorGrpcService {
 
   rpc AddSensor (CreateSensorRequest) returns (SensorDto);
   rpc UpdateSensor (UpdateSensorRequest) returns (SensorDto);
-  rpc DeleteSensor (GenericDeleteRequest) returns (SensorDto);
+  rpc DeleteSensor (GenericDeleteRequest) returns (DeleteSensorResponse);
 }
 
 message GetAllSensorsResponse {
@@ -38,4 +38,9 @@ message UpdateSensorRequest {
 
   // allow only owner of the sensor to update it
   string UserId = 8;
+}
+
+message DeleteSensorResponse {
+  int32 DeletedSensorId = 1;
+  int32 ParentDeviceId = 2;
 }

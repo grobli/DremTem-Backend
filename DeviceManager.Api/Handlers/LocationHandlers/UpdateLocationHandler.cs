@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -44,10 +45,17 @@ namespace DeviceManager.Api.Handlers.LocationHandlers
                 throw new RpcException(new Status(StatusCode.NotFound, "Not found"));
             }
 
-            await _locationService
-                .UpdateLocationAsync(location, _mapper.Map<UpdateLocationRequest, Location>(request.Body),
-                    cancellationToken);
-            return _mapper.Map<Location, LocationDto>(location);
+            try
+            {
+                await _locationService
+                    .UpdateLocationAsync(location, _mapper.Map<UpdateLocationRequest, Location>(request.Body),
+                        cancellationToken);
+                return _mapper.Map<Location, LocationDto>(location);
+            }
+            catch (ValidationException e)
+            {
+                throw new RpcException(new Status(StatusCode.InvalidArgument, e.Message, e));
+            }
         }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Security.Claims;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -106,7 +105,7 @@ namespace ClientApiGateway.Api.Controllers
 
         // POST: api/v1/Devices
         [HttpPost]
-        public async Task<ActionResult<DeviceDto>> CreateDevice(CreateDeviceResource resource,
+        public async Task<ActionResult<DeviceDto>> CreateDevice([FromBody] CreateDeviceResource resource,
             CancellationToken token)
         {
             var request = _mapper.Map<CreateDeviceResource, CreateDeviceRequest>(resource);
@@ -114,7 +113,8 @@ namespace ClientApiGateway.Api.Controllers
             try
             {
                 var createdDevice = await _deviceService.CreateDeviceAsync(request, cancellationToken: token);
-                return CreatedAtAction("GetDevice", createdDevice.Id, createdDevice);
+                return CreatedAtAction("GetDevice", new { id = createdDevice.Id },
+                    createdDevice);
             }
             catch (RpcException e)
             {
@@ -152,6 +152,21 @@ namespace ClientApiGateway.Api.Controllers
             try
             {
                 return Ok(await _deviceService.GenerateTokenAsync(request, cancellationToken: token));
+            }
+            catch (RpcException e)
+            {
+                return HandleRpcException(e);
+            }
+        }
+
+        // DELETE: api/v1/Devices/42
+        [HttpDelete("{id:int}")]
+        public async Task<ActionResult<DeviceDto>> DeleteDevice(int id, CancellationToken token)
+        {
+            var request = new GenericDeleteRequest { Id = id, UserId = UserId };
+            try
+            {
+                return Ok(await _deviceService.DeleteDeviceAsync(request, cancellationToken: token));
             }
             catch (RpcException e)
             {

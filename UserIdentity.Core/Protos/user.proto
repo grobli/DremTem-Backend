@@ -1,6 +1,5 @@
 ﻿syntax = "proto3";
 
-import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
 
 option csharp_namespace = "UserIdentity.Core.Proto";
@@ -9,17 +8,17 @@ package user;
 
 service UserGrpcService {
   // Read
-  rpc GetAllUsers (GetAllUsersRequest) returns (stream UserResource);
+  rpc GetAllUsers (GetAllUsersRequest) returns (GetAllUsersResponse);
 
-  rpc GetUserById (GetUserByIdRequest) returns (UserResource);
-  rpc GetUserByEmail (GetUserByEmailRequest) returns (UserResource);
+  rpc GetUserById (GetUserByIdRequest) returns (UserDto);
+  rpc GetUserByEmail (GetUserByEmailRequest) returns (UserDto);
   // Update
-  rpc UpdateUserDetails (UpdateUserDetailsRequest) returns (UserResource);
+  rpc UpdateUserDetails (UpdateUserDetailsRequest) returns (UserDto);
   // Delete
-  rpc DeleteUser (DeleteUserRequest) returns (google.protobuf.Empty);
+  rpc DeleteUser (DeleteUserRequest) returns (DeleteUserResponse);
 }
 
-message UserResource {
+message UserDto {
   string Id = 1;
   string FirstName = 2;
   google.protobuf.StringValue LastName = 3;
@@ -29,7 +28,15 @@ message UserResource {
   repeated string Roles = 7;
 }
 
-message GetAllUsersRequest {}
+message GetAllUsersRequest {
+  int32 PageSize = 1;
+  int32 PageNumber = 2;
+}
+
+message GetAllUsersResponse {
+  repeated UserDto Users = 1;
+  PaginationMetaData MetaData = 2;
+}
 
 message UpdateUserDetailsRequest {
   string Id = 1;
@@ -48,4 +55,17 @@ message GetUserByIdRequest {
 
 message GetUserByEmailRequest {
   string Email = 1;
+}
+
+message DeleteUserResponse {
+  string DeletedUserId = 1;
+}
+
+message PaginationMetaData {
+  int32 TotalCount = 1;
+  int32 PageSize = 2;
+  int32 CurrentPage = 3;
+  int32 TotalPages = 4;
+  bool HasNext = 5;
+  bool HasPrevious = 6;
 }

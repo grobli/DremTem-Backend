@@ -13,7 +13,7 @@ service SensorTypeGrpcService {
 
   rpc CreateSensorType (CreateSensorTypeRequest) returns (SensorTypeDto);
   rpc UpdateSensorType (UpdateSensorTypeRequest) returns (SensorTypeDto);
-  rpc DeleteSensorType (GenericDeleteRequest) returns (google.protobuf.Empty);
+  rpc DeleteSensorType (GenericDeleteRequest) returns (DeleteSensorTypeResponse);
 }
 
 message GetAllSensorTypesResponse {
@@ -38,4 +38,8 @@ message UpdateSensorTypeRequest {
   google.protobuf.StringValue UnitSymbol = 5;
   bool IsDiscrete = 6;
   bool IsSummable = 7;
+}
+
+message DeleteSensorTypeResponse {
+  int32 DeletedSensorTypeId = 1;
 }

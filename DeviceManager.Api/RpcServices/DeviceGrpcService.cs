@@ -36,7 +36,8 @@ namespace DeviceManager.Api.RpcServices
             return result;
         }
 
-        public override async Task<DeviceDto> CreateDevice(CreateDeviceRequest request, ServerCallContext context)
+        public override async Task<DeviceExtendedDto> CreateDevice(CreateDeviceRequest request,
+            ServerCallContext context)
         {
             var command = new CreateDeviceCommand(request);
             var result = await _mediator.Send(command, context.CancellationToken);
@@ -50,11 +51,12 @@ namespace DeviceManager.Api.RpcServices
             return result;
         }
 
-        public override Task<Empty> DeleteDevice(GenericDeleteRequest request, ServerCallContext context)
+        public override async Task<DeleteDeviceResponse> DeleteDevice(GenericDeleteRequest request,
+            ServerCallContext context)
         {
-            /* TODO: Tutaj trochę skomplikowane bo trzeba nie tylko usunąć samo urządzenie ale również sensory
-             TODO: i dane zebrane z sensorów w innym serwisie (bo nastąpi desynchronizacja danych AAAAAAAA) */
-            return base.DeleteDevice(request, context);
+            var command = new DeleteDeviceCommand(request);
+            var result = await _mediator.Send(command, context.CancellationToken);
+            return result;
         }
 
         public override async Task<Empty> Ping(PingRequest request, ServerCallContext context)

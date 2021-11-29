@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Security.Claims;
+using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using ClientApiGateway.Api.Resources.User;
@@ -33,22 +35,20 @@ namespace ClientApiGateway.Api.Controllers
             _mapper = mapper;
         }
 
-        // GET: api/v1/Users
+
+        // GET: api/v1/Users?pageNumber=1&pageSize=3
         [Authorize(Roles = DefaultRoles.SuperUser)]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<UserResource>>> GetAllUsers()
+        public async Task<ActionResult<IEnumerable<UserDto>>> GetAllUsers(
+            [FromQuery] UserPagedParameters parameters, CancellationToken token)
         {
+            var request = new GetAllUsersRequest
+                { PageNumber = parameters.Page.Number, PageSize = parameters.Page.Size };
             try
             {
-                var users = new List<UserResource>();
-
-                var call = _userService.GetAllUsers(new GetAllUsersRequest());
-                await foreach (var user in call.ResponseStream.ReadAllAsync())
-                {
-                    users.Add(user);
-                }
-
-                return Ok(users);
+                var result = await _userService.GetAllUsersAsync(request, cancellationToken: token);
+                Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(result.MetaData));
+                return Ok(result.Users);
             }
             catch (RpcException e)
             {
@@ -59,7 +59,7 @@ namespace ClientApiGateway.Api.Controllers
         // GET: api/v1/Users/fa87b04b-002f-4490-9c4d-659c474924cd
         [Authorize(Roles = DefaultRoles.SuperUser)]
         [HttpGet("{id:guid}")]
-        public async Task<ActionResult<UserResource>> GetUserById(Guid id)
+        public async Task<ActionResult<UserDto>> GetUserById(Guid id)
         {
             try
             {
@@ -74,7 +74,7 @@ namespace ClientApiGateway.Api.Controllers
         // GET: api/v1/Users/some%40email.com
         [Authorize(Roles = DefaultRoles.SuperUser)]
         [HttpGet("{email}")]
-        public async Task<ActionResult<UserResource>> GetUserByEmail(string email)
+        public async Task<ActionResult<UserDto>> GetUserByEmail(string email)
         {
             try
             {
@@ -88,7 +88,7 @@ namespace ClientApiGateway.Api.Controllers
 
         // GET: api/v1/Users/me
         [HttpGet("me")]
-        public async Task<ActionResult<UserResource>> GetCurrentUser()
+        public async Task<ActionResult<UserDto>> GetCurrentUser()
         {
             try
             {
@@ -104,7 +104,7 @@ namespace ClientApiGateway.Api.Controllers
         // PUT: api/v1/Users/fa87b04b-002f-4490-9c4d-659c474924cd
         [Authorize(Roles = DefaultRoles.SuperUser)]
         [HttpPut("{id:guid}")]
-        public async Task<ActionResult<UserResource>> UpdateUserDetails(UpdateUserDetailsResource resource, Guid id)
+        public async Task<ActionResult<UserDto>> UpdateUserDetails(UpdateUserDetailsResource resource, Guid id)
         {
             var request = _mapper.Map<UpdateUserDetailsResource, UpdateUserDetailsRequest>(resource);
             request.Id = id.ToString();
@@ -120,13 +120,30 @@ namespace ClientApiGateway.Api.Controllers
 
         //  PUT: api/v1/Users/me
         [HttpPut("me")]
-        public async Task<ActionResult<UserResource>> UpdateCurrentUserDetails(UpdateUserDetailsResource resource)
+        public async Task<ActionResult<UserDto>> UpdateCurrentUserDetails(UpdateUserDetailsResource resource)
         {
             var request = _mapper.Map<UpdateUserDetailsResource, UpdateUserDetailsRequest>(resource);
             request.Id = User.FindFirstValue(ClaimTypes.NameIdentifier);
             try
             {
                 return Ok(await _userService.UpdateUserDetailsAsync(request));
+            }
+            catch (RpcException e)
+            {
+                return HandleRpcException(e);
+            }
+        }
+
+        // DELETE: api/v1/Users/fa87b04b-002f-4490-9c4d-659c474924cd
+        [Authorize(Roles = DefaultRoles.SuperUser)]
+        [HttpDelete("{id:guid}")]
+        public async Task<ActionResult<DeleteUserResponse>> DeleteUser(Guid id)
+        {
+            var request = new DeleteUserRequest { Id = id.ToString() };
+            try
+            {
+                var result = await _userService.DeleteUserAsync(request);
+                return Ok(result);
             }
             catch (RpcException e)
             {

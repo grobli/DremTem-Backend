@@ -13,7 +13,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Shared;
 
-namespace DeviceManager.Api.Handlers.Device
+namespace DeviceManager.Api.Handlers.DeviceHandlers
 {
     public class GetAllDevicesHandler : IRequestHandler<GetAllDevicesQuery, GetAllDevicesResponse>
     {
