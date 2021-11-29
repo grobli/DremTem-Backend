@@ -17,7 +17,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Shared;
-using Shared.Settings;
+using Shared.Configs;
+using Shared.Extensions;
 
 namespace DeviceManager.Api
 {
@@ -45,6 +46,8 @@ namespace DeviceManager.Api
                     .UseSnakeCaseNamingConvention()
             );
 
+            services.AddConsul();
+
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IDeviceManagerContext, DeviceManagerContext>();
             services.AddTransient<IDeviceService, DeviceService>();
@@ -67,12 +70,12 @@ namespace DeviceManager.Api
             // message handlers
             services.AddScoped<UserMessageConsumer>();
 
-            services.Configure<JwtSettings>(Configuration.GetSection("Jwt"));
+            services.Configure<JwtConfig>(Configuration.GetSection("Jwt"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, DeviceManagerContext dbContext,
-            IBus bus)
+            IBus bus, IHostApplicationLifetime lifetime)
         {
             if (env.IsDevelopment())
             {
@@ -82,6 +85,8 @@ namespace DeviceManager.Api
 
             app.ApplicationServices.GetRequiredService<AutoSubscriber>()
                 .SubscribeAsync(Assembly.GetExecutingAssembly().GetTypes());
+
+            app.RegisterWithConsul(lifetime);
 
             app.UseRouting();
 

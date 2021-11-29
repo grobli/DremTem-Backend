@@ -11,6 +11,7 @@ using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Shared.Services.GrpcClientProvider;
 using UserIdentity.Core.Models.Auth;
 using static ClientApiGateway.Api.Handlers.RpcExceptionHandler;
 
@@ -22,19 +23,18 @@ namespace ClientApiGateway.Api.Controllers
     public class LocationsController : ControllerBase
     {
         private readonly ILogger<LocationsController> _logger;
-        private readonly LocationGrpcService.LocationGrpcServiceClient _locationService;
+        private readonly IGrpcClientProvider<LocationGrpcService.LocationGrpcServiceClient> _clientProvider;
         private readonly IMapper _mapper;
 
         private string UserId => User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         public LocationsController(
             ILogger<LocationsController> logger,
-            LocationGrpcService.LocationGrpcServiceClient locationService,
-            IMapper mapper)
+            IMapper mapper, IGrpcClientProvider<LocationGrpcService.LocationGrpcServiceClient> clientProvider)
         {
             _logger = logger;
-            _locationService = locationService;
             _mapper = mapper;
+            _clientProvider = clientProvider;
         }
 
         // GET: api/v1/Locations?includeDevices=true
@@ -69,7 +69,8 @@ namespace ClientApiGateway.Api.Controllers
             };
             try
             {
-                var result = await _locationService.GetAllLocationsAsync(request, cancellationToken: token);
+                var client = await _clientProvider.GetRandomClientAsync(token);
+                var result = await client.GetAllLocationsAsync(request, cancellationToken: token);
                 Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(result.MetaData));
                 return Ok(result.Locations);
             }
@@ -95,7 +96,8 @@ namespace ClientApiGateway.Api.Controllers
             };
             try
             {
-                var response = await _locationService.GetLocationAsync(request, cancellationToken: token);
+                var client = await _clientProvider.GetRandomClientAsync(token);
+                var response = await client.GetLocationAsync(request, cancellationToken: token);
                 var location = _mapper.Map<LocationExtendedDto, GetLocationResource>(response);
                 if (parameters.IncludeDevices) location.Devices = null;
                 return Ok(location);
@@ -115,7 +117,8 @@ namespace ClientApiGateway.Api.Controllers
             request.UserId = UserId;
             try
             {
-                var createdLocation = await _locationService.CreateLocationAsync(request, cancellationToken: token);
+                var client = await _clientProvider.GetRandomClientAsync(token);
+                var createdLocation = await client.CreateLocationAsync(request, cancellationToken: token);
                 return Created($"api/v1/Locations/{createdLocation.Id}", createdLocation);
             }
             catch (RpcException e)
@@ -134,7 +137,8 @@ namespace ClientApiGateway.Api.Controllers
             request.Id = id;
             try
             {
-                return Ok(await _locationService.UpdateLocationAsync(request, cancellationToken: token));
+                var client = await _clientProvider.GetRandomClientAsync(token);
+                return Ok(await client.UpdateLocationAsync(request, cancellationToken: token));
             }
             catch (RpcException e)
             {
@@ -149,7 +153,8 @@ namespace ClientApiGateway.Api.Controllers
             var request = new GenericDeleteRequest { Id = id, UserId = UserId };
             try
             {
-                return Ok(await _locationService.DeleteLocationAsync(request, cancellationToken: token));
+                var client = await _clientProvider.GetRandomClientAsync(token);
+                return Ok(await client.DeleteLocationAsync(request, cancellationToken: token));
             }
             catch (RpcException e)
             {

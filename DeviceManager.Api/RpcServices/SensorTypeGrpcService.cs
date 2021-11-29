@@ -1,9 +1,7 @@
 ﻿using System.Threading.Tasks;
 using DeviceManager.Api.Commands;
 using DeviceManager.Api.Queries;
-using DeviceManager.Core.Messages;
 using DeviceManager.Core.Proto;
-using EasyNetQ;
 using Grpc.Core;
 using MediatR;
 using Microsoft.Extensions.Logging;

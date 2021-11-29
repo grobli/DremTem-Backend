@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using ClientApiGateway.Api.Resources;
 using ClientApiGateway.Api.Resources.Device;
 using ClientApiGateway.Api.Resources.Location;
 using ClientApiGateway.Api.Resources.Sensor;

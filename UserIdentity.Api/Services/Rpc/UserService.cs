@@ -1,12 +1,9 @@
-﻿using System;
-using System.Threading.Tasks;
-using EasyNetQ;
+﻿using System.Threading.Tasks;
 using Grpc.Core;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using UserIdentity.Api.Commands;
 using UserIdentity.Api.Queries;
-using UserIdentity.Core.Messages;
 using UserIdentity.Core.Proto;
 
 namespace UserIdentity.Api.Services.Rpc

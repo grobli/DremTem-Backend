@@ -11,6 +11,7 @@ using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Shared.Services.GrpcClientProvider;
 using UserIdentity.Core.Models.Auth;
 using static ClientApiGateway.Api.Handlers.RpcExceptionHandler;
 
@@ -22,19 +23,20 @@ namespace ClientApiGateway.Api.Controllers
     public class DevicesController : ControllerBase
     {
         private readonly ILogger<DevicesController> _logger;
-        private readonly DeviceGrpcService.DeviceGrpcServiceClient _deviceService;
+
+        //     private readonly DeviceGrpcService.DeviceGrpcServiceClient _deviceService;
         private readonly IMapper _mapper;
+        private readonly IGrpcClientProvider<DeviceGrpcService.DeviceGrpcServiceClient> _clientProvider;
 
         private string UserId => User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         public DevicesController(
-            ILogger<DevicesController> logger,
-            DeviceGrpcService.DeviceGrpcServiceClient deviceService,
-            IMapper mapper)
+            ILogger<DevicesController> logger, IMapper mapper,
+            IGrpcClientProvider<DeviceGrpcService.DeviceGrpcServiceClient> clientProvider)
         {
             _logger = logger;
-            _deviceService = deviceService;
             _mapper = mapper;
+            _clientProvider = clientProvider;
         }
 
         // GET: api/v1/Devices?pageNumber=1&pageSize=3&includeLocation=true&includeSensors=false
@@ -69,7 +71,8 @@ namespace ClientApiGateway.Api.Controllers
             };
             try
             {
-                var result = await _deviceService.GetAllDevicesAsync(request, cancellationToken: token);
+                var client = await _clientProvider.GetRandomClientAsync(token);
+                var result = await client.GetAllDevicesAsync(request, cancellationToken: token);
                 Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(result.MetaData));
                 return Ok(result.Devices);
             }
@@ -95,7 +98,8 @@ namespace ClientApiGateway.Api.Controllers
             };
             try
             {
-                return Ok(await _deviceService.GetDeviceAsync(request, cancellationToken: token));
+                var client = await _clientProvider.GetRandomClientAsync(token);
+                return Ok(await client.GetDeviceAsync(request, cancellationToken: token));
             }
             catch (RpcException e)
             {
@@ -112,7 +116,8 @@ namespace ClientApiGateway.Api.Controllers
             request.UserId = UserId;
             try
             {
-                var createdDevice = await _deviceService.CreateDeviceAsync(request, cancellationToken: token);
+                var client = await _clientProvider.GetRandomClientAsync(token);
+                var createdDevice = await client.CreateDeviceAsync(request, cancellationToken: token);
                 return CreatedAtAction("GetDevice", new { id = createdDevice.Id },
                     createdDevice);
             }
@@ -132,7 +137,8 @@ namespace ClientApiGateway.Api.Controllers
             request.UserId = UserId;
             try
             {
-                return Ok(await _deviceService.UpdateDeviceAsync(request, cancellationToken: token));
+                var client = await _clientProvider.GetRandomClientAsync(token);
+                return Ok(await client.UpdateDeviceAsync(request, cancellationToken: token));
             }
             catch (RpcException e)
             {
@@ -151,7 +157,8 @@ namespace ClientApiGateway.Api.Controllers
             };
             try
             {
-                return Ok(await _deviceService.GenerateTokenAsync(request, cancellationToken: token));
+                var client = await _clientProvider.GetRandomClientAsync(token);
+                return Ok(await client.GenerateTokenAsync(request, cancellationToken: token));
             }
             catch (RpcException e)
             {
@@ -166,7 +173,8 @@ namespace ClientApiGateway.Api.Controllers
             var request = new GenericDeleteRequest { Id = id, UserId = UserId };
             try
             {
-                return Ok(await _deviceService.DeleteDeviceAsync(request, cancellationToken: token));
+                var client = await _clientProvider.GetRandomClientAsync(token);
+                return Ok(await client.DeleteDeviceAsync(request, cancellationToken: token));
             }
             catch (RpcException e)
             {

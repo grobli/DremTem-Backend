@@ -1,8 +1,6 @@
 ﻿using DeviceManager.Core;
 using DeviceManager.Core.Proto;
-using DeviceManager.Data.Configurations;
 using FluentValidation;
-using Microsoft.EntityFrameworkCore;
 using Shared.Extensions;
 
 namespace DeviceManager.Api.Validation.SensorRequests

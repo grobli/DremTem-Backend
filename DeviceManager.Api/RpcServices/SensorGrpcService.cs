@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
 using DeviceManager.Api.Commands;
 using DeviceManager.Api.Queries;
-using DeviceManager.Core.Messages;
 using DeviceManager.Core.Proto;
 using Grpc.Core;
 using MediatR;

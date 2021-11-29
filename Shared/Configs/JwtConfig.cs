@@ -1,6 +1,6 @@
-﻿namespace Shared.Settings
+﻿namespace Shared.Configs
 {
-    public class JwtSettings
+    public class JwtConfig
     {
         public string Issuer { get; set; }
         public string Secret { get; set; }

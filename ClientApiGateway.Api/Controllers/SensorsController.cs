@@ -11,6 +11,7 @@ using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Shared.Services.GrpcClientProvider;
 using UserIdentity.Core.Models.Auth;
 using static ClientApiGateway.Api.Handlers.RpcExceptionHandler;
 
@@ -22,19 +23,18 @@ namespace ClientApiGateway.Api.Controllers
     public class SensorsController : ControllerBase
     {
         private readonly ILogger<SensorsController> _logger;
-        private readonly SensorGrpcService.SensorGrpcServiceClient _sensorService;
+        private readonly IGrpcClientProvider<SensorGrpcService.SensorGrpcServiceClient> _clientProvider;
         private readonly IMapper _mapper;
 
         private string UserId => User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         public SensorsController(
-            ILogger<SensorsController> logger,
-            SensorGrpcService.SensorGrpcServiceClient sensorService,
-            IMapper mapper)
+            ILogger<SensorsController> logger, IMapper mapper,
+            IGrpcClientProvider<SensorGrpcService.SensorGrpcServiceClient> clientProvider)
         {
             _logger = logger;
-            _sensorService = sensorService;
             _mapper = mapper;
+            _clientProvider = clientProvider;
         }
 
         // GET: api/v1/Sensors?detailed=true
@@ -69,7 +69,8 @@ namespace ClientApiGateway.Api.Controllers
             };
             try
             {
-                var result = await _sensorService.GetAllSensorsAsync(request, cancellationToken: token);
+                var client = await _clientProvider.GetRandomClientAsync(token);
+                var result = await client.GetAllSensorsAsync(request, cancellationToken: token);
                 Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(result.MetaData));
                 return Ok(result.Sensors);
             }
@@ -95,7 +96,8 @@ namespace ClientApiGateway.Api.Controllers
             };
             try
             {
-                return Ok(await _sensorService.GetSensorAsync(request, cancellationToken: token));
+                var client = await _clientProvider.GetRandomClientAsync(token);
+                return Ok(await client.GetSensorAsync(request, cancellationToken: token));
             }
             catch (RpcException e)
             {
@@ -111,7 +113,8 @@ namespace ClientApiGateway.Api.Controllers
             request.UserId = User.IsInRole(DefaultRoles.SuperUser) ? null : UserId;
             try
             {
-                var createdSensor = await _sensorService.AddSensorAsync(request, cancellationToken: token);
+                var client = await _clientProvider.GetRandomClientAsync(token);
+                var createdSensor = await client.AddSensorAsync(request, cancellationToken: token);
                 return Created($"api/v1/Sensors/{createdSensor.Id}", createdSensor);
             }
             catch (RpcException e)
@@ -129,7 +132,8 @@ namespace ClientApiGateway.Api.Controllers
             request.UserId = User.IsInRole(DefaultRoles.SuperUser) ? null : UserId;
             try
             {
-                return Ok(await _sensorService.UpdateSensorAsync(request, cancellationToken: token));
+                var client = await _clientProvider.GetRandomClientAsync(token);
+                return Ok(await client.UpdateSensorAsync(request, cancellationToken: token));
             }
             catch (RpcException e)
             {

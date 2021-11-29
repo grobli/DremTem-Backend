@@ -4,13 +4,13 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using Shared.Settings;
+using Shared.Configs;
 
 namespace Shared.Extensions
 {
     public static class AuthExtension
     {
-        public static IServiceCollection AddAuth(this IServiceCollection services, JwtSettings jwtSettings)
+        public static IServiceCollection AddAuth(this IServiceCollection services, JwtConfig jwtConfig)
         {
             services.AddAuthorization()
                 .AddAuthentication(options =>
@@ -24,9 +24,9 @@ namespace Shared.Extensions
                     options.RequireHttpsMetadata = false;
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
-                        ValidIssuer = jwtSettings.Issuer,
-                        ValidAudience = jwtSettings.Issuer,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Secret)),
+                        ValidIssuer = jwtConfig.Issuer,
+                        ValidAudience = jwtConfig.Issuer,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtConfig.Secret)),
                         ClockSkew = TimeSpan.Zero
                     };
                 });

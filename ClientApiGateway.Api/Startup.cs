@@ -7,8 +7,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using Shared.Configs;
 using Shared.Extensions;
-using Shared.Settings;
+using Shared.Services;
+using Shared.Services.GrpcClientProvider;
 using UserIdentity.Core.Proto;
 
 namespace ClientApiGateway.Api
@@ -56,25 +58,25 @@ namespace ClientApiGateway.Api
                     }
                 };
 
+
                 c.AddSecurityRequirement(security);
             });
-
+            services.AddConsul();
             // --------------- gRPC clients ---------------------
-            // DeviceManager services
-            var deviceManagerUri = new Uri(Configuration.GetSection("Grpc:Urls")["DeviceManager"]);
-            services.AddGrpcClient<DeviceGrpcService.DeviceGrpcServiceClient>(o => o.Address = deviceManagerUri);
-            services.AddGrpcClient<LocationGrpcService.LocationGrpcServiceClient>(o => o.Address = deviceManagerUri);
-            services.AddGrpcClient<SensorGrpcService.SensorGrpcServiceClient>(o => o.Address = deviceManagerUri);
-            services.AddGrpcClient<SensorTypeGrpcService.SensorTypeGrpcServiceClient>(o =>
-                o.Address = deviceManagerUri);
-            // UserIdentity services
-            var userIdentityUri = new Uri(Configuration.GetSection("Grpc:Urls")["UserIdentity"]);
-            services.AddGrpcClient<UserAuthGrpcService.UserAuthGrpcServiceClient>(o => o.Address = userIdentityUri);
-            services.AddGrpcClient<UserGrpcService.UserGrpcServiceClient>(o => o.Address = userIdentityUri);
+            // DeviceManager service
+            services.AddGrpcClientProvider<DeviceGrpcService.DeviceGrpcServiceClient>("DeviceManager");
+            services.AddGrpcClientProvider<LocationGrpcService.LocationGrpcServiceClient>("DeviceManager");
+            services.AddGrpcClientProvider<SensorGrpcService.SensorGrpcServiceClient>("DeviceManager");
+            services.AddGrpcClientProvider<SensorTypeGrpcService.SensorTypeGrpcServiceClient>("DeviceManager");
+
+            // UserIdentity service
+            services.AddGrpcClientProvider<UserAuthGrpcService.UserAuthGrpcServiceClient>("UserIdentity");
+            services.AddGrpcClientProvider<UserGrpcService.UserGrpcServiceClient>("UserIdentity");
+
 
             services.AddAutoMapper(typeof(Startup));
 
-            var jwtSettings = Configuration.GetSection("Jwt").Get<JwtSettings>();
+            var jwtSettings = Configuration.GetSection("Jwt").Get<JwtConfig>();
             services.AddAuth(jwtSettings);
         }
 
