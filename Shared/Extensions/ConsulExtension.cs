@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Reflection;
 using Consul;
 using Microsoft.AspNetCore.Builder;
@@ -42,11 +44,11 @@ namespace Shared.Extensions
             var logger = loggingFactory.CreateLogger<IApplicationBuilder>();
 
             // get server ip address
-            var features = app.Properties["server.Features"] as FeatureCollection;
-            Debug.Assert(features != null, nameof(features) + " != null");
-            var addresses = features.Get<IServerAddressesFeature>();
-            Debug.Assert(addresses != null, nameof(addresses) + " != null");
-            var address = addresses.Addresses.First();
+            var serverAddressesFeature = app.ServerFeatures.Get<IServerAddressesFeature>();
+            var address = serverAddressesFeature.Addresses
+                .First()
+                .Replace("+", Dns.GetHostEntry(Dns.GetHostName()).AddressList
+                    .First(ip => ip.AddressFamily == AddressFamily.InterNetwork).ToString());
 
             // register service with consul
             var uri = new Uri(address);
@@ -59,7 +61,13 @@ namespace Shared.Extensions
                     ? Assembly.GetExecutingAssembly().GetName().Name
                     : consulConfig.ServiceName,
                 Address = $"{uri.Scheme}://{uri.Host}",
-                Port = uri.Port
+                Port = uri.Port,
+                Check = new AgentCheckRegistration
+                {
+                    GRPC = $"{uri.Host}:{uri.Port}",
+                    GRPCUseTLS = false,
+                    Interval = TimeSpan.FromSeconds(10)
+                }
             };
 
             logger.LogInformation($"Registering with Consul as {registration.Name}:{registration.ID}");

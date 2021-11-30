@@ -69,8 +69,8 @@ namespace ClientApiGateway.Api.Controllers
             };
             try
             {
-                var client = await _clientProvider.GetRandomClientAsync(token);
-                var result = await client.GetAllLocationsAsync(request, cancellationToken: token);
+                var result = await _clientProvider.SendRequestAsync(async client =>
+                    await client.GetAllLocationsAsync(request, cancellationToken: token));
                 Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(result.MetaData));
                 return Ok(result.Locations);
             }
@@ -96,8 +96,8 @@ namespace ClientApiGateway.Api.Controllers
             };
             try
             {
-                var client = await _clientProvider.GetRandomClientAsync(token);
-                var response = await client.GetLocationAsync(request, cancellationToken: token);
+                var response = await _clientProvider.SendRequestAsync(async client =>
+                    await client.GetLocationAsync(request, cancellationToken: token));
                 var location = _mapper.Map<LocationExtendedDto, GetLocationResource>(response);
                 if (parameters.IncludeDevices) location.Devices = null;
                 return Ok(location);
@@ -117,8 +117,8 @@ namespace ClientApiGateway.Api.Controllers
             request.UserId = UserId;
             try
             {
-                var client = await _clientProvider.GetRandomClientAsync(token);
-                var createdLocation = await client.CreateLocationAsync(request, cancellationToken: token);
+                var createdLocation = await _clientProvider.SendRequestAsync(async client =>
+                    await client.CreateLocationAsync(request, cancellationToken: token));
                 return Created($"api/v1/Locations/{createdLocation.Id}", createdLocation);
             }
             catch (RpcException e)
@@ -137,8 +137,9 @@ namespace ClientApiGateway.Api.Controllers
             request.Id = id;
             try
             {
-                var client = await _clientProvider.GetRandomClientAsync(token);
-                return Ok(await client.UpdateLocationAsync(request, cancellationToken: token));
+                var result = await _clientProvider.SendRequestAsync(async client =>
+                    await client.UpdateLocationAsync(request, cancellationToken: token));
+                return Ok(result);
             }
             catch (RpcException e)
             {
@@ -153,8 +154,9 @@ namespace ClientApiGateway.Api.Controllers
             var request = new GenericDeleteRequest { Id = id, UserId = UserId };
             try
             {
-                var client = await _clientProvider.GetRandomClientAsync(token);
-                return Ok(await client.DeleteLocationAsync(request, cancellationToken: token));
+                var result = await _clientProvider.SendRequestAsync(async client =>
+                    await client.DeleteLocationAsync(request, cancellationToken: token));
+                return Ok(result);
             }
             catch (RpcException e)
             {

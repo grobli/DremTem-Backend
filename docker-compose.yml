@@ -1,0 +1,68 @@
+version: '1.0'
+services:
+  db-postgres:
+    image: 'postgres'
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_PASSWORD: 'password'
+    volumes:
+      - './data/db:/var/lib/postgresql/data'
+  consul:
+    image: 'consul'
+    ports:
+      - '8500:8500'
+  rabbitmq:
+    image: 'rabbitmq:3-management'
+    ports:
+      - '15672:15672' # management
+  user-identity:
+    build:
+      context: '.'
+      dockerfile: './UserIdentity.Api/Dockerfile'
+    environment:
+      ASPNETCORE_URLS: 'http://+:6000;https://+:6001'
+      ASPNETCORE_HTTPS_PORT: '6001'
+      ASPNETCORE_ENVIRONMENT: 'docker'
+      ASPNETCORE_Kestrel__Certificates__Default__Password: password
+      ASPNETCORE_Kestrel__Certificates__Default__Path: /https/aspnetapp.pfx
+    volumes:
+      - '~/.aspnet/https:/https:ro'
+    depends_on:
+      - db-postgres
+      - rabbitmq
+      - consul
+  device-manager:
+    build:
+      context: '.'
+      dockerfile: './DeviceManager.Api/Dockerfile'
+    environment:
+      ASPNETCORE_URLS: 'http://+:5000;https://+:5001'
+      ASPNETCORE_HTTPS_PORT: '5001'
+      ASPNETCORE_ENVIRONMENT: 'docker'
+      ASPNETCORE_Kestrel__Certificates__Default__Password: password
+      ASPNETCORE_Kestrel__Certificates__Default__Path: /https/aspnetapp.pfx
+    volumes:
+      - '~/.aspnet/https:/https:ro'
+    depends_on:
+      - db-postgres
+      - rabbitmq
+      - consul
+  client-gateway:
+    build:
+      context: '.'
+      dockerfile: './ClientApiGateway.Api/Dockerfile'
+    ports:
+      - '8080:8080'
+      - '8081:8081'
+    environment:
+      ASPNETCORE_URLS: 'http://+:8080;https://+:8081'
+      ASPNETCORE_HTTPS_PORT: '8081'
+      ASPNETCORE_ENVIRONMENT: 'docker'
+      ASPNETCORE_Kestrel__Certificates__Default__Password: password
+      ASPNETCORE_Kestrel__Certificates__Default__Path: /https/aspnetapp.pfx
+    volumes:
+      - '~/.aspnet/https:/https:ro'
+    depends_on:
+      - consul
+      

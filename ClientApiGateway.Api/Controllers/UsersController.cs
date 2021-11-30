@@ -46,8 +46,8 @@ namespace ClientApiGateway.Api.Controllers
                 { PageNumber = parameters.Page.Number, PageSize = parameters.Page.Size };
             try
             {
-                var client = await _clientProvider.GetRandomClientAsync(token);
-                var result = await client.GetAllUsersAsync(request, cancellationToken: token);
+                var result = await _clientProvider.SendRequestAsync(async client =>
+                    await client.GetAllUsersAsync(request, cancellationToken: token));
                 Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(result.MetaData));
                 return Ok(result.Users);
             }
@@ -62,11 +62,12 @@ namespace ClientApiGateway.Api.Controllers
         [HttpGet("{id:guid}")]
         public async Task<ActionResult<UserDto>> GetUserById(Guid id, CancellationToken token)
         {
+            var request = new GetUserByIdRequest { Id = id.ToString() };
             try
             {
-                var client = await _clientProvider.GetRandomClientAsync(token);
-                return Ok(await client.GetUserByIdAsync(new GetUserByIdRequest { Id = id.ToString() },
-                    cancellationToken: token));
+                var result = await _clientProvider.SendRequestAsync(async client =>
+                    await client.GetUserByIdAsync(request, cancellationToken: token));
+                return Ok(result);
             }
             catch (RpcException e)
             {
@@ -79,11 +80,12 @@ namespace ClientApiGateway.Api.Controllers
         [HttpGet("{email}")]
         public async Task<ActionResult<UserDto>> GetUserByEmail(string email, CancellationToken token)
         {
+            var request = new GetUserByEmailRequest { Email = email };
             try
             {
-                var client = await _clientProvider.GetRandomClientAsync(token);
-                return Ok(await client.GetUserByEmailAsync(new GetUserByEmailRequest { Email = email },
-                    cancellationToken: token));
+                var result = await _clientProvider.SendRequestAsync(async client =>
+                    await client.GetUserByEmailAsync(request, cancellationToken: token));
+                return Ok(result);
             }
             catch (RpcException e)
             {
@@ -95,12 +97,14 @@ namespace ClientApiGateway.Api.Controllers
         [HttpGet("me")]
         public async Task<ActionResult<UserDto>> GetCurrentUser(CancellationToken token)
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             try
             {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                var client = await _clientProvider.GetRandomClientAsync(token);
-                return Ok(await client.GetUserByIdAsync(new GetUserByIdRequest { Id = userId },
-                    cancellationToken: token));
+                var request = new GetUserByIdRequest { Id = userId };
+                var result = await _clientProvider.SendRequestAsync(
+                    async client => await client.GetUserByIdAsync(request, cancellationToken: token),
+                    TimeSpan.FromSeconds(1));
+                return Ok(result);
             }
             catch (RpcException e)
             {
@@ -118,8 +122,9 @@ namespace ClientApiGateway.Api.Controllers
             request.Id = id.ToString();
             try
             {
-                var client = await _clientProvider.GetRandomClientAsync(token);
-                return Ok(await client.UpdateUserDetailsAsync(request, cancellationToken: token));
+                var result = await _clientProvider.SendRequestAsync(async client =>
+                    await client.UpdateUserDetailsAsync(request, cancellationToken: token));
+                return Ok(result);
             }
             catch (RpcException e)
             {
@@ -136,8 +141,9 @@ namespace ClientApiGateway.Api.Controllers
             request.Id = User.FindFirstValue(ClaimTypes.NameIdentifier);
             try
             {
-                var client = await _clientProvider.GetRandomClientAsync(token);
-                return Ok(await client.UpdateUserDetailsAsync(request, cancellationToken: token));
+                var result = await _clientProvider.SendRequestAsync(async client =>
+                    await client.UpdateUserDetailsAsync(request, cancellationToken: token));
+                return Ok(result);
             }
             catch (RpcException e)
             {
@@ -153,8 +159,8 @@ namespace ClientApiGateway.Api.Controllers
             var request = new DeleteUserRequest { Id = id.ToString() };
             try
             {
-                var client = await _clientProvider.GetRandomClientAsync(token);
-                var result = await client.DeleteUserAsync(request, cancellationToken: token);
+                var result = await _clientProvider.SendRequestAsync(async client =>
+                    await client.DeleteUserAsync(request, cancellationToken: token));
                 return Ok(result);
             }
             catch (RpcException e)

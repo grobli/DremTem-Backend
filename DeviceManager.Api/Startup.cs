@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using DeviceManager.Api.Consumers;
 using DeviceManager.Api.RpcServices;
 using DeviceManager.Core;
@@ -8,6 +9,7 @@ using DeviceManager.Services;
 using EasyNetQ;
 using EasyNetQ.AutoSubscribe;
 using FluentValidation;
+using Grpc.HealthCheck;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -37,12 +39,22 @@ namespace DeviceManager.Api
         {
             services.AddGrpc();
 
+            services.AddHealthChecks();
+
+            services.AddSingleton<HealthServiceImpl>();
+
+            services.AddHostedService<StatusService>();
+
             services.AddValidatorsFromAssembly(typeof(Startup).Assembly);
 
             var dataAssemblyName = typeof(DeviceManagerContext).Assembly.GetName().Name;
             services.AddDbContext<DeviceManagerContext>(opt =>
                 opt.UseNpgsql(Configuration.GetConnectionString("Default"),
-                        x => x.MigrationsAssembly(dataAssemblyName))
+                        x =>
+                        {
+                            x.MigrationsAssembly(dataAssemblyName);
+                            x.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null);
+                        })
                     .UseSnakeCaseNamingConvention()
             );
 
@@ -77,7 +89,7 @@ namespace DeviceManager.Api
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, DeviceManagerContext dbContext,
             IBus bus, IHostApplicationLifetime lifetime)
         {
-            if (env.IsDevelopment())
+            if (env.IsDevelopment() || env.IsEnvironment("docker"))
             {
                 app.UseDeveloperExceptionPage();
                 dbContext.Database.Migrate();
@@ -92,6 +104,7 @@ namespace DeviceManager.Api
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapGrpcService<HealthServiceImpl>();
                 endpoints.MapGrpcService<DeviceGrpcService>();
                 endpoints.MapGrpcService<LocationGrpcService>();
                 endpoints.MapGrpcService<SensorGrpcService>();

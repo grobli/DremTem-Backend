@@ -392,3 +392,8 @@ FodyWeavers.xsd
 
 # testing projects
 ConsoleApp*
+
+# docker-compose
+
+# db-postgres data folder
+data

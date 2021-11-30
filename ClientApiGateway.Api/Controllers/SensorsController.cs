@@ -69,8 +69,8 @@ namespace ClientApiGateway.Api.Controllers
             };
             try
             {
-                var client = await _clientProvider.GetRandomClientAsync(token);
-                var result = await client.GetAllSensorsAsync(request, cancellationToken: token);
+                var result = await _clientProvider.SendRequestAsync(async client =>
+                    await client.GetAllSensorsAsync(request, cancellationToken: token));
                 Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(result.MetaData));
                 return Ok(result.Sensors);
             }
@@ -96,8 +96,9 @@ namespace ClientApiGateway.Api.Controllers
             };
             try
             {
-                var client = await _clientProvider.GetRandomClientAsync(token);
-                return Ok(await client.GetSensorAsync(request, cancellationToken: token));
+                var result = await _clientProvider.SendRequestAsync(async client =>
+                    await client.GetSensorAsync(request, cancellationToken: token));
+                return Ok(result);
             }
             catch (RpcException e)
             {
@@ -113,8 +114,8 @@ namespace ClientApiGateway.Api.Controllers
             request.UserId = User.IsInRole(DefaultRoles.SuperUser) ? null : UserId;
             try
             {
-                var client = await _clientProvider.GetRandomClientAsync(token);
-                var createdSensor = await client.AddSensorAsync(request, cancellationToken: token);
+                var createdSensor = await _clientProvider.SendRequestAsync(async client =>
+                    await client.AddSensorAsync(request, cancellationToken: token));
                 return Created($"api/v1/Sensors/{createdSensor.Id}", createdSensor);
             }
             catch (RpcException e)
@@ -132,8 +133,9 @@ namespace ClientApiGateway.Api.Controllers
             request.UserId = User.IsInRole(DefaultRoles.SuperUser) ? null : UserId;
             try
             {
-                var client = await _clientProvider.GetRandomClientAsync(token);
-                return Ok(await client.UpdateSensorAsync(request, cancellationToken: token));
+                var result = await _clientProvider.SendRequestAsync(async client =>
+                    await client.UpdateSensorAsync(request, cancellationToken: token));
+                return Ok(result);
             }
             catch (RpcException e)
             {

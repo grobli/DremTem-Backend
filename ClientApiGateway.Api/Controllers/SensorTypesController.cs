@@ -53,8 +53,8 @@ namespace ClientApiGateway.Api.Controllers
             };
             try
             {
-                var client = await _clientProvider.GetRandomClientAsync(token);
-                var result = await client.GetAllSensorTypesAsync(request, cancellationToken: token);
+                var result = await _clientProvider.SendRequestAsync(async client =>
+                    await client.GetAllSensorTypesAsync(request, cancellationToken: token));
                 Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(result.MetaData));
                 return Ok(result.SensorTypes);
             }
@@ -75,8 +75,9 @@ namespace ClientApiGateway.Api.Controllers
             };
             try
             {
-                var client = await _clientProvider.GetRandomClientAsync(token);
-                return Ok(await client.GetSensorTypeAsync(request, cancellationToken: token));
+                var result = await _clientProvider.SendRequestAsync(async client =>
+                    await client.GetSensorTypeAsync(request, cancellationToken: token));
+                return Ok(result);
             }
             catch (RpcException e)
             {
@@ -92,8 +93,8 @@ namespace ClientApiGateway.Api.Controllers
         {
             try
             {
-                var client = await _clientProvider.GetRandomClientAsync(token);
-                var createdType = await client.CreateSensorTypeAsync(request, cancellationToken: token);
+                var createdType = await _clientProvider.SendRequestAsync(async client =>
+                    await client.CreateSensorTypeAsync(request, cancellationToken: token));
                 return Created($"api/v1/Sensors/{createdType.Id}", createdType);
             }
             catch (RpcException e)
@@ -112,8 +113,9 @@ namespace ClientApiGateway.Api.Controllers
             request.Id = id;
             try
             {
-                var client = await _clientProvider.GetRandomClientAsync(token);
-                return Ok(await client.UpdateSensorTypeAsync(request, cancellationToken: token));
+                var result = await _clientProvider.SendRequestAsync(async client =>
+                    await client.UpdateSensorTypeAsync(request, cancellationToken: token));
+                return Ok(result);
             }
             catch (RpcException e)
             {
@@ -129,8 +131,9 @@ namespace ClientApiGateway.Api.Controllers
             var request = new GenericDeleteRequest { Id = id, UserId = UserId };
             try
             {
-                var client = await _clientProvider.GetRandomClientAsync(token);
-                return Ok(await client.DeleteSensorTypeAsync(request, cancellationToken: token));
+                var result = await _clientProvider.SendRequestAsync(async client =>
+                    await client.DeleteSensorTypeAsync(request, cancellationToken: token));
+                return Ok(result);
             }
             catch (RpcException e)
             {

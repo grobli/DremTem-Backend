@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using EasyNetQ;
 using EasyNetQ.AutoSubscribe;
 using FluentValidation;
+using Grpc.HealthCheck;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -12,6 +15,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Shared;
 using Shared.Configs;
 using Shared.Extensions;
@@ -38,6 +42,12 @@ namespace UserIdentity.Api
         {
             services.AddGrpc();
 
+            services.AddHealthChecks();
+
+            services.AddSingleton<HealthServiceImpl>();
+
+            services.AddHostedService<StatusService>();
+
             services.AddValidatorsFromAssembly(typeof(Startup).Assembly);
 
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
@@ -58,7 +68,11 @@ namespace UserIdentity.Api
             var dataAssemblyName = typeof(UserDbContext).Assembly.GetName().Name;
             services.AddDbContext<UserDbContext>(options =>
                 options.UseNpgsql(Configuration.GetConnectionString("Default"),
-                    o => o.MigrationsAssembly(dataAssemblyName)));
+                    o =>
+                    {
+                        o.MigrationsAssembly(dataAssemblyName);
+                        o.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null);
+                    }));
 
             services.AddIdentity<User, Role>(options =>
                 {
@@ -76,12 +90,14 @@ namespace UserIdentity.Api
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IBus bus,
-            IHostApplicationLifetime lifetime, UserDbContext dbContext)
+            IHostApplicationLifetime lifetime, UserDbContext dbContext, RoleManager<Role> roleManager,
+            ILogger<Startup> logger)
         {
-            if (env.IsDevelopment())
+            if (env.IsDevelopment() || env.IsEnvironment("docker"))
             {
                 app.UseDeveloperExceptionPage();
-                dbContext.Database.Migrate();
+                dbContext.Database.MigrateAsync();
+                AddDefaultRolesIfNotExist(roleManager, logger);
             }
 
             // EasyNetQ
@@ -94,6 +110,7 @@ namespace UserIdentity.Api
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapGrpcService<HealthServiceImpl>();
                 endpoints.MapGrpcService<AuthService>();
                 endpoints.MapGrpcService<UserService>();
 
@@ -104,6 +121,24 @@ namespace UserIdentity.Api
                             "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
                     });
             });
+        }
+
+        private static void AddDefaultRolesIfNotExist(RoleManager<Role> roleManager,
+            ILogger<Startup> logger)
+        {
+            if (roleManager.Roles.Any()) return;
+
+            try
+            {
+                var baseUser = new Role { Name = DefaultRoles.BaseUser };
+                var superUser = new Role { Name = DefaultRoles.SuperUser };
+                Task.WaitAll(roleManager.CreateAsync(baseUser));
+                Task.WaitAll(roleManager.CreateAsync(superUser));
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, "An error occured while adding the default roles. :(");
+            }
         }
     }
 }

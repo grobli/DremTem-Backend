@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
 
@@ -10,6 +11,7 @@ namespace Shared.Services.GrpcClientProvider
 
         Task<TClient> GetClientByIdAsync(string id, CancellationToken cancellationToken = default);
 
-        //    Task<TClient> GetClientWithUriAsync(Uri address, CancellationToken cancellationToken = default);
+        Task<TResult> SendRequestAsync<TResult>(Func<TClient, Task<TResult>> requestFunc, TimeSpan? timeout = null,
+            int retryLimit = 5);
     }
 }

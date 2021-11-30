@@ -45,13 +45,13 @@ namespace UserIdentity.Api.Handlers.AuthHandlers
             var userCreateResult = await _userManager.CreateAsync(user, request.Body.Password);
             if (!userCreateResult.Succeeded)
             {
-                throw new RpcException(new Status(StatusCode.Internal, userCreateResult.Errors.First().Description));
+                throw new RpcException(new Status(StatusCode.InvalidArgument, userCreateResult.Errors.First().Description));
             }
 
             var roleResult = await _userManager.AddToRoleAsync(user, DefaultRoles.BaseUser);
             if (!roleResult.Succeeded)
             {
-                throw new RpcException(new Status(StatusCode.Internal, roleResult.Errors.First().Description));
+                throw new RpcException(new Status(StatusCode.InvalidArgument, roleResult.Errors.First().Description));
             }
 
             var userDto = _mapper.Map<User, UserDto>(user);
