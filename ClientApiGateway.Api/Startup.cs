@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using DeviceManager.Core.Proto;
+using Google.Protobuf.WellKnownTypes;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -10,7 +11,7 @@ using Microsoft.OpenApi.Models;
 using Shared.Configs;
 using Shared.Extensions;
 using Shared.Services;
-using Shared.Services.GrpcClientProvider;
+using Shared.Services.GrpcClientServices;
 using UserIdentity.Core.Proto;
 
 namespace ClientApiGateway.Api

@@ -72,5 +72,10 @@ namespace DeviceManager.Api.RpcServices
             var result = await _mediator.Send(command, context.CancellationToken);
             return result;
         }
+
+        public override async Task<Empty> PingService(Empty request, ServerCallContext context)
+        {
+            return await Task.FromResult(new Empty());
+        }
     }
 }

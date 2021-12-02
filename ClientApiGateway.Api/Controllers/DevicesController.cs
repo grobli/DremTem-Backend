@@ -11,7 +11,7 @@ using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Shared.Services.GrpcClientProvider;
+using Shared.Services.GrpcClientServices;
 using UserIdentity.Core.Models.Auth;
 using static ClientApiGateway.Api.Handlers.RpcExceptionHandler;
 
@@ -26,17 +26,17 @@ namespace ClientApiGateway.Api.Controllers
 
         //     private readonly DeviceGrpcService.DeviceGrpcServiceClient _deviceService;
         private readonly IMapper _mapper;
-        private readonly IGrpcClientProvider<DeviceGrpcService.DeviceGrpcServiceClient> _clientProvider;
+        private readonly IGrpcClient<DeviceGrpcService.DeviceGrpcServiceClient> _client;
 
         private string UserId => User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         public DevicesController(
             ILogger<DevicesController> logger, IMapper mapper,
-            IGrpcClientProvider<DeviceGrpcService.DeviceGrpcServiceClient> clientProvider)
+            IGrpcClient<DeviceGrpcService.DeviceGrpcServiceClient> client)
         {
             _logger = logger;
             _mapper = mapper;
-            _clientProvider = clientProvider;
+            _client = client;
         }
 
         // GET: api/v1/Devices?pageNumber=1&pageSize=3&includeLocation=true&includeSensors=false
@@ -71,7 +71,7 @@ namespace ClientApiGateway.Api.Controllers
             };
             try
             {
-                var result = await _clientProvider.SendRequestAsync(async client =>
+                var result = await _client.SendRequestAsync(async client =>
                     await client.GetAllDevicesAsync(request, cancellationToken: token));
                 Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(result.MetaData));
                 return Ok(result.Devices);
@@ -98,7 +98,7 @@ namespace ClientApiGateway.Api.Controllers
             };
             try
             {
-                var result = await _clientProvider.SendRequestAsync(async client =>
+                var result = await _client.SendRequestAsync(async client =>
                     await client.GetDeviceAsync(request, cancellationToken: token));
                 return Ok(result);
             }
@@ -117,7 +117,7 @@ namespace ClientApiGateway.Api.Controllers
             request.UserId = UserId;
             try
             {
-                var createdDevice = await _clientProvider.SendRequestAsync(async client =>
+                var createdDevice = await _client.SendRequestAsync(async client =>
                     await client.CreateDeviceAsync(request, cancellationToken: token));
                 return CreatedAtAction("GetDevice", new { id = createdDevice.Id },
                     createdDevice);
@@ -138,7 +138,7 @@ namespace ClientApiGateway.Api.Controllers
             request.UserId = UserId;
             try
             {
-                var result = await _clientProvider.SendRequestAsync(async client =>
+                var result = await _client.SendRequestAsync(async client =>
                     await client.UpdateDeviceAsync(request, cancellationToken: token));
                 return Ok(result);
             }
@@ -155,7 +155,7 @@ namespace ClientApiGateway.Api.Controllers
             var request = new GenerateTokenRequest { Id = id, UserId = UserId };
             try
             {
-                var result = await _clientProvider.SendRequestAsync(async client =>
+                var result = await _client.SendRequestAsync(async client =>
                     await client.GenerateTokenAsync(request, cancellationToken: token));
                 return Ok(result);
             }
@@ -172,7 +172,7 @@ namespace ClientApiGateway.Api.Controllers
             var request = new GenericDeleteRequest { Id = id, UserId = UserId };
             try
             {
-                var result = await _clientProvider.SendRequestAsync(async client =>
+                var result = await _client.SendRequestAsync(async client =>
                     await client.DeleteDeviceAsync(request, cancellationToken: token));
                 return Ok(result);
             }

@@ -11,7 +11,7 @@ using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Shared.Services.GrpcClientProvider;
+using Shared.Services.GrpcClientServices;
 using UserIdentity.Core.Models.Auth;
 using static ClientApiGateway.Api.Handlers.RpcExceptionHandler;
 
@@ -23,18 +23,18 @@ namespace ClientApiGateway.Api.Controllers
     public class LocationsController : ControllerBase
     {
         private readonly ILogger<LocationsController> _logger;
-        private readonly IGrpcClientProvider<LocationGrpcService.LocationGrpcServiceClient> _clientProvider;
+        private readonly IGrpcClient<LocationGrpcService.LocationGrpcServiceClient> _client;
         private readonly IMapper _mapper;
 
         private string UserId => User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         public LocationsController(
             ILogger<LocationsController> logger,
-            IMapper mapper, IGrpcClientProvider<LocationGrpcService.LocationGrpcServiceClient> clientProvider)
+            IMapper mapper, IGrpcClient<LocationGrpcService.LocationGrpcServiceClient> client)
         {
             _logger = logger;
             _mapper = mapper;
-            _clientProvider = clientProvider;
+            _client = client;
         }
 
         // GET: api/v1/Locations?includeDevices=true
@@ -69,7 +69,7 @@ namespace ClientApiGateway.Api.Controllers
             };
             try
             {
-                var result = await _clientProvider.SendRequestAsync(async client =>
+                var result = await _client.SendRequestAsync(async client =>
                     await client.GetAllLocationsAsync(request, cancellationToken: token));
                 Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(result.MetaData));
                 return Ok(result.Locations);
@@ -96,7 +96,7 @@ namespace ClientApiGateway.Api.Controllers
             };
             try
             {
-                var response = await _clientProvider.SendRequestAsync(async client =>
+                var response = await _client.SendRequestAsync(async client =>
                     await client.GetLocationAsync(request, cancellationToken: token));
                 var location = _mapper.Map<LocationExtendedDto, GetLocationResource>(response);
                 if (parameters.IncludeDevices) location.Devices = null;
@@ -117,7 +117,7 @@ namespace ClientApiGateway.Api.Controllers
             request.UserId = UserId;
             try
             {
-                var createdLocation = await _clientProvider.SendRequestAsync(async client =>
+                var createdLocation = await _client.SendRequestAsync(async client =>
                     await client.CreateLocationAsync(request, cancellationToken: token));
                 return Created($"api/v1/Locations/{createdLocation.Id}", createdLocation);
             }
@@ -137,7 +137,7 @@ namespace ClientApiGateway.Api.Controllers
             request.Id = id;
             try
             {
-                var result = await _clientProvider.SendRequestAsync(async client =>
+                var result = await _client.SendRequestAsync(async client =>
                     await client.UpdateLocationAsync(request, cancellationToken: token));
                 return Ok(result);
             }
@@ -154,7 +154,7 @@ namespace ClientApiGateway.Api.Controllers
             var request = new GenericDeleteRequest { Id = id, UserId = UserId };
             try
             {
-                var result = await _clientProvider.SendRequestAsync(async client =>
+                var result = await _client.SendRequestAsync(async client =>
                     await client.DeleteLocationAsync(request, cancellationToken: token));
                 return Ok(result);
             }

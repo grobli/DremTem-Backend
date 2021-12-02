@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -55,6 +56,11 @@ namespace UserIdentity.Api.Services.Rpc
             var command = new DeleteUserCommand(request);
             var result = await _mediator.Send(command, context.CancellationToken);
             return result;
+        }
+
+        public override async Task<Empty> PingService(Empty request, ServerCallContext context)
+        {
+            return await Task.FromResult(new Empty());
         }
     }
 }

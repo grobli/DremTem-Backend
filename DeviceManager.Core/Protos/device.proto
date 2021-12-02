@@ -17,6 +17,8 @@ service DeviceGrpcService {
 
   rpc Ping (PingRequest) returns (google.protobuf.Empty);
   rpc GenerateToken (GenerateTokenRequest) returns (GenerateTokenResponse);
+
+  rpc PingService (google.protobuf.Empty) returns (google.protobuf.Empty);
 }
 
 message GetAllDevicesResponse {

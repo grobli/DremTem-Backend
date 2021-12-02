@@ -5,7 +5,7 @@ using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Shared.Services.GrpcClientProvider;
+using Shared.Services.GrpcClientServices;
 using UserIdentity.Core.Models.Auth;
 using UserIdentity.Core.Proto;
 using static ClientApiGateway.Api.Handlers.RpcExceptionHandler;
@@ -18,13 +18,13 @@ namespace ClientApiGateway.Api.Controllers
     public class AuthController : ControllerBase
     {
         private readonly ILogger<AuthController> _logger;
-        private readonly IGrpcClientProvider<UserAuthGrpcService.UserAuthGrpcServiceClient> _clientProvider;
+        private readonly IGrpcClient<UserAuthGrpcService.UserAuthGrpcServiceClient> _client;
 
         public AuthController(ILogger<AuthController> logger,
-            IGrpcClientProvider<UserAuthGrpcService.UserAuthGrpcServiceClient> clientProvider)
+            IGrpcClient<UserAuthGrpcService.UserAuthGrpcServiceClient> client)
         {
             _logger = logger;
-            _clientProvider = clientProvider;
+            _client = client;
         }
 
         // POST: api/v1/Auth/signup
@@ -34,7 +34,7 @@ namespace ClientApiGateway.Api.Controllers
         {
             try
             {
-                var result = await _clientProvider.SendRequestAsync(async client =>
+                var result = await _client.SendRequestAsync(async client =>
                     await client.SignUpAsync(request, cancellationToken: token));
                 return Ok(result);
             }
@@ -51,7 +51,7 @@ namespace ClientApiGateway.Api.Controllers
         {
             try
             {
-                var result = await _clientProvider.SendRequestAsync(async client =>
+                var result = await _client.SendRequestAsync(async client =>
                     await client.SignInAsync(request, cancellationToken: token));
                 return Ok(result);
             }
@@ -68,7 +68,7 @@ namespace ClientApiGateway.Api.Controllers
         {
             try
             {
-                var result = await _clientProvider.SendRequestAsync(async client =>
+                var result = await _client.SendRequestAsync(async client =>
                     await client.CreateRoleAsync(request, cancellationToken: token));
                 return Ok(result);
             }
@@ -85,7 +85,7 @@ namespace ClientApiGateway.Api.Controllers
         {
             try
             {
-                var result = await _clientProvider.SendRequestAsync(async client =>
+                var result = await _client.SendRequestAsync(async client =>
                     await client.AddUserToRoleAsync(request, cancellationToken: token));
                 return Ok(result);
             }

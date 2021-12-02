@@ -32,6 +32,7 @@ services:
       - db-postgres
       - rabbitmq
       - consul
+    command: [ './wait-for-it.sh', 'db-postgres:5432' ]
   device-manager:
     build:
       context: '.'
@@ -48,6 +49,7 @@ services:
       - db-postgres
       - rabbitmq
       - consul
+    command: [ './wait-for-it.sh', 'db-postgres:5432' ]
   client-gateway:
     build:
       context: '.'
