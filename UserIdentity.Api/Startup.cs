@@ -96,7 +96,7 @@ namespace UserIdentity.Api
             if (env.IsDevelopment() || env.IsEnvironment("docker"))
             {
                 app.UseDeveloperExceptionPage();
-                dbContext.Database.MigrateAsync();
+                dbContext.Database.Migrate();
                 AddDefaultRolesIfNotExist(roleManager, logger);
             }
 

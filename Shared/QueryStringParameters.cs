@@ -8,8 +8,8 @@ namespace Shared
 
     public sealed class PageQueryStringParameters
     {
-        public const int MaxPageSize = 200;
-        public const int DefaultPageSize = 50;
+        public const int MaxPageSize = 2000;
+        public const int DefaultPageSize = 500;
 
         private int _size = DefaultPageSize;
 

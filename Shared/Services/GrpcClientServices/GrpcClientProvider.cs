@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Consul;
+using Google.Protobuf;
 using Grpc.Core;
 using Grpc.Net.Client;
 using Microsoft.Extensions.Logging;
@@ -62,7 +63,7 @@ namespace Shared.Services.GrpcClientServices
             }
         }
 
-        private GrpcChannel AddChannel(AgentService service)
+        private async Task<GrpcChannel> AddChannel(AgentService service)
         {
             if (Cache.TryGetValue(service.ID, out var channel)) return channel;
 
@@ -75,7 +76,40 @@ namespace Shared.Services.GrpcClientServices
 
             _logger.LogInformation("Added new channel: {channel}", channel.Target);
             _logger.LogInformation("Total registered channels: {channels}", Cache.Count);
+
+            // perform three warmups to ensure that endpoints are fully warmed up
+            var warmups = Enumerable.Range(0, 3).Select(_ => WarmupConnection(channel));
+            await Task.WhenAll(warmups);
             return channel;
+        }
+
+        private static async Task WarmupConnection(GrpcChannel channel)
+        {
+            var serviceMethods = typeof(TClient)
+                .GetMethods()
+                .Where(m => m.ReturnType.GetInterfaces().Contains(typeof(IMessage)) ||
+                            m.ReturnType.IsGenericType &&
+                            m.ReturnType.GenericTypeArguments.First().GetInterfaces().Contains(typeof(IMessage)));
+            var client = CreateClient(channel);
+
+            var warmupRequests = new List<Task>();
+            foreach (var methodInfo in serviceMethods)
+            {
+                var arguments = methodInfo.GetParameters()
+                    .Select((p, i) => i == 0 ? p.ParameterType : Type.Missing)
+                    .ToArray();
+                arguments[0] = Activator.CreateInstance((Type)arguments[0])!;
+                warmupRequests.Add(Task.Run(() => methodInfo.Invoke(client, arguments)));
+            }
+
+            try
+            {
+                await Task.WhenAll(warmupRequests);
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
         }
 
         private void RemoveChannel(string serviceId)
@@ -96,10 +130,13 @@ namespace Shared.Services.GrpcClientServices
             var services = await FetchHealthyServiceIds(token);
             _logger.LogDebug($"fetched healthy services count: {services.Count}");
             if (services.Count == 0) return;
-            var addedChannels = services
+            var addChannelTasks = services
                 .Where(agentService => !Cache.TryGetValue(agentService.ID, out _))
                 .Select(AddChannel)
                 .ToList();
+
+            await Task.WhenAll(addChannelTasks);
+            var addedChannels = addChannelTasks.Select(task => task.Result);
 
             if (InitializeConnectionAction is not null)
             {
