@@ -67,6 +67,7 @@ namespace DeviceManager.Api
             services.AddTransient<ISensorService, SensorService>();
             services.AddTransient<ISensorTypeService, SensorTypeService>();
             services.AddTransient<IDeviceTokenService, DeviceTokenService>();
+            services.AddTransient<IGroupService, GroupService>();
             services.AddMediatR(typeof(Startup));
             services.AddAutoMapper(typeof(Startup));
 
@@ -109,6 +110,7 @@ namespace DeviceManager.Api
                 endpoints.MapGrpcService<LocationGrpcService>();
                 endpoints.MapGrpcService<SensorGrpcService>();
                 endpoints.MapGrpcService<SensorTypeGrpcService>();
+                endpoints.MapGrpcService<GroupGrpcService>();
 
                 endpoints.MapGet("/",
                     async context =>

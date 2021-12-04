@@ -5,9 +5,9 @@ using Shared.Services.GrpcClientServices;
 
 namespace Shared.Extensions
 {
-    public static class GrpcClientExtension
+    public static class GrpcServiceExtension
     {
-        public static IServiceCollection AddGrpcClientProvider<TClient>(this IServiceCollection serviceCollection,
+        public static IServiceCollection AddGrpcServiceProvider<TClient>(this IServiceCollection serviceCollection,
             string serviceName, Action<TClient> initializeConnectionAction = null) where TClient : ClientBase
         {
             using var serviceProvider = serviceCollection.BuildServiceProvider();
@@ -19,7 +19,7 @@ namespace Shared.Extensions
             );
             serviceCollection.AddSingleton<IGrpcClientProvider<TClient>, GrpcClientProvider<TClient>>();
             serviceCollection.AddHostedService<GrpcChannelScanner<TClient>>();
-            serviceCollection.AddTransient<IGrpcClient<TClient>, GrpcClient<TClient>>();
+            serviceCollection.AddTransient<IGrpcService<TClient>, GrpcService<TClient>>();
 
             return serviceCollection;
         }

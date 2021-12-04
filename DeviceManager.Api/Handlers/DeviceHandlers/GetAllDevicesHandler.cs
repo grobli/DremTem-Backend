@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using DeviceManager.Api.Queries;
 using DeviceManager.Core.Extensions;
+using DeviceManager.Core.Models;
 using DeviceManager.Core.Proto;
 using DeviceManager.Core.Services;
 using FluentValidation;
@@ -19,14 +20,16 @@ namespace DeviceManager.Api.Handlers.DeviceHandlers
     {
         private readonly IValidator<GenericGetManyRequest> _validator;
         private readonly IDeviceService _deviceService;
+        private readonly ISensorService _sensorService;
         private readonly IMapper _mapper;
 
         public GetAllDevicesHandler(IValidator<GenericGetManyRequest> validator, IDeviceService deviceService,
-            IMapper mapper)
+            IMapper mapper, ISensorService sensorService)
         {
             _validator = validator;
             _deviceService = deviceService;
             _mapper = mapper;
+            _sensorService = sensorService;
         }
 
         public async Task<GetAllDevicesResponse> Handle(GetAllDevicesQuery request, CancellationToken cancellationToken)
@@ -40,7 +43,7 @@ namespace DeviceManager.Api.Handlers.DeviceHandlers
             }
 
             var userId = query.Parameters?.UserId() ?? Guid.Empty;
-            var devices = _deviceService.GetAllDevicesQuery(userId);
+            IQueryable<Device> devices = _deviceService.GetAllDevicesQuery(userId).Include(d => d.Groups);
             if (query.Parameters != null)
                 devices = query.Parameters.IncludeFieldsSet(Entity.Location, Entity.Sensor)
                     .Aggregate(devices, (current, field) => field switch
@@ -50,16 +53,53 @@ namespace DeviceManager.Api.Handlers.DeviceHandlers
                         _ => current
                     });
 
-            var pagedList = await PagedList<Core.Models.Device>.ToPagedListAsync(devices, query.PageNumber,
+            var pagedList = await PagedList<Device>.ToPagedListAsync(devices, query.PageNumber,
                 query.PageSize, cancellationToken);
+
+            var pagedListMapped = pagedList
+                .Select(d => _mapper.Map<Device, DeviceExtendedDto>(d))
+                .ToList();
+
+            await AddSensorIdsToMap();
 
             var response = new GetAllDevicesResponse
             {
-                Devices = { pagedList.Select(d => _mapper.Map<Core.Models.Device, DeviceExtendedDto>(d)) },
+                Devices = { pagedListMapped },
                 MetaData = new PaginationMetaData().FromPagedList(pagedList)
             };
 
             return response;
+
+            async Task AddSensorIdsToMap()
+            {
+                // add sensor ids 
+                if (query.Parameters.IncludeFieldsSet(Entity.Sensor).Count > 0)
+                {
+                    foreach (var device in pagedListMapped)
+                    {
+                        var sensors = device.Sensors.Select(s => s.Id);
+                        device.SensorIds.AddRange(sensors);
+                    }
+                }
+                else
+                {
+                    var deviceIds = pagedListMapped.Select(d => d.Id);
+                    var sensors = await _sensorService.GetAllSensorsQuery(userId)
+                        .Where(s => deviceIds.Contains(s.DeviceId))
+                        .Select(s => new { s.DeviceId, s.Id })
+                        .ToListAsync(cancellationToken);
+
+                    var sensorDict = sensors
+                        .GroupBy(s => s.DeviceId)
+                        .Select(pair => new { DeviceId = pair.Key, SensorIds = pair.Select(p => p.Id) })
+                        .ToDictionary(x => x.DeviceId, x => x.SensorIds);
+
+                    foreach (var device in pagedListMapped)
+                    {
+                        device.SensorIds.AddRange(sensorDict[device.Id]);
+                    }
+                }
+            }
         }
     }
 }

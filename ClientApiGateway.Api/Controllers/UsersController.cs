@@ -23,16 +23,16 @@ namespace ClientApiGateway.Api.Controllers
     public class UsersController : ControllerBase
     {
         private readonly ILogger<UsersController> _logger;
-        private readonly IGrpcClient<UserGrpcService.UserGrpcServiceClient> _client;
+        private readonly IGrpcService<UserGrpcService.UserGrpcServiceClient> _grpcService;
         private readonly IMapper _mapper;
 
         public UsersController(
             ILogger<UsersController> logger, IMapper mapper,
-            IGrpcClient<UserGrpcService.UserGrpcServiceClient> client)
+            IGrpcService<UserGrpcService.UserGrpcServiceClient> grpcService)
         {
             _logger = logger;
             _mapper = mapper;
-            _client = client;
+            _grpcService = grpcService;
         }
 
 
@@ -46,7 +46,7 @@ namespace ClientApiGateway.Api.Controllers
                 { PageNumber = parameters.Page.Number, PageSize = parameters.Page.Size };
             try
             {
-                var result = await _client.SendRequestAsync(async client =>
+                var result = await _grpcService.SendRequestAsync(async client =>
                     await client.GetAllUsersAsync(request, cancellationToken: token));
                 Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(result.MetaData));
                 return Ok(result.Users);
@@ -65,7 +65,7 @@ namespace ClientApiGateway.Api.Controllers
             var request = new GetUserByIdRequest { Id = id.ToString() };
             try
             {
-                var result = await _client.SendRequestAsync(async client =>
+                var result = await _grpcService.SendRequestAsync(async client =>
                     await client.GetUserByIdAsync(request, cancellationToken: token));
                 return Ok(result);
             }
@@ -83,7 +83,7 @@ namespace ClientApiGateway.Api.Controllers
             var request = new GetUserByEmailRequest { Email = email };
             try
             {
-                var result = await _client.SendRequestAsync(async client =>
+                var result = await _grpcService.SendRequestAsync(async client =>
                     await client.GetUserByEmailAsync(request, cancellationToken: token));
                 return Ok(result);
             }
@@ -101,7 +101,7 @@ namespace ClientApiGateway.Api.Controllers
             try
             {
                 var request = new GetUserByIdRequest { Id = userId };
-                var result = await _client.SendRequestAsync(
+                var result = await _grpcService.SendRequestAsync(
                     async client => await client.GetUserByIdAsync(request, cancellationToken: token),
                     TimeSpan.FromSeconds(1));
                 return Ok(result);
@@ -122,7 +122,7 @@ namespace ClientApiGateway.Api.Controllers
             request.Id = id.ToString();
             try
             {
-                var result = await _client.SendRequestAsync(async client =>
+                var result = await _grpcService.SendRequestAsync(async client =>
                     await client.UpdateUserDetailsAsync(request, cancellationToken: token));
                 return Ok(result);
             }
@@ -141,7 +141,7 @@ namespace ClientApiGateway.Api.Controllers
             request.Id = User.FindFirstValue(ClaimTypes.NameIdentifier);
             try
             {
-                var result = await _client.SendRequestAsync(async client =>
+                var result = await _grpcService.SendRequestAsync(async client =>
                     await client.UpdateUserDetailsAsync(request, cancellationToken: token));
                 return Ok(result);
             }
@@ -159,7 +159,7 @@ namespace ClientApiGateway.Api.Controllers
             var request = new DeleteUserRequest { Id = id.ToString() };
             try
             {
-                var result = await _client.SendRequestAsync(async client =>
+                var result = await _grpcService.SendRequestAsync(async client =>
                     await client.DeleteUserAsync(request, cancellationToken: token));
                 return Ok(result);
             }

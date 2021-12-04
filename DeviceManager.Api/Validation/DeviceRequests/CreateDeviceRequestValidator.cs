@@ -28,6 +28,10 @@ namespace DeviceManager.Api.Validation.DeviceRequests
                     sensor.RuleFor(x => x.Name)
                         .NotEmpty();
                 });
+
+            RuleFor(r => r.UserId)
+                .NotEmpty()
+                .Guid();
         }
     }
 }

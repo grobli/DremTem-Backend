@@ -12,6 +12,7 @@ namespace DeviceManager.Data
         public DbSet<Location> Locations { get; set; }
         public DbSet<Sensor> Sensors { get; set; }
         public DbSet<SensorType> SensorTypes { get; set; }
+        public DbSet<Group> Groups { get; set; }
 
         public DeviceManagerContext(DbContextOptions<DeviceManagerContext> options) : base(options)
         {
@@ -27,6 +28,7 @@ namespace DeviceManager.Data
             builder.ApplyConfiguration(new LocationConfiguration());
             builder.ApplyConfiguration(new SensorConfiguration());
             builder.ApplyConfiguration(new SensorTypeConfiguration());
+            builder.ApplyConfiguration(new GroupConfiguration());
         }
     }
 }

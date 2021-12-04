@@ -18,15 +18,17 @@ namespace DeviceManager.Api.Handlers.LocationHandlers
     public class GetLocationHandler : IRequestHandler<GetLocationQuery, LocationExtendedDto>
     {
         private readonly ILocationService _locationService;
+        private readonly IDeviceService _deviceService;
         private readonly IMapper _mapper;
         private readonly IValidator<GenericGetRequest> _validator;
 
         public GetLocationHandler(ILocationService locationService, IValidator<GenericGetRequest> validator,
-            IMapper mapper)
+            IMapper mapper, IDeviceService deviceService)
         {
             _locationService = locationService;
             _validator = validator;
             _mapper = mapper;
+            _deviceService = deviceService;
         }
 
         public async Task<LocationExtendedDto> Handle(GetLocationQuery request, CancellationToken cancellationToken)
@@ -54,7 +56,18 @@ namespace DeviceManager.Api.Handlers.LocationHandlers
                     new Status(StatusCode.NotFound, "Not found"));
             }
 
-            return _mapper.Map<Location, LocationExtendedDto>(location);
+            var locationMap = _mapper.Map<Location, LocationExtendedDto>(location);
+
+            // add device ids
+            var devices = query.Parameters.IncludeFieldsSet(Entity.Device).Count > 0
+                ? locationMap.Devices.Select(d => d.Id)
+                : await _deviceService.GetAllDevicesQuery(userId)
+                    .Where(d => d.LocationId == location.Id)
+                    .Select(d => d.Id)
+                    .ToArrayAsync(cancellationToken);
+            locationMap.DeviceIds.AddRange(devices);
+
+            return locationMap;
         }
     }
 }

@@ -26,9 +26,7 @@ namespace Shared.Services.GrpcClientServices
                 try
                 {
                     await _clientProvider.RefreshChannels(stoppingToken);
-                    _logger.LogInformation("Refreshed connections with grpc services of {Service}",
-                        typeof(TClient).Name);
-                    await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+                    await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
                 }
                 catch (Exception ex)
                 {

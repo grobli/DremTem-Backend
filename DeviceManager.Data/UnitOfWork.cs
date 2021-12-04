@@ -13,11 +13,13 @@ namespace DeviceManager.Data
         private LocationRepository _locationRepository;
         private SensorRepository _sensorRepository;
         private SensorTypeRepository _typeRepository;
+        private GroupRepository _groupRepository;
 
         public IDeviceRepository Devices => _deviceRepository ??= new DeviceRepository(_context);
         public ILocationRepository Locations => _locationRepository ??= new LocationRepository(_context);
         public ISensorRepository Sensors => _sensorRepository ??= new SensorRepository(_context);
         public ISensorTypeRepository SensorTypes => _typeRepository ??= new SensorTypeRepository(_context);
+        public IGroupRepository Groups => _groupRepository ??= new GroupRepository(_context);
 
         public UnitOfWork(IDeviceManagerContext context)
         {

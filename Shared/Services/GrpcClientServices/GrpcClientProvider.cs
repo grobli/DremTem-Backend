@@ -74,12 +74,10 @@ namespace Shared.Services.GrpcClientServices
                 Channels.AddLast(new ServiceChannel { ServiceId = service.ID, Channel = channel });
             }
 
-            _logger.LogInformation("Added new channel: {channel}", channel.Target);
-            _logger.LogInformation("Total registered channels: {channels}", Cache.Count);
+            _logger.LogInformation("[{client}] Added new channel: {channel} | Total registered channels: {count}",
+                typeof(TClient).Name, channel.Target, Cache.Count);
 
-            // perform three warmups to ensure that endpoints are fully warmed up
-            var warmups = Enumerable.Range(0, 3).Select(_ => WarmupConnection(channel));
-            await Task.WhenAll(warmups);
+            await WarmupConnection(channel);
             return channel;
         }
 
@@ -91,7 +89,6 @@ namespace Shared.Services.GrpcClientServices
                             m.ReturnType.IsGenericType &&
                             m.ReturnType.GenericTypeArguments.First().GetInterfaces().Contains(typeof(IMessage)));
             var client = CreateClient(channel);
-
             var warmupRequests = new List<Task>();
             foreach (var methodInfo in serviceMethods)
             {
@@ -121,15 +118,14 @@ namespace Shared.Services.GrpcClientServices
                 if (channelNode is not null) Channels.Remove(channelNode);
             }
 
-            _logger.LogInformation($"Removed channel for service: {_config.ServiceName}:{serviceId}");
+            _logger.LogInformation(
+                $"[{typeof(TClient).Name}] Removed channel for service: {_config.ServiceName}:{serviceId}");
         }
 
         public async Task RefreshChannels(CancellationToken token = default)
         {
-            _logger.LogDebug($"Refreshing channels, channels count: {Cache.Count}");
             var services = await FetchHealthyServiceIds(token);
-            _logger.LogDebug($"fetched healthy services count: {services.Count}");
-            if (services.Count == 0) return;
+
             var addChannelTasks = services
                 .Where(agentService => !Cache.TryGetValue(agentService.ID, out _))
                 .Select(AddChannel)
@@ -181,7 +177,7 @@ namespace Shared.Services.GrpcClientServices
                 .Where(ch => !ch.Status.Equals(HealthStatus.Passing))
                 .Select(ch => ch.ServiceID))
             {
-                RemoveChannel(unhealthyServiceId);
+                if (Cache.ContainsKey(unhealthyServiceId)) RemoveChannel(unhealthyServiceId);
             }
         }
 

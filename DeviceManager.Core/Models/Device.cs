@@ -10,12 +10,12 @@ namespace DeviceManager.Core.Models
 {
     public record Device
     {
-        private string _macAddress;
-
         public int Id { get; set; }
         public string Name { get; set; }
         public string DisplayName { get; set; }
         public bool Online { get; set; }
+
+        private string _macAddress;
 
         public string MacAddress
         {
@@ -33,6 +33,7 @@ namespace DeviceManager.Core.Models
         public Guid UserId { get; set; }
 
         public ICollection<Sensor> Sensors { get; set; }
+        public ICollection<Group> Groups { get; set; }
 
         public override string ToString() => JsonSerializer.Serialize(this);
 
@@ -77,6 +78,6 @@ namespace DeviceManager.Core.Models
 
     public class DevicePagedParameters : DeviceParameters
     {
-        public PageQueryStringParameters Page { get; }= new();
+        public PageQueryStringParameters Page { get; } = new();
     }
 }

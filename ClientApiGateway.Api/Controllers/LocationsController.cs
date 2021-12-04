@@ -7,12 +7,14 @@ using AutoMapper;
 using ClientApiGateway.Api.Resources.Location;
 using DeviceManager.Core.Models;
 using DeviceManager.Core.Proto;
+using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Shared.Services.GrpcClientServices;
 using UserIdentity.Core.Models.Auth;
+using UserIdentity.Core.Proto;
 using static ClientApiGateway.Api.Handlers.RpcExceptionHandler;
 
 namespace ClientApiGateway.Api.Controllers
@@ -23,18 +25,18 @@ namespace ClientApiGateway.Api.Controllers
     public class LocationsController : ControllerBase
     {
         private readonly ILogger<LocationsController> _logger;
-        private readonly IGrpcClient<LocationGrpcService.LocationGrpcServiceClient> _client;
+        private readonly IGrpcService<LocationGrpcService.LocationGrpcServiceClient> _grpcService;
         private readonly IMapper _mapper;
 
         private string UserId => User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         public LocationsController(
             ILogger<LocationsController> logger,
-            IMapper mapper, IGrpcClient<LocationGrpcService.LocationGrpcServiceClient> client)
+            IMapper mapper, IGrpcService<LocationGrpcService.LocationGrpcServiceClient> grpcService)
         {
             _logger = logger;
             _mapper = mapper;
-            _client = client;
+            _grpcService = grpcService;
         }
 
         // GET: api/v1/Locations?includeDevices=true
@@ -69,7 +71,7 @@ namespace ClientApiGateway.Api.Controllers
             };
             try
             {
-                var result = await _client.SendRequestAsync(async client =>
+                var result = await _grpcService.SendRequestAsync(async client =>
                     await client.GetAllLocationsAsync(request, cancellationToken: token));
                 Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(result.MetaData));
                 return Ok(result.Locations);
@@ -96,7 +98,7 @@ namespace ClientApiGateway.Api.Controllers
             };
             try
             {
-                var response = await _client.SendRequestAsync(async client =>
+                var response = await _grpcService.SendRequestAsync(async client =>
                     await client.GetLocationAsync(request, cancellationToken: token));
                 var location = _mapper.Map<LocationExtendedDto, GetLocationResource>(response);
                 if (parameters.IncludeDevices) location.Devices = null;
@@ -117,9 +119,9 @@ namespace ClientApiGateway.Api.Controllers
             request.UserId = UserId;
             try
             {
-                var createdLocation = await _client.SendRequestAsync(async client =>
+                var createdLocation = await _grpcService.SendRequestAsync(async client =>
                     await client.CreateLocationAsync(request, cancellationToken: token));
-                return Created($"api/v1/Locations/{createdLocation.Id}", createdLocation);
+                return CreatedAtAction("GetLocation", new { id = createdLocation.Id }, createdLocation);
             }
             catch (RpcException e)
             {
@@ -133,11 +135,11 @@ namespace ClientApiGateway.Api.Controllers
             CancellationToken token)
         {
             var request = _mapper.Map<UpdateLocationResource, UpdateLocationRequest>(resource);
-            request.UserId = User.IsInRole(DefaultRoles.SuperUser) ? null : UserId;
+            request.UserId = UserId;
             request.Id = id;
             try
             {
-                var result = await _client.SendRequestAsync(async client =>
+                var result = await _grpcService.SendRequestAsync(async client =>
                     await client.UpdateLocationAsync(request, cancellationToken: token));
                 return Ok(result);
             }
@@ -149,12 +151,12 @@ namespace ClientApiGateway.Api.Controllers
 
         // DELETE: api/v1/Locations/42
         [HttpDelete("{id:int}")]
-        public async Task<ActionResult<LocationDto>> DeleteLocation(int id, CancellationToken token)
+        public async Task<ActionResult<Empty>> DeleteLocation(int id, CancellationToken token)
         {
             var request = new GenericDeleteRequest { Id = id, UserId = UserId };
             try
             {
-                var result = await _client.SendRequestAsync(async client =>
+                var result = await _grpcService.SendRequestAsync(async client =>
                     await client.DeleteLocationAsync(request, cancellationToken: token));
                 return Ok(result);
             }

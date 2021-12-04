@@ -19,15 +19,17 @@ namespace DeviceManager.Api.Handlers.LocationHandlers
     public class GetAllLocationsHandler : IRequestHandler<GetAllLocationsQuery, GetAllLocationsResponse>
     {
         private readonly ILocationService _locationService;
+        private readonly IDeviceService _deviceService;
         private readonly IMapper _mapper;
         private readonly IValidator<GenericGetManyRequest> _validator;
 
         public GetAllLocationsHandler(ILocationService locationService, IMapper mapper,
-            IValidator<GenericGetManyRequest> validator)
+            IValidator<GenericGetManyRequest> validator, IDeviceService deviceService)
         {
             _locationService = locationService;
             _mapper = mapper;
             _validator = validator;
+            _deviceService = deviceService;
         }
 
         public async Task<GetAllLocationsResponse> Handle(GetAllLocationsQuery request,
@@ -52,13 +54,38 @@ namespace DeviceManager.Api.Handlers.LocationHandlers
             var pagedList = await PagedList<Location>.ToPagedListAsync(locations, query.PageNumber, query.PageSize,
                 cancellationToken);
 
+            var pagedListMapped = pagedList
+                .Select(l => _mapper.Map<Location, LocationExtendedDto>(l))
+                .ToList();
+
+            await AddDeviceIdsToMap();
+
             var response = new GetAllLocationsResponse
             {
-                Locations = { pagedList.Select(l => _mapper.Map<Location, LocationExtendedDto>(l)) },
+                Locations = { pagedListMapped },
                 MetaData = new PaginationMetaData().FromPagedList(pagedList)
             };
 
             return response;
+
+            async Task AddDeviceIdsToMap()
+            {
+                var locationIds = pagedListMapped.Select(l => l.Id);
+                var devices = await _deviceService.GetAllDevicesQuery(userId)
+                    .Where(d => locationIds.Contains(d.LocationId ?? 0))
+                    .Select(d => new { LocationId = d.LocationId.Value, d.Id })
+                    .ToListAsync(cancellationToken);
+
+                var devicesDict = devices
+                    .GroupBy(d => d.LocationId)
+                    .Select(pair => new { LocationId = pair.Key, DeviceIds = pair.Select(p => p.Id) })
+                    .ToDictionary(x => x.LocationId, x => x.DeviceIds);
+
+                foreach (var location in pagedListMapped)
+                {
+                    location.DeviceIds.AddRange(devicesDict[location.Id]);
+                }
+            }
         }
     }
 }

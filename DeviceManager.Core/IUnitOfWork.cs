@@ -11,6 +11,7 @@ namespace DeviceManager.Core
         ILocationRepository Locations { get; }
         ISensorRepository Sensors { get; }
         ISensorTypeRepository SensorTypes { get; }
+        IGroupRepository Groups { get; }
 
         Task<int> CommitAsync(CancellationToken cancellationToken);
     }

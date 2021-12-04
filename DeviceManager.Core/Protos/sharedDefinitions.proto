@@ -18,6 +18,8 @@ message DeviceDto {
   google.protobuf.Timestamp Created = 10;
   google.protobuf.Int32Value LocationId = 11;
   string UserId = 12;
+  repeated int32 SensorIds = 13;
+  repeated GroupTinyDto Groups = 14;
 }
 
 message DeviceExtendedDto {
@@ -33,9 +35,27 @@ message DeviceExtendedDto {
   google.protobuf.Timestamp Created = 10;
   google.protobuf.Int32Value LocationId = 11;
   string UserId = 12;
+  repeated int32 SensorIds = 13;
+  repeated GroupTinyDto Groups = 14;
+  repeated SensorDto Sensors = 20;
+  LocationDto Location = 21;
 
-  LocationDto Location = 32;
-  repeated SensorDto Sensors = 33;
+}
+
+message GroupDto {
+  int32 Id = 1;
+  string Name = 2;
+  google.protobuf.StringValue DisplayName = 3;
+  google.protobuf.Timestamp LastModified = 4;
+  google.protobuf.Timestamp Created = 5;
+  string UserId = 12;
+  repeated int32 DeviceIds = 13;
+}
+
+message GroupTinyDto {
+  int32 Id = 1;
+  string Name = 2;
+  google.protobuf.StringValue DisplayName = 3;
 }
 
 
@@ -50,6 +70,7 @@ message LocationDto {
   google.protobuf.FloatValue Longitude = 6;
   google.protobuf.Timestamp LastModified = 7;
   google.protobuf.Timestamp Created = 8;
+  repeated int32 DeviceIds = 9;
 }
 
 
@@ -64,6 +85,7 @@ message LocationExtendedDto {
   google.protobuf.FloatValue Longitude = 6;
   google.protobuf.Timestamp LastModified = 7;
   google.protobuf.Timestamp Created = 8;
+  repeated int32 DeviceIds = 9;
 
   repeated DeviceDto Devices = 32;
 }
@@ -92,14 +114,13 @@ message SensorTypeDto {
   int32 Id = 1;
 
   string Name = 2;
-  string DataType = 3;
-  string Unit = 4;
-  string UnitShort = 5;
-  google.protobuf.StringValue UnitSymbol = 6;
-  bool IsDiscrete = 7;
-  bool IsSummable = 8;
-  google.protobuf.Timestamp LastModified = 10;
-  google.protobuf.Timestamp Created = 11;
+  string Unit = 3;
+  string UnitShort = 4;
+  google.protobuf.StringValue UnitSymbol = 5;
+  bool IsDiscrete = 6;
+  bool IsSummable = 7;
+  google.protobuf.Timestamp LastModified = 8;
+  google.protobuf.Timestamp Created = 9;
 }
 
 enum Entity {
@@ -108,6 +129,7 @@ enum Entity {
   LOCATION = 2;
   SENSOR = 3;
   SENSOR_TYPE = 4;
+  GROUP = 5;
 }
 
 message GetRequestParameters {

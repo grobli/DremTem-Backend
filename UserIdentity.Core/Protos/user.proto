@@ -1,6 +1,5 @@
 ﻿syntax = "proto3";
 
-import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
 
 option csharp_namespace = "UserIdentity.Core.Proto";
@@ -17,9 +16,6 @@ service UserGrpcService {
   rpc UpdateUserDetails (UpdateUserDetailsRequest) returns (UserDto);
   // Delete
   rpc DeleteUser (DeleteUserRequest) returns (DeleteUserResponse);
-
-  // other
-  rpc PingService (google.protobuf.Empty) returns (google.protobuf.Empty);
 }
 
 message UserDto {

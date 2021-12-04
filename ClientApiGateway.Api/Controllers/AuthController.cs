@@ -18,13 +18,13 @@ namespace ClientApiGateway.Api.Controllers
     public class AuthController : ControllerBase
     {
         private readonly ILogger<AuthController> _logger;
-        private readonly IGrpcClient<UserAuthGrpcService.UserAuthGrpcServiceClient> _client;
+        private readonly IGrpcService<UserAuthGrpcService.UserAuthGrpcServiceClient> _grpcService;
 
         public AuthController(ILogger<AuthController> logger,
-            IGrpcClient<UserAuthGrpcService.UserAuthGrpcServiceClient> client)
+            IGrpcService<UserAuthGrpcService.UserAuthGrpcServiceClient> grpcService)
         {
             _logger = logger;
-            _client = client;
+            _grpcService = grpcService;
         }
 
         // POST: api/v1/Auth/signup
@@ -34,7 +34,7 @@ namespace ClientApiGateway.Api.Controllers
         {
             try
             {
-                var result = await _client.SendRequestAsync(async client =>
+                var result = await _grpcService.SendRequestAsync(async client =>
                     await client.SignUpAsync(request, cancellationToken: token));
                 return Ok(result);
             }
@@ -51,7 +51,7 @@ namespace ClientApiGateway.Api.Controllers
         {
             try
             {
-                var result = await _client.SendRequestAsync(async client =>
+                var result = await _grpcService.SendRequestAsync(async client =>
                     await client.SignInAsync(request, cancellationToken: token));
                 return Ok(result);
             }
@@ -68,7 +68,7 @@ namespace ClientApiGateway.Api.Controllers
         {
             try
             {
-                var result = await _client.SendRequestAsync(async client =>
+                var result = await _grpcService.SendRequestAsync(async client =>
                     await client.CreateRoleAsync(request, cancellationToken: token));
                 return Ok(result);
             }
@@ -85,7 +85,7 @@ namespace ClientApiGateway.Api.Controllers
         {
             try
             {
-                var result = await _client.SendRequestAsync(async client =>
+                var result = await _grpcService.SendRequestAsync(async client =>
                     await client.AddUserToRoleAsync(request, cancellationToken: token));
                 return Ok(result);
             }

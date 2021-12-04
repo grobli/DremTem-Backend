@@ -26,17 +26,17 @@ namespace ClientApiGateway.Api.Controllers
 
         //     private readonly DeviceGrpcService.DeviceGrpcServiceClient _deviceService;
         private readonly IMapper _mapper;
-        private readonly IGrpcClient<DeviceGrpcService.DeviceGrpcServiceClient> _client;
+        private readonly IGrpcService<DeviceGrpcService.DeviceGrpcServiceClient> _grpcService;
 
         private string UserId => User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         public DevicesController(
             ILogger<DevicesController> logger, IMapper mapper,
-            IGrpcClient<DeviceGrpcService.DeviceGrpcServiceClient> client)
+            IGrpcService<DeviceGrpcService.DeviceGrpcServiceClient> grpcService)
         {
             _logger = logger;
             _mapper = mapper;
-            _client = client;
+            _grpcService = grpcService;
         }
 
         // GET: api/v1/Devices?pageNumber=1&pageSize=3&includeLocation=true&includeSensors=false
@@ -71,7 +71,7 @@ namespace ClientApiGateway.Api.Controllers
             };
             try
             {
-                var result = await _client.SendRequestAsync(async client =>
+                var result = await _grpcService.SendRequestAsync(async client =>
                     await client.GetAllDevicesAsync(request, cancellationToken: token));
                 Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(result.MetaData));
                 return Ok(result.Devices);
@@ -98,7 +98,7 @@ namespace ClientApiGateway.Api.Controllers
             };
             try
             {
-                var result = await _client.SendRequestAsync(async client =>
+                var result = await _grpcService.SendRequestAsync(async client =>
                     await client.GetDeviceAsync(request, cancellationToken: token));
                 return Ok(result);
             }
@@ -117,7 +117,7 @@ namespace ClientApiGateway.Api.Controllers
             request.UserId = UserId;
             try
             {
-                var createdDevice = await _client.SendRequestAsync(async client =>
+                var createdDevice = await _grpcService.SendRequestAsync(async client =>
                     await client.CreateDeviceAsync(request, cancellationToken: token));
                 return CreatedAtAction("GetDevice", new { id = createdDevice.Id },
                     createdDevice);
@@ -138,7 +138,7 @@ namespace ClientApiGateway.Api.Controllers
             request.UserId = UserId;
             try
             {
-                var result = await _client.SendRequestAsync(async client =>
+                var result = await _grpcService.SendRequestAsync(async client =>
                     await client.UpdateDeviceAsync(request, cancellationToken: token));
                 return Ok(result);
             }
@@ -155,7 +155,7 @@ namespace ClientApiGateway.Api.Controllers
             var request = new GenerateTokenRequest { Id = id, UserId = UserId };
             try
             {
-                var result = await _client.SendRequestAsync(async client =>
+                var result = await _grpcService.SendRequestAsync(async client =>
                     await client.GenerateTokenAsync(request, cancellationToken: token));
                 return Ok(result);
             }
@@ -167,12 +167,12 @@ namespace ClientApiGateway.Api.Controllers
 
         // DELETE: api/v1/Devices/42
         [HttpDelete("{id:int}")]
-        public async Task<ActionResult<DeviceDto>> DeleteDevice(int id, CancellationToken token)
+        public async Task<ActionResult<DeleteDeviceResponse>> DeleteDevice(int id, CancellationToken token)
         {
             var request = new GenericDeleteRequest { Id = id, UserId = UserId };
             try
             {
-                var result = await _client.SendRequestAsync(async client =>
+                var result = await _grpcService.SendRequestAsync(async client =>
                     await client.DeleteDeviceAsync(request, cancellationToken: token));
                 return Ok(result);
             }

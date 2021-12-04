@@ -23,18 +23,18 @@ namespace ClientApiGateway.Api.Controllers
     public class SensorsController : ControllerBase
     {
         private readonly ILogger<SensorsController> _logger;
-        private readonly IGrpcClient<SensorGrpcService.SensorGrpcServiceClient> _client;
+        private readonly IGrpcService<SensorGrpcService.SensorGrpcServiceClient> _grpcService;
         private readonly IMapper _mapper;
 
         private string UserId => User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         public SensorsController(
             ILogger<SensorsController> logger, IMapper mapper,
-            IGrpcClient<SensorGrpcService.SensorGrpcServiceClient> client)
+            IGrpcService<SensorGrpcService.SensorGrpcServiceClient> grpcService)
         {
             _logger = logger;
             _mapper = mapper;
-            _client = client;
+            _grpcService = grpcService;
         }
 
         // GET: api/v1/Sensors?detailed=true
@@ -69,7 +69,7 @@ namespace ClientApiGateway.Api.Controllers
             };
             try
             {
-                var result = await _client.SendRequestAsync(async client =>
+                var result = await _grpcService.SendRequestAsync(async client =>
                     await client.GetAllSensorsAsync(request, cancellationToken: token));
                 Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(result.MetaData));
                 return Ok(result.Sensors);
@@ -96,7 +96,7 @@ namespace ClientApiGateway.Api.Controllers
             };
             try
             {
-                var result = await _client.SendRequestAsync(async client =>
+                var result = await _grpcService.SendRequestAsync(async client =>
                     await client.GetSensorAsync(request, cancellationToken: token));
                 return Ok(result);
             }
@@ -114,7 +114,7 @@ namespace ClientApiGateway.Api.Controllers
             request.UserId = User.IsInRole(DefaultRoles.SuperUser) ? null : UserId;
             try
             {
-                var createdSensor = await _client.SendRequestAsync(async client =>
+                var createdSensor = await _grpcService.SendRequestAsync(async client =>
                     await client.AddSensorAsync(request, cancellationToken: token));
                 return Created($"api/v1/Sensors/{createdSensor.Id}", createdSensor);
             }
@@ -133,8 +133,25 @@ namespace ClientApiGateway.Api.Controllers
             request.UserId = User.IsInRole(DefaultRoles.SuperUser) ? null : UserId;
             try
             {
-                var result = await _client.SendRequestAsync(async client =>
+                var result = await _grpcService.SendRequestAsync(async client =>
                     await client.UpdateSensorAsync(request, cancellationToken: token));
+                return Ok(result);
+            }
+            catch (RpcException e)
+            {
+                return HandleRpcException(e);
+            }
+        }
+
+        // DELETE: api/v1/Sensors/42
+        [HttpDelete("{id:int}")]
+        public async Task<ActionResult<DeleteSensorResponse>> DeleteSensor(int id, CancellationToken token)
+        {
+            var request = new GenericDeleteRequest { Id = id, UserId = UserId };
+            try
+            {
+                var result = await _grpcService.SendRequestAsync(async client =>
+                    await client.DeleteSensorAsync(request, cancellationToken: token));
                 return Ok(result);
             }
             catch (RpcException e)

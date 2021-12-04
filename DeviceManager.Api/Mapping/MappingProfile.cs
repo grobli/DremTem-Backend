@@ -117,6 +117,21 @@ namespace DeviceManager.Api.Mapping
 
             CreateMap<Device, GenerateTokenResponse>();
 
+            CreateMap<Group, GroupDto>()
+                .ForMember(
+                    dest => dest.Created,
+                    opt => opt.MapFrom(src => Timestamp.FromDateTime(src.Created)))
+                .ForMember(
+                    dest => dest.LastModified,
+                    opt =>
+                    {
+                        opt.PreCondition(src => src.LastModified.HasValue);
+                        opt.MapFrom(src => Timestamp.FromDateTime(src.LastModified.Value));
+                    })
+                .ForMember(
+                    dest => dest.DeviceIds,
+                    opt => opt.MapFrom(src => src.Devices.Select(d => d.Id)));
+
 
             //---------- Resource/Request to Domain ----------
             CreateMap<CreateDeviceRequest, Device>()
@@ -146,6 +161,8 @@ namespace DeviceManager.Api.Mapping
             CreateMap<UpdateLocationRequest, Location>();
             CreateMap<CreateSensorTypeRequest, SensorType>();
             CreateMap<UpdateSensorTypeRequest, SensorType>();
+            CreateMap<CreateGroupRequest, Group>();
+            CreateMap<UpdateGroupRequest, Group>();
 
             // grpc response -> event message
             CreateMap<DeleteDeviceResponse, DeletedDeviceMessage>()

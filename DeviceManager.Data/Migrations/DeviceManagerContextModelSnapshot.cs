@@ -19,6 +19,25 @@ namespace DeviceManager.Data.Migrations
                 .HasAnnotation("ProductVersion", "5.0.12")
                 .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
+            modelBuilder.Entity("DeviceGroup", b =>
+                {
+                    b.Property<int>("DevicesId")
+                        .HasColumnType("integer")
+                        .HasColumnName("devices_id");
+
+                    b.Property<int>("GroupsId")
+                        .HasColumnType("integer")
+                        .HasColumnName("groups_id");
+
+                    b.HasKey("DevicesId", "GroupsId")
+                        .HasName("pk_device_group");
+
+                    b.HasIndex("GroupsId")
+                        .HasDatabaseName("ix_device_group_groups_id");
+
+                    b.ToTable("device_group");
+                });
+
             modelBuilder.Entity("DeviceManager.Core.Models.Device", b =>
                 {
                     b.Property<int>("Id")
@@ -94,6 +113,48 @@ namespace DeviceManager.Data.Migrations
                         .HasDatabaseName("ix_devices_mac_address");
 
                     b.ToTable("devices");
+                });
+
+            modelBuilder.Entity("DeviceManager.Core.Models.Group", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<DateTime>("Created")
+                        .HasPrecision(0)
+                        .HasColumnType("timestamp(0) without time zone")
+                        .HasColumnName("created");
+
+                    b.Property<string>("DisplayName")
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("display_name");
+
+                    b.Property<DateTime?>("LastModified")
+                        .HasPrecision(0)
+                        .HasColumnType("timestamp(0) without time zone")
+                        .HasColumnName("last_modified");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("name");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_groups");
+
+                    b.HasAlternateKey("Name", "UserId")
+                        .HasName("ak_groups_name_user_id");
+
+                    b.ToTable("groups");
                 });
 
             modelBuilder.Entity("DeviceManager.Core.Models.Location", b =>
@@ -197,6 +258,10 @@ namespace DeviceManager.Data.Migrations
                     b.HasIndex("TypeId")
                         .HasDatabaseName("ix_sensors_type_id");
 
+                    b.HasIndex("Name", "DeviceId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_sensors_name_device_id");
+
                     b.ToTable("sensors");
                 });
 
@@ -255,6 +320,23 @@ namespace DeviceManager.Data.Migrations
                         .HasName("ak_sensor_types_name");
 
                     b.ToTable("sensor_types");
+                });
+
+            modelBuilder.Entity("DeviceGroup", b =>
+                {
+                    b.HasOne("DeviceManager.Core.Models.Device", null)
+                        .WithMany()
+                        .HasForeignKey("DevicesId")
+                        .HasConstraintName("fk_device_group_devices_devices_id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DeviceManager.Core.Models.Group", null)
+                        .WithMany()
+                        .HasForeignKey("GroupsId")
+                        .HasConstraintName("fk_device_group_groups_groups_id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("DeviceManager.Core.Models.Device", b =>

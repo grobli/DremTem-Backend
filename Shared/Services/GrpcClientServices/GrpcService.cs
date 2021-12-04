@@ -7,14 +7,18 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Shared.Services.GrpcClientServices
 {
-    public class GrpcClient<TClient> : IGrpcClient<TClient> where TClient : ClientBase
+    public class GrpcService<TClient> : IGrpcService<TClient> where TClient : ClientBase
     {
         private readonly IGrpcClientProvider<TClient> _clientProvider;
 
-        public GrpcClient(IGrpcClientProvider<TClient> clientProvider)
+        public GrpcService(IGrpcClientProvider<TClient> clientProvider)
         {
             _clientProvider = clientProvider;
         }
+
+        public TClient GetClient(string serviceId = null) => string.IsNullOrWhiteSpace(serviceId)
+            ? _clientProvider.NextClient.client
+            : _clientProvider.GetClientById(serviceId);
 
         public async Task<TResult> SendRequestAsync<TResult>(Func<TClient, Task<TResult>> requestFunc,
             TimeSpan? timeout = null, int retryLimit = 5) where TResult : IMessage, IBufferMessage

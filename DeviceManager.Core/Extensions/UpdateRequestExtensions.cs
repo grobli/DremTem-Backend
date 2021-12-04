@@ -19,5 +19,10 @@ namespace DeviceManager.Core.Extensions
         {
             return Guid.TryParse(self.UserId, out var result) ? result : Guid.Empty;
         }
+
+        public static Guid UserId(this UpdateGroupRequest self)
+        {
+            return Guid.TryParse(self.UserId, out var result) ? result : Guid.Empty;
+        }
     }
 }

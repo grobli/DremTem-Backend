@@ -32,7 +32,7 @@ namespace Shared.Extensions
         }
 
         public static IApplicationBuilder RegisterWithConsul(this IApplicationBuilder app,
-            IHostApplicationLifetime lifetime)
+            IHostApplicationLifetime lifetime, string serviceId = null)
         {
             var consulClient = app.ApplicationServices.GetRequiredService<IConsulClient>();
             var consulConfig = app.ApplicationServices.GetRequiredService<IOptions<ConsulConfig>>().Value;
@@ -52,9 +52,11 @@ namespace Shared.Extensions
             var uri = new Uri(address);
             var registration = new AgentServiceRegistration
             {
-                ID = string.IsNullOrWhiteSpace(consulConfig.ServiceId)
-                    ? Guid.NewGuid().ToString()
-                    : consulConfig.ServiceId,
+                ID = string.IsNullOrWhiteSpace(serviceId)
+                    ? string.IsNullOrWhiteSpace(consulConfig.ServiceId)
+                        ? Guid.NewGuid().ToString()
+                        : consulConfig.ServiceId
+                    : serviceId,
                 Name = string.IsNullOrWhiteSpace(consulConfig.ServiceName)
                     ? Assembly.GetExecutingAssembly().GetName().Name
                     : consulConfig.ServiceName,

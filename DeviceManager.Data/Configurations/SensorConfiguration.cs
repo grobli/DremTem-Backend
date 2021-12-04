@@ -19,6 +19,10 @@ namespace DeviceManager.Data.Configurations
                 .HasAlternateKey(s => new { s.Name, s.DeviceId });
 
             builder
+                .HasIndex(s => new { s.Name, s.DeviceId })
+                .IsUnique();
+
+            builder
                 .Property(s => s.Id)
                 .ValueGeneratedOnAdd();
 

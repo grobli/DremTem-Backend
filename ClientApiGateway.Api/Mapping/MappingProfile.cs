@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using ClientApiGateway.Api.Resources.Device;
+using ClientApiGateway.Api.Resources.Group;
 using ClientApiGateway.Api.Resources.Location;
 using ClientApiGateway.Api.Resources.Sensor;
 using ClientApiGateway.Api.Resources.SensorType;
@@ -32,6 +33,10 @@ namespace ClientApiGateway.Api.Mapping
 
             // user
             CreateMap<UpdateUserDetailsResource, UpdateUserDetailsRequest>();
+
+            //group 
+            CreateMap<CreateGroupResource, CreateGroupRequest>();
+            CreateMap<UpdateGroupResource, UpdateGroupRequest>();
         }
     }
 }
