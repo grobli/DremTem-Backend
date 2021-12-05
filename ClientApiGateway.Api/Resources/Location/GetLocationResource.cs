@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using DeviceManager.Core.Proto;
 using Google.Protobuf.WellKnownTypes;
+using Shared.Proto;
 
 namespace ClientApiGateway.Api.Resources.Location
 {

@@ -1,0 +1,45 @@
+﻿syntax = "proto3";
+
+import "google/protobuf/wrappers.proto";
+
+import "Protos/shared_definitions.proto";
+import "Protos/common.proto";
+
+option csharp_namespace = "Shared.Proto.SensorType";
+
+service SensorTypeGrpc {
+  rpc GetAllSensorTypes (common.GenericGetManyRequest) returns (GetAllSensorTypesResponse);
+  rpc GetSensorType (common.GenericGetRequest) returns (SensorTypeDto);
+
+  rpc CreateSensorType (CreateSensorTypeRequest) returns (SensorTypeDto);
+  rpc UpdateSensorType (UpdateSensorTypeRequest) returns (SensorTypeDto);
+  rpc DeleteSensorType (common.GenericDeleteRequest) returns (DeleteSensorTypeResponse);
+}
+
+message GetAllSensorTypesResponse {
+  repeated SensorTypeDto SensorTypes = 1;
+  common.PaginationMetaData MetaData = 2;
+}
+
+message CreateSensorTypeRequest {
+  string Name = 1;
+  string Unit = 2;
+  string UnitShort = 3;
+  google.protobuf.StringValue UnitSymbol = 4;
+  bool IsDiscrete = 5;
+  bool IsSummable = 6;
+}
+
+message UpdateSensorTypeRequest {
+  int32 Id = 1;
+  string Name = 2;
+  string Unit = 3;
+  string UnitShort = 4;
+  google.protobuf.StringValue UnitSymbol = 5;
+  bool IsDiscrete = 6;
+  bool IsSummable = 7;
+}
+
+message DeleteSensorTypeResponse {
+  int32 DeletedSensorTypeId = 1;
+}

@@ -1,5 +1,5 @@
-﻿using DeviceManager.Core.Proto;
-using FluentValidation;
+﻿using FluentValidation;
+using Shared.Proto.Common;
 
 namespace DeviceManager.Api.Validation
 {

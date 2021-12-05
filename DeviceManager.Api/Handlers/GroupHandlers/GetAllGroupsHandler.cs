@@ -4,15 +4,17 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using DeviceManager.Api.Queries;
-using DeviceManager.Core.Extensions;
 using DeviceManager.Core.Models;
-using DeviceManager.Core.Proto;
 using DeviceManager.Core.Services;
 using FluentValidation;
 using Grpc.Core;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Shared;
+using Shared.Extensions;
+using Shared.Proto;
+using Shared.Proto.Common;
+using Shared.Proto.Group;
 
 namespace DeviceManager.Api.Handlers.GroupHandlers
 {

@@ -1,7 +1,7 @@
 ﻿using DeviceManager.Core;
-using DeviceManager.Core.Proto;
 using FluentValidation;
 using Shared.Extensions;
+using Shared.Proto.Group;
 
 namespace DeviceManager.Api.Validation.GroupRequests
 {

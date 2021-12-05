@@ -1,0 +1,124 @@
+﻿syntax = "proto3";
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
+
+option csharp_namespace = "Shared.Proto";
+
+message DeviceDto {
+  int32 Id = 1;
+  string Name = 2;
+  google.protobuf.StringValue DisplayName = 3;
+  bool Online = 4;
+  google.protobuf.StringValue MacAddress = 5;
+  google.protobuf.StringValue Model = 6;
+  google.protobuf.StringValue Manufacturer = 7;
+  google.protobuf.Timestamp LastSeen = 8;
+  google.protobuf.Timestamp LastModified = 9;
+  google.protobuf.Timestamp Created = 10;
+  google.protobuf.Int32Value LocationId = 11;
+  string UserId = 12;
+  repeated int32 SensorIds = 13;
+  repeated GroupTinyDto Groups = 14;
+}
+
+message DeviceExtendedDto {
+  int32 Id = 1;
+  string Name = 2;
+  google.protobuf.StringValue DisplayName = 3;
+  bool Online = 4;
+  google.protobuf.StringValue MacAddress = 5;
+  google.protobuf.StringValue Model = 6;
+  google.protobuf.StringValue Manufacturer = 7;
+  google.protobuf.Timestamp LastSeen = 8;
+  google.protobuf.Timestamp LastModified = 9;
+  google.protobuf.Timestamp Created = 10;
+  google.protobuf.Int32Value LocationId = 11;
+  string UserId = 12;
+  repeated int32 SensorIds = 13;
+  repeated GroupTinyDto Groups = 14;
+  repeated SensorDto Sensors = 20;
+  LocationDto Location = 21;
+
+}
+
+message GroupDto {
+  int32 Id = 1;
+  string Name = 2;
+  google.protobuf.StringValue DisplayName = 3;
+  google.protobuf.Timestamp LastModified = 4;
+  google.protobuf.Timestamp Created = 5;
+  string UserId = 12;
+  repeated int32 DeviceIds = 13;
+}
+
+message GroupTinyDto {
+  int32 Id = 1;
+  string Name = 2;
+  google.protobuf.StringValue DisplayName = 3;
+}
+
+
+message LocationDto {
+  int32 Id = 1;
+  string Name = 2;
+  string UserId = 3;
+
+  // Properties
+  google.protobuf.StringValue DisplayName = 4;
+  google.protobuf.FloatValue Latitude = 5;
+  google.protobuf.FloatValue Longitude = 6;
+  google.protobuf.Timestamp LastModified = 7;
+  google.protobuf.Timestamp Created = 8;
+  repeated int32 DeviceIds = 9;
+}
+
+
+message LocationExtendedDto {
+  int32 Id = 1;
+  string Name = 2;
+  string UserId = 3;
+
+  // Properties
+  google.protobuf.StringValue DisplayName = 4;
+  google.protobuf.FloatValue Latitude = 5;
+  google.protobuf.FloatValue Longitude = 6;
+  google.protobuf.Timestamp LastModified = 7;
+  google.protobuf.Timestamp Created = 8;
+  repeated int32 DeviceIds = 9;
+
+  repeated DeviceDto Devices = 32;
+}
+
+
+message SensorDto {
+  int32 Id = 1;
+
+  string Name = 2;
+  google.protobuf.StringValue DisplayName = 3;
+  int32 DeviceId = 4;
+  int32 TypeId = 5;
+  google.protobuf.Timestamp LastModified = 6;
+  google.protobuf.Timestamp Created = 7;
+
+  SensorTypeDto Type = 16;
+}
+
+message CreateDeviceSensorResource {
+  string Name = 1;
+  google.protobuf.StringValue DisplayName = 2;
+  int32 TypeId = 3;
+}
+
+message SensorTypeDto {
+  int32 Id = 1;
+
+  string Name = 2;
+  string Unit = 3;
+  string UnitShort = 4;
+  google.protobuf.StringValue UnitSymbol = 5;
+  bool IsDiscrete = 6;
+  bool IsSummable = 7;
+  google.protobuf.Timestamp LastModified = 8;
+  google.protobuf.Timestamp Created = 9;
+}

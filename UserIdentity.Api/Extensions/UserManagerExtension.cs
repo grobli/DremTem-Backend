@@ -2,8 +2,8 @@
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Shared.Proto.User;
 using UserIdentity.Core.Models.Auth;
-using UserIdentity.Core.Proto;
 
 namespace UserIdentity.Api.Extensions
 {

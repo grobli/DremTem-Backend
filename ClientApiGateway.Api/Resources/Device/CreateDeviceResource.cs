@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using DeviceManager.Core.Proto;
+using Shared.Proto;
 
 namespace ClientApiGateway.Api.Resources.Device
 {

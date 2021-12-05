@@ -1,0 +1,40 @@
+﻿syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+
+option csharp_namespace = "Shared.Proto.UserIdentity";
+
+service UserAuthGrpc {
+  rpc SignUp (UserSignUpRequest) returns (google.protobuf.Empty);
+  rpc SignIn (UserLoginRequest) returns (UserLoginResponse);
+  rpc CreateRole (CreateRoleRequest) returns (google.protobuf.Empty);
+  rpc AddUserToRole (AddUserToRoleRequest) returns (google.protobuf.Empty);
+}
+
+message UserSignUpRequest{
+  string Email = 1;
+  string Password = 2;
+
+  google.protobuf.StringValue FirstName = 3;
+  google.protobuf.StringValue LastName = 4;
+}
+
+message UserLoginRequest {
+  string Email = 1;
+  string Password = 2 ;
+}
+
+message UserLoginResponse {
+  string JwtToken = 1;
+}
+
+message CreateRoleRequest {
+  string RoleName = 1;
+}
+
+message AddUserToRoleRequest {
+  string Email = 1;
+  string RoleName = 2;
+}
+

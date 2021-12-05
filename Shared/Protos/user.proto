@@ -1,0 +1,61 @@
+﻿syntax = "proto3";
+
+import "google/protobuf/wrappers.proto";
+import "Protos/common.proto";
+
+option csharp_namespace = "Shared.Proto.User";
+
+service UserGrpc {
+  // Read
+  rpc GetAllUsers (GetAllUsersRequest) returns (GetAllUsersResponse);
+
+  rpc GetUserById (GetUserByIdRequest) returns (UserDto);
+  rpc GetUserByEmail (GetUserByEmailRequest) returns (UserDto);
+  // Update
+  rpc UpdateUserDetails (UpdateUserDetailsRequest) returns (UserDto);
+  // Delete
+  rpc DeleteUser (DeleteUserRequest) returns (DeleteUserResponse);
+}
+
+message UserDto {
+  string Id = 1;
+  string FirstName = 2;
+  google.protobuf.StringValue LastName = 3;
+  string UserName = 4;
+  string Email = 5;
+  bool EmailConfirmed = 6;
+  repeated string Roles = 7;
+}
+
+message GetAllUsersRequest {
+  int32 PageSize = 1;
+  int32 PageNumber = 2;
+}
+
+message GetAllUsersResponse {
+  repeated UserDto Users = 1;
+  common.PaginationMetaData MetaData = 2;
+}
+
+message UpdateUserDetailsRequest {
+  string Id = 1;
+
+  google.protobuf.StringValue FirstName = 2;
+  google.protobuf.StringValue LastName = 3;
+}
+
+message DeleteUserRequest {
+  string Id = 1;
+}
+
+message GetUserByIdRequest {
+  string Id = 1;
+}
+
+message GetUserByEmailRequest {
+  string Email = 1;
+}
+
+message DeleteUserResponse {
+  string DeletedUserId = 1;
+}

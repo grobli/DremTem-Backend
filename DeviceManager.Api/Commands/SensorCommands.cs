@@ -1,5 +1,7 @@
-﻿using DeviceManager.Core.Proto;
-using MediatR;
+﻿using MediatR;
+using Shared.Proto;
+using Shared.Proto.Common;
+using Shared.Proto.Sensor;
 
 namespace DeviceManager.Api.Commands
 {

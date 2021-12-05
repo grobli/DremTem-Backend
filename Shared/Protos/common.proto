@@ -1,0 +1,49 @@
+﻿syntax = "proto3";
+
+import "google/protobuf/wrappers.proto";
+
+option csharp_namespace = "Shared.Proto.Common";
+
+package common;
+
+message PaginationMetaData {
+  int32 TotalCount = 1;
+  int32 PageSize = 2;
+  int32 CurrentPage = 3;
+  int32 TotalPages = 4;
+  bool HasNext = 5;
+  bool HasPrevious = 6;
+}
+
+enum Entity {
+  NONE = 0;
+  DEVICE = 1;
+  LOCATION = 2;
+  SENSOR = 3;
+  SENSOR_TYPE = 4;
+  GROUP = 5;
+}
+
+message GetRequestParameters {
+  google.protobuf.StringValue UserId = 1;
+  repeated Entity IncludeFields = 2;
+}
+
+message GenericGetRequest {
+  int32 Id = 1;
+  GetRequestParameters Parameters = 2;
+}
+
+message GenericGetManyRequest {
+  GetRequestParameters Parameters = 1;
+
+  // pagination parameters
+
+  int32 PageSize = 3;
+  int32 PageNumber = 4;
+}
+
+message GenericDeleteRequest {
+  int32 Id = 1;
+  string UserId = 2;
+}

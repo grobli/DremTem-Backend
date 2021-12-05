@@ -7,10 +7,11 @@ using Grpc.Core;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Shared;
+using Shared.Extensions;
+using Shared.Proto.Common;
+using Shared.Proto.User;
 using UserIdentity.Api.Queries;
-using UserIdentity.Core.Extensions;
 using UserIdentity.Core.Models.Auth;
-using UserIdentity.Core.Proto;
 
 namespace UserIdentity.Api.Handlers.UserHandlers
 {

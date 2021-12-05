@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
+using Shared.Proto.User;
+using Shared.Proto.UserIdentity;
 using UserIdentity.Core.Models.Auth;
-using UserIdentity.Core.Proto;
 
 namespace UserIdentity.Api.Mappings
 {

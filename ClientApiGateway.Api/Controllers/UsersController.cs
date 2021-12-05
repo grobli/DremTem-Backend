@@ -10,9 +10,9 @@ using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Shared.Proto.User;
 using Shared.Services.GrpcClientServices;
 using UserIdentity.Core.Models.Auth;
-using UserIdentity.Core.Proto;
 using static ClientApiGateway.Api.Handlers.RpcExceptionHandler;
 
 namespace ClientApiGateway.Api.Controllers
@@ -23,12 +23,12 @@ namespace ClientApiGateway.Api.Controllers
     public class UsersController : ControllerBase
     {
         private readonly ILogger<UsersController> _logger;
-        private readonly IGrpcService<UserGrpcService.UserGrpcServiceClient> _grpcService;
+        private readonly IGrpcService<UserGrpc.UserGrpcClient> _grpcService;
         private readonly IMapper _mapper;
 
         public UsersController(
             ILogger<UsersController> logger, IMapper mapper,
-            IGrpcService<UserGrpcService.UserGrpcServiceClient> grpcService)
+            IGrpcService<UserGrpc.UserGrpcClient> grpcService)
         {
             _logger = logger;
             _mapper = mapper;

@@ -2,9 +2,10 @@
 using System.Threading.Tasks;
 using DeviceManager.Api.Commands;
 using DeviceManager.Api.Queries;
-using DeviceManager.Core.Proto;
 using EasyNetQ.AutoSubscribe;
 using MediatR;
+using Shared.Proto;
+using Shared.Proto.Common;
 using UserIdentity.Core.Messages;
 
 namespace DeviceManager.Api.Consumers

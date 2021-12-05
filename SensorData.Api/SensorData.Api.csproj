@@ -7,12 +7,31 @@
 
 
     <ItemGroup>
+        <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.1" />
+        <PackageReference Include="EasyNetQ" Version="6.3.1" />
+        <PackageReference Include="EFCore.NamingConventions" Version="5.0.2" />
+        <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="10.3.4" />
         <PackageReference Include="Grpc.AspNetCore" Version="2.40.0" />
+        <PackageReference Include="Grpc.HealthCheck" Version="2.42.0" />
+        <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="9.0.0" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.12">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.10" />
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\DeviceManager.Core\DeviceManager.Core.csproj" />
+        <ProjectReference Include="..\SensorData.Data\SensorData.Data.csproj" />
         <ProjectReference Include="..\Shared\Shared.csproj" />
         <ProjectReference Include="..\SensorData.Core\SensorData.Core.csproj" />
+        <ProjectReference Include="..\UserIdentity.Core\UserIdentity.Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Commands" />
+      <Folder Include="Validation" />
     </ItemGroup>
 
 

@@ -6,11 +6,13 @@ using System.Threading.Tasks;
 using AutoMapper;
 using ClientApiGateway.Api.Resources.Sensor;
 using DeviceManager.Core.Models;
-using DeviceManager.Core.Proto;
 using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Shared.Proto;
+using Shared.Proto.Common;
+using Shared.Proto.Sensor;
 using Shared.Services.GrpcClientServices;
 using UserIdentity.Core.Models.Auth;
 using static ClientApiGateway.Api.Handlers.RpcExceptionHandler;
@@ -23,14 +25,14 @@ namespace ClientApiGateway.Api.Controllers
     public class SensorsController : ControllerBase
     {
         private readonly ILogger<SensorsController> _logger;
-        private readonly IGrpcService<SensorGrpcService.SensorGrpcServiceClient> _grpcService;
+        private readonly IGrpcService<SensorGrpc.SensorGrpcClient> _grpcService;
         private readonly IMapper _mapper;
 
         private string UserId => User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         public SensorsController(
             ILogger<SensorsController> logger, IMapper mapper,
-            IGrpcService<SensorGrpcService.SensorGrpcServiceClient> grpcService)
+            IGrpcService<SensorGrpc.SensorGrpcClient> grpcService)
         {
             _logger = logger;
             _mapper = mapper;

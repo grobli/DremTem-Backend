@@ -6,15 +6,16 @@ using System.Threading.Tasks;
 using AutoMapper;
 using ClientApiGateway.Api.Resources.Location;
 using DeviceManager.Core.Models;
-using DeviceManager.Core.Proto;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Shared.Proto;
+using Shared.Proto.Common;
+using Shared.Proto.Location;
 using Shared.Services.GrpcClientServices;
 using UserIdentity.Core.Models.Auth;
-using UserIdentity.Core.Proto;
 using static ClientApiGateway.Api.Handlers.RpcExceptionHandler;
 
 namespace ClientApiGateway.Api.Controllers
@@ -25,14 +26,14 @@ namespace ClientApiGateway.Api.Controllers
     public class LocationsController : ControllerBase
     {
         private readonly ILogger<LocationsController> _logger;
-        private readonly IGrpcService<LocationGrpcService.LocationGrpcServiceClient> _grpcService;
+        private readonly IGrpcService<LocationGrpc.LocationGrpcClient> _grpcService;
         private readonly IMapper _mapper;
 
         private string UserId => User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         public LocationsController(
             ILogger<LocationsController> logger,
-            IMapper mapper, IGrpcService<LocationGrpcService.LocationGrpcServiceClient> grpcService)
+            IMapper mapper, IGrpcService<LocationGrpc.LocationGrpcClient> grpcService)
         {
             _logger = logger;
             _mapper = mapper;

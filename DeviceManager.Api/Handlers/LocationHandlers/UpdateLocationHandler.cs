@@ -3,14 +3,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using DeviceManager.Api.Commands;
-using DeviceManager.Core.Proto;
 using DeviceManager.Core.Services;
 using FluentValidation;
 using Grpc.Core;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using DeviceManager.Core.Extensions;
 using DeviceManager.Core.Models;
+using Shared.Extensions;
+using Shared.Proto;
+using Shared.Proto.Location;
 
 namespace DeviceManager.Api.Handlers.LocationHandlers
 {

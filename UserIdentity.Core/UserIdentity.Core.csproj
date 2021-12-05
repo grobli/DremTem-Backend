@@ -6,33 +6,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Protobuf Include="Protos\user.proto">
-            <GrpcServices>Both</GrpcServices>
-            <Access>Public</Access>
-            <ProtoCompile>True</ProtoCompile>
-            <CompileOutputs>True</CompileOutputs>
-            <OutputDir>obj\Debug\net5.0\</OutputDir>
-            <Generator>MSBuild:Compile</Generator>
-        </Protobuf>
-        <Protobuf Include="Protos\auth.proto">
-            <GrpcServices>Both</GrpcServices>
-            <Access>Public</Access>
-            <ProtoCompile>True</ProtoCompile>
-            <CompileOutputs>True</CompileOutputs>
-            <OutputDir>obj\Debug\net5.0\</OutputDir>
-            <Generator>MSBuild:Compile</Generator>
-        </Protobuf>
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Google.Protobuf" Version="3.19.1" />
-        <PackageReference Include="Grpc.AspNetCore" Version="2.40.0" />
         <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="5.0.12" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\SensorData.Core\SensorData.Core.csproj" />
-      <ProjectReference Include="..\Shared\Shared.csproj" />
+        <ProjectReference Include="..\SensorData.Core\SensorData.Core.csproj" />
+        <ProjectReference Include="..\Shared\Shared.csproj" />
     </ItemGroup>
 
 </Project>

@@ -1,15 +1,14 @@
 ﻿using System.Threading.Tasks;
-using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Shared.Proto.User;
 using UserIdentity.Api.Commands;
 using UserIdentity.Api.Queries;
-using UserIdentity.Core.Proto;
 
 namespace UserIdentity.Api.Services.Rpc
 {
-    public class UserService : UserGrpcService.UserGrpcServiceBase
+    public class UserService : UserGrpc.UserGrpcBase
     {
         private readonly ILogger<UserService> _logger;
         private readonly IMediator _mediator;

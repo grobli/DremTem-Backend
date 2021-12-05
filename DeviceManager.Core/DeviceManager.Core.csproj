@@ -6,64 +6,16 @@
 
     <ItemGroup>
         <PackageReference Include="FluentValidation" Version="10.3.4" />
-        <PackageReference Include="Google.Protobuf.Tools" Version="3.19.1" />
         <PackageReference Include="Grpc.AspNetCore" Version="2.40.0" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.12" />
     </ItemGroup>
 
-    <ItemGroup>
-        <Protobuf Include="Protos\device.proto">
-            <GrpcServices>Both</GrpcServices>
-            <Access>Public</Access>
-            <ProtoCompile>True</ProtoCompile>
-            <CompileOutputs>True</CompileOutputs>
-            <OutputDir>obj\Debug\net5.0\</OutputDir>
-            <Generator>MSBuild:Compile</Generator>
-        </Protobuf>
-        <Protobuf Include="Protos\location.proto">
-            <GrpcServices>Both</GrpcServices>
-            <Access>Public</Access>
-            <ProtoCompile>True</ProtoCompile>
-            <CompileOutputs>True</CompileOutputs>
-            <OutputDir>obj\Debug\net5.0\</OutputDir>
-            <Generator>MSBuild:Compile</Generator>
-        </Protobuf>
-        <Protobuf Include="Protos\sensor.proto">
-            <GrpcServices>Both</GrpcServices>
-            <Access>Public</Access>
-            <ProtoCompile>True</ProtoCompile>
-            <CompileOutputs>True</CompileOutputs>
-            <OutputDir>obj\Debug\net5.0\</OutputDir>
-            <Generator>MSBuild:Compile</Generator>
-        </Protobuf>
-        <Protobuf Include="Protos\sensorType.proto">
-            <GrpcServices>Both</GrpcServices>
-            <Access>Public</Access>
-            <ProtoCompile>True</ProtoCompile>
-            <CompileOutputs>True</CompileOutputs>
-            <OutputDir>obj\Debug\net5.0\</OutputDir>
-            <Generator>MSBuild:Compile</Generator>
-        </Protobuf>
-        <Protobuf Include="Protos\sharedDefinitions.proto">
-            <GrpcServices>Both</GrpcServices>
-            <Access>Public</Access>
-            <ProtoCompile>True</ProtoCompile>
-            <CompileOutputs>True</CompileOutputs>
-            <OutputDir>obj\Debug\net5.0\</OutputDir>
-            <Generator>MSBuild:Compile</Generator>
-        </Protobuf>
-        <Protobuf Include="Protos\group.proto">
-            <GrpcServices>Both</GrpcServices>
-            <Access>Public</Access>
-            <ProtoCompile>True</ProtoCompile>
-            <CompileOutputs>True</CompileOutputs>
-            <OutputDir>obj\Debug\net5.0\</OutputDir>
-            <Generator>MSBuild:Compile</Generator>
-        </Protobuf>
-    </ItemGroup>
+        <ItemGroup>
+            <ProjectReference Include="..\Shared\Shared.csproj" />
+        </ItemGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\Shared\Shared.csproj" />
-    </ItemGroup>
+        <ItemGroup>
+          <Folder Include="Extensions" />
+        </ItemGroup>
 
 </Project>

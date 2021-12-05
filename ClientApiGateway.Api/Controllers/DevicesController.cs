@@ -6,11 +6,13 @@ using System.Threading.Tasks;
 using AutoMapper;
 using ClientApiGateway.Api.Resources.Device;
 using DeviceManager.Core.Models;
-using DeviceManager.Core.Proto;
 using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Shared.Proto;
+using Shared.Proto.Common;
+using Shared.Proto.Device;
 using Shared.Services.GrpcClientServices;
 using UserIdentity.Core.Models.Auth;
 using static ClientApiGateway.Api.Handlers.RpcExceptionHandler;
@@ -26,13 +28,13 @@ namespace ClientApiGateway.Api.Controllers
 
         //     private readonly DeviceGrpcService.DeviceGrpcServiceClient _deviceService;
         private readonly IMapper _mapper;
-        private readonly IGrpcService<DeviceGrpcService.DeviceGrpcServiceClient> _grpcService;
+        private readonly IGrpcService<DeviceGrpc.DeviceGrpcClient> _grpcService;
 
         private string UserId => User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         public DevicesController(
             ILogger<DevicesController> logger, IMapper mapper,
-            IGrpcService<DeviceGrpcService.DeviceGrpcServiceClient> grpcService)
+            IGrpcService<DeviceGrpc.DeviceGrpcClient> grpcService)
         {
             _logger = logger;
             _mapper = mapper;

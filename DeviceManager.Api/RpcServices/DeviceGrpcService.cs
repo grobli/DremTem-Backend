@@ -1,15 +1,17 @@
 ﻿using System.Threading.Tasks;
 using DeviceManager.Api.Commands;
 using DeviceManager.Api.Queries;
-using DeviceManager.Core.Proto;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Shared.Proto;
+using Shared.Proto.Common;
+using Shared.Proto.Device;
 
 namespace DeviceManager.Api.RpcServices
 {
-    public class DeviceGrpcService : Core.Proto.DeviceGrpcService.DeviceGrpcServiceBase
+    public class DeviceGrpcService : DeviceGrpc.DeviceGrpcBase
     {
         private readonly ILogger<DeviceGrpcService> _logger;
         private readonly IMediator _mediator;

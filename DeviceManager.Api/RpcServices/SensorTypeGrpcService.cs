@@ -1,14 +1,17 @@
 ﻿using System.Threading.Tasks;
 using DeviceManager.Api.Commands;
 using DeviceManager.Api.Queries;
-using DeviceManager.Core.Proto;
 using Grpc.Core;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Shared.Proto;
+using Shared.Proto.Common;
+using Shared.Proto.Sensor;
+using Shared.Proto.SensorType;
 
 namespace DeviceManager.Api.RpcServices
 {
-    public class SensorTypeGrpcService : Core.Proto.SensorTypeGrpcService.SensorTypeGrpcServiceBase
+    public class SensorTypeGrpcService : SensorTypeGrpc.SensorTypeGrpcBase
     {
         private readonly ILogger<SensorTypeGrpcService> _logger;
         private readonly IMediator _mediator;

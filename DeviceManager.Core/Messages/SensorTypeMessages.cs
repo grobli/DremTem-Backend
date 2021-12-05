@@ -1,4 +1,4 @@
-﻿using DeviceManager.Core.Proto;
+﻿using Shared.Proto;
 
 namespace DeviceManager.Core.Messages
 {

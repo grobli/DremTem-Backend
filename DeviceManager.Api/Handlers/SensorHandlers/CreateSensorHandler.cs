@@ -5,12 +5,13 @@ using AutoMapper;
 using DeviceManager.Api.Commands;
 using DeviceManager.Core.Messages;
 using DeviceManager.Core.Models;
-using DeviceManager.Core.Proto;
 using DeviceManager.Core.Services;
 using EasyNetQ;
 using FluentValidation;
 using Grpc.Core;
 using MediatR;
+using Shared.Proto;
+using Shared.Proto.Sensor;
 
 namespace DeviceManager.Api.Handlers.SensorHandlers
 {

@@ -8,9 +8,9 @@ using Grpc.Core;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Shared.Proto.User;
 using UserIdentity.Api.Commands;
 using UserIdentity.Core.Messages;
-using UserIdentity.Core.Proto;
 
 namespace UserIdentity.Api.Handlers.UserHandlers
 {

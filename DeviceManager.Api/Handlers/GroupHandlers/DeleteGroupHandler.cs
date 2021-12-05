@@ -2,14 +2,14 @@
 using System.Threading;
 using System.Threading.Tasks;
 using DeviceManager.Api.Commands;
-using DeviceManager.Core.Extensions;
-using DeviceManager.Core.Proto;
 using DeviceManager.Core.Services;
 using FluentValidation;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Shared.Proto.Common;
+using Shared.Extensions;
 
 namespace DeviceManager.Api.Handlers.GroupHandlers
 {

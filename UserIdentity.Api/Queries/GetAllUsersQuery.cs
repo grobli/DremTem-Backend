@@ -1,5 +1,5 @@
 ﻿using MediatR;
-using UserIdentity.Core.Proto;
+using Shared.Proto.User;
 
 namespace UserIdentity.Api.Queries
 {

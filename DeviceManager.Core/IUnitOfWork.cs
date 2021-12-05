@@ -13,6 +13,6 @@ namespace DeviceManager.Core
         ISensorTypeRepository SensorTypes { get; }
         IGroupRepository Groups { get; }
 
-        Task<int> CommitAsync(CancellationToken cancellationToken);
+        Task<int> CommitAsync(CancellationToken cancellationToken = default);
     }
 }

@@ -3,15 +3,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using DeviceManager.Api.Commands;
-using DeviceManager.Core.Proto;
 using DeviceManager.Core.Services;
 using FluentValidation;
 using Grpc.Core;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using DeviceManager.Core.Extensions;
 using DeviceManager.Core.Messages;
 using EasyNetQ;
+using Shared.Proto;
+using Shared.Proto.Device;
+using Shared.Extensions;
 
 namespace DeviceManager.Api.Handlers.DeviceHandlers
 {

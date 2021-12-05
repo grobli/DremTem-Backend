@@ -1,6 +1,6 @@
-﻿using DeviceManager.Core.Proto;
-using FluentValidation;
+﻿using FluentValidation;
 using Shared.Extensions;
+using Shared.Proto.Sensor;
 
 namespace DeviceManager.Api.Validation.SensorRequests
 {

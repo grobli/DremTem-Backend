@@ -8,10 +8,11 @@ using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using Shared.Proto.User;
+using Shared.Proto.UserIdentity;
 using UserIdentity.Api.Commands;
 using UserIdentity.Core.Messages;
 using UserIdentity.Core.Models.Auth;
-using UserIdentity.Core.Proto;
 
 namespace UserIdentity.Api.Handlers.AuthHandlers
 {

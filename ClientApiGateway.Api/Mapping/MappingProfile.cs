@@ -5,8 +5,13 @@ using ClientApiGateway.Api.Resources.Location;
 using ClientApiGateway.Api.Resources.Sensor;
 using ClientApiGateway.Api.Resources.SensorType;
 using ClientApiGateway.Api.Resources.User;
-using DeviceManager.Core.Proto;
-using UserIdentity.Core.Proto;
+using Shared.Proto;
+using Shared.Proto.Device;
+using Shared.Proto.Group;
+using Shared.Proto.Location;
+using Shared.Proto.Sensor;
+using Shared.Proto.SensorType;
+using Shared.Proto.User;
 
 namespace ClientApiGateway.Api.Mapping
 {

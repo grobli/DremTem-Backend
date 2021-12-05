@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.Json;
-using DeviceManager.Core.Proto;
 using Shared;
+using Shared.Proto.Common;
 
 namespace DeviceManager.Core.Models
 {

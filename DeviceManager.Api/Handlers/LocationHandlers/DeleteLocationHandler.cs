@@ -2,14 +2,14 @@
 using System.Threading;
 using System.Threading.Tasks;
 using DeviceManager.Api.Commands;
-using DeviceManager.Core.Proto;
 using DeviceManager.Core.Services;
 using FluentValidation;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using DeviceManager.Core.Extensions;
+using Shared.Extensions;
+using Shared.Proto.Common;
 
 namespace DeviceManager.Api.Handlers.LocationHandlers
 {

@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using DeviceManager.Core.Proto;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -8,7 +7,13 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Shared.Configs;
 using Shared.Extensions;
-using UserIdentity.Core.Proto;
+using Shared.Proto.Device;
+using Shared.Proto.Group;
+using Shared.Proto.Location;
+using Shared.Proto.Sensor;
+using Shared.Proto.SensorType;
+using Shared.Proto.User;
+using Shared.Proto.UserIdentity;
 
 namespace ClientApiGateway.Api
 {
@@ -61,15 +66,15 @@ namespace ClientApiGateway.Api
             services.AddConsul();
             // --------------- gRPC clients ---------------------
             // DeviceManager service
-            services.AddGrpcServiceProvider<DeviceGrpcService.DeviceGrpcServiceClient>("DeviceManager");
-            services.AddGrpcServiceProvider<LocationGrpcService.LocationGrpcServiceClient>("DeviceManager");
-            services.AddGrpcServiceProvider<SensorGrpcService.SensorGrpcServiceClient>("DeviceManager");
-            services.AddGrpcServiceProvider<SensorTypeGrpcService.SensorTypeGrpcServiceClient>("DeviceManager");
+            services.AddGrpcServiceProvider<DeviceGrpc.DeviceGrpcClient>("DeviceManager");
+            services.AddGrpcServiceProvider<LocationGrpc.LocationGrpcClient>("DeviceManager");
+            services.AddGrpcServiceProvider<SensorGrpc.SensorGrpcClient>("DeviceManager");
+            services.AddGrpcServiceProvider<SensorTypeGrpc.SensorTypeGrpcClient>("DeviceManager");
             services.AddGrpcServiceProvider<GroupGrpc.GroupGrpcClient>("DeviceManager");
 
             // UserIdentity service
-            services.AddGrpcServiceProvider<UserAuthGrpcService.UserAuthGrpcServiceClient>("UserIdentity");
-            services.AddGrpcServiceProvider<UserGrpcService.UserGrpcServiceClient>("UserIdentity");
+            services.AddGrpcServiceProvider<UserAuthGrpc.UserAuthGrpcClient>("UserIdentity");
+            services.AddGrpcServiceProvider<UserGrpc.UserGrpcClient>("UserIdentity");
 
 
             services.AddAutoMapper(typeof(Startup));

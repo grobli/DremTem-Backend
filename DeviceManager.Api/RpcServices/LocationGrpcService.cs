@@ -1,15 +1,17 @@
 ﻿using System.Threading.Tasks;
 using DeviceManager.Api.Commands;
 using DeviceManager.Api.Queries;
-using DeviceManager.Core.Proto;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Shared.Proto;
+using Shared.Proto.Common;
+using Shared.Proto.Location;
 
 namespace DeviceManager.Api.RpcServices
 {
-    public class LocationGrpcService : Core.Proto.LocationGrpcService.LocationGrpcServiceBase
+    public class LocationGrpcService : LocationGrpc.LocationGrpcBase
     {
         private ILogger<LocationGrpcService> _logger;
         private readonly IMediator _mediator;

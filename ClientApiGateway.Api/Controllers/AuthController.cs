@@ -5,9 +5,9 @@ using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Shared.Proto.UserIdentity;
 using Shared.Services.GrpcClientServices;
 using UserIdentity.Core.Models.Auth;
-using UserIdentity.Core.Proto;
 using static ClientApiGateway.Api.Handlers.RpcExceptionHandler;
 
 namespace ClientApiGateway.Api.Controllers
@@ -18,10 +18,10 @@ namespace ClientApiGateway.Api.Controllers
     public class AuthController : ControllerBase
     {
         private readonly ILogger<AuthController> _logger;
-        private readonly IGrpcService<UserAuthGrpcService.UserAuthGrpcServiceClient> _grpcService;
+        private readonly IGrpcService<UserAuthGrpc.UserAuthGrpcClient> _grpcService;
 
         public AuthController(ILogger<AuthController> logger,
-            IGrpcService<UserAuthGrpcService.UserAuthGrpcServiceClient> grpcService)
+            IGrpcService<UserAuthGrpc.UserAuthGrpcClient> grpcService)
         {
             _logger = logger;
             _grpcService = grpcService;

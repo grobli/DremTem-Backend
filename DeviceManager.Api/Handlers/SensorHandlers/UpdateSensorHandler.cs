@@ -4,15 +4,16 @@ using System.Threading.Tasks;
 using AutoMapper;
 using DeviceManager.Api.Commands;
 using DeviceManager.Core.Models;
-using DeviceManager.Core.Proto;
 using DeviceManager.Core.Services;
 using FluentValidation;
 using Grpc.Core;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using DeviceManager.Core.Extensions;
 using DeviceManager.Core.Messages;
 using EasyNetQ;
+using Shared.Extensions;
+using Shared.Proto;
+using Shared.Proto.Sensor;
 
 namespace DeviceManager.Api.Handlers.SensorHandlers
 {

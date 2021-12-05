@@ -8,6 +8,14 @@ services:
       POSTGRES_PASSWORD: 'password'
     volumes:
       - './data/db:/var/lib/postgresql/data'
+  db-timescale:
+    image: 'timescale/timescaledb:latest-pg14'
+    ports:
+      - '5555:5432'
+    environment:
+      POSTGRES_PASSWORD: 'password'
+    volumes:
+      - './data/timescale:/var/lib/postgresql/data'
   consul:
     image: 'consul'
     ports:
@@ -67,4 +75,22 @@ services:
       - '~/.aspnet/https:/https:ro'
     depends_on:
       - consul
+  sensor-data-1:
+    build:
+      context: '.'
+      dockerfile: './SensorData.Api/Dockerfile'
+    environment:
+      ASPNETCORE_URLS: 'http://+:7000;https://+:7001'
+      ASPNETCORE_HTTPS_PORT: '7001'
+      ASPNETCORE_ENVIRONMENT: 'docker'
+      ASPNETCORE_Kestrel__Certificates__Default__Password: password
+      ASPNETCORE_Kestrel__Certificates__Default__Path: /https/aspnetapp.pfx
+      User__Id: 'someuser111'
+    volumes:
+      - '~/.aspnet/https:/https:ro'
+    depends_on:
+      - consul
+      - rabbitmq
+      - device-manager
+      - db-timescale
       

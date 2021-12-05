@@ -3,12 +3,13 @@ using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Shared.Proto.User;
+using Shared.Proto.UserIdentity;
 using UserIdentity.Api.Commands;
-using UserIdentity.Core.Proto;
 
 namespace UserIdentity.Api.Services.Rpc
 {
-    public class AuthService : UserAuthGrpcService.UserAuthGrpcServiceBase
+    public class AuthService : UserAuthGrpc.UserAuthGrpcBase
     {
         private readonly ILogger<AuthService> _logger;
         private readonly IMediator _mediator;

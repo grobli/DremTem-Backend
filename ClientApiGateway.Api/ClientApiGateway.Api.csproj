@@ -12,7 +12,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\ClientApiGateway.Services\ClientApiGateway.Services.csproj" />
       <ProjectReference Include="..\DeviceManager.Core\DeviceManager.Core.csproj" />
       <ProjectReference Include="..\Shared\Shared.csproj" />
       <ProjectReference Include="..\UserIdentity.Core\UserIdentity.Core.csproj" />

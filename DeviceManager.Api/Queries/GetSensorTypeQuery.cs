@@ -1,5 +1,6 @@
-﻿using DeviceManager.Core.Proto;
-using MediatR;
+﻿using MediatR;
+using Shared.Proto;
+using Shared.Proto.Common;
 
 namespace DeviceManager.Api.Queries
 {
