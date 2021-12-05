@@ -55,7 +55,7 @@ namespace DeviceManager.Api.Handlers.GroupHandlers
 
             if (!group.Devices.Contains(device))
             {
-                throw new RpcException(new Status(StatusCode.NotFound, "Device is not member of the group"));
+                throw new RpcException(new Status(StatusCode.InvalidArgument, "Device is not member of the group"));
             }
 
             await _groupService.RemoveDevice(group, device, cancellationToken);

@@ -21,15 +21,15 @@ namespace ClientApiGateway.Api.Controllers
     [Route("api/v1/[controller]")]
     [Authorize]
     [ApiController]
-    public class GroupController : ControllerBase
+    public class GroupsController : ControllerBase
     {
-        private readonly ILogger<GroupController> _logger;
+        private readonly ILogger<GroupsController> _logger;
         private readonly IGrpcService<GroupGrpc.GroupGrpcClient> _grpcService;
         private readonly IMapper _mapper;
 
         private string UserId => User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        public GroupController(ILogger<GroupController> logger, IGrpcService<GroupGrpc.GroupGrpcClient> grpcService,
+        public GroupsController(ILogger<GroupsController> logger, IGrpcService<GroupGrpc.GroupGrpcClient> grpcService,
             IMapper mapper)
         {
             _logger = logger;
@@ -158,8 +158,8 @@ namespace ClientApiGateway.Api.Controllers
             }
         }
 
-        // GET api/v1/Groups/42/add/2137
-        [HttpGet("{groupId:int}/add/{deviceId:int}")]
+        // POST api/v1/Groups/42/add/2137
+        [HttpPost("{groupId:int}/add/{deviceId:int}")]
         public async Task<ActionResult<Empty>> AddDeviceToGroup(int groupId, int deviceId,
             CancellationToken token)
         {
@@ -176,8 +176,8 @@ namespace ClientApiGateway.Api.Controllers
             }
         }
 
-        // GET api/v1/Groups/42/remove/2137
-        [HttpGet("{groupId:int}/remove/{deviceId:int}")]
+        // DELETE api/v1/Groups/42/remove/2137
+        [HttpDelete("{groupId:int}/remove/{deviceId:int}")]
         public async Task<ActionResult<Empty>> RemoveDeviceFromGroup(int groupId, int deviceId,
             CancellationToken token)
         {
