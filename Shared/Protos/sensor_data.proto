@@ -3,6 +3,7 @@
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "Protos/common.proto";
+import "google/protobuf/wrappers.proto";
 
 option csharp_namespace = "Shared.Proto.SensorData";
 
@@ -14,7 +15,7 @@ service SensorDataGrpc {
   rpc DeleteReading (DeleteReadingRequest) returns (google.protobuf.Empty);
   rpc DeleteManyReadings (DeleteManyReadingsRequest) returns (google.protobuf.Empty);
 
-  rpc SaveReadingsFromCsv (stream SaveReadingsFromCsvRequest) returns (google.protobuf.Empty);
+  rpc SaveReadingsFromCsv (stream SaveReadingsFromCsvChunk) returns (google.protobuf.Empty);
 
   // Queries (Read)
   rpc GetFirstRecentFromSensor (GetFirstRecentFromSensorRequest) returns (ReadingDto);
@@ -99,6 +100,7 @@ message CreateReadingRequest {
     DeviceAndSensorName DeviceAndName = 3;
     int32 SensorId = 4;
   }
+  bool AllowOverwrite = 5;
 }
 
 message UpdateReadingRequest {
@@ -116,8 +118,10 @@ message DeleteManyReadingsRequest {
   repeated DeleteReadingRequest DeleteRequests = 1;
 }
 
-message SaveReadingsFromCsvRequest {
-
+message SaveReadingsFromCsvChunk {
+  bytes Chunk = 1;
+  google.protobuf.BoolValue AllowOverwrite = 16;
+  google.protobuf.Int32Value DeviceId = 17;
 }
 
 message GetFirstRecentFromSensorRequest {

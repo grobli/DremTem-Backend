@@ -23,11 +23,23 @@ namespace SensorData.Api.Mapping
             //---------- Resource/Request to Domain ----------
             CreateMap<ReadingDto, Reading>()
                 .ForMember(dest => dest.Time,
-                    opt => opt.MapFrom(src => src.Time.ToDateTime()));
+                    opt => opt.MapFrom(src => src.Time.ToDateTime().ToUniversalTime()));
 
             CreateMap<ReadingNoSensorDto, Reading>()
                 .ForMember(dest => dest.Time,
-                    opt => opt.MapFrom(src => src.Time.ToDateTime()));
+                    opt => opt.MapFrom(src => src.Time.ToDateTime().ToUniversalTime()));
+
+            CreateMap<CreateReadingRequest, Reading>()
+                .ForMember(dest => dest.Time,
+                    opt => opt.MapFrom(src => src.Time.ToDateTime().ToUniversalTime()));
+
+            CreateMap<UpdateReadingRequest, Reading>()
+                .ForMember(dest => dest.Time,
+                    opt => opt.MapFrom(src => src.Time.ToDateTime().ToUniversalTime()));
+
+            CreateMap<DeleteReadingRequest, Reading>()
+                .ForMember(dest => dest.Time,
+                    opt => opt.MapFrom(src => src.Time.ToDateTime().ToUniversalTime()));
         }
     }
 }

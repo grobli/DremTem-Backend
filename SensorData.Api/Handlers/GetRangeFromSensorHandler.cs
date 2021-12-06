@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Grpc.Core;
 using MediatR;
-using Microsoft.Extensions.Options;
 using SensorData.Api.Queries;
 using SensorData.Core.Models;
 using SensorData.Core.Services;
@@ -17,10 +16,9 @@ using Shared.Proto.Sensor;
 using Shared.Proto.SensorData;
 using Shared.Services.GrpcClientServices;
 
-
 namespace SensorData.Api.Handlers
 {
-    public class GetAllFromSensorHandler : IRequestHandler<GetAllFromSensorQuery, GetManyFromSensorResponse>
+    public class GetRangeFromSensorHandler : IRequestHandler<GetRangeFromSensorQuery, GetManyFromSensorResponse>
     {
         private readonly IReadingService _readingService;
         private readonly IGrpcService<SensorGrpc.SensorGrpcClient> _sensorService;
@@ -28,24 +26,24 @@ namespace SensorData.Api.Handlers
         private readonly UserSettings _userSettings;
         private readonly IMapper _mapper;
 
-        public GetAllFromSensorHandler(IReadingService readingService, IMapper mapper,
+        public GetRangeFromSensorHandler(IReadingService readingService,
             IGrpcService<SensorGrpc.SensorGrpcClient> sensorService,
-            IGrpcService<DeviceGrpc.DeviceGrpcClient> deviceService, IOptions<UserSettings> userSettings)
+            IGrpcService<DeviceGrpc.DeviceGrpcClient> deviceService, UserSettings userSettings, IMapper mapper)
         {
             _readingService = readingService;
-            _mapper = mapper;
             _sensorService = sensorService;
             _deviceService = deviceService;
-            _userSettings = userSettings.Value;
+            _userSettings = userSettings;
+            _mapper = mapper;
         }
 
-        public async Task<GetManyFromSensorResponse> Handle(GetAllFromSensorQuery request,
+        public async Task<GetManyFromSensorResponse> Handle(GetRangeFromSensorQuery request,
             CancellationToken cancellationToken)
         {
             var query = request.Query;
 
             // find sensor id
-            if (query.SensorCase == GetAllFromSensorRequest.SensorOneofCase.DeviceAndName)
+            if (query.SensorCase == GetRangeFromSensorRequest.SensorOneofCase.DeviceAndName)
             {
                 var deviceRequest = new GenericGetRequest
                 {
@@ -79,8 +77,11 @@ namespace SensorData.Api.Handlers
                     "Sensor not found")); // maybe it was deleted in the meantime who knows?
             }
 
+            var startDate = query.StartDate.ToDateTime();
+            var endDate = query.EndDate.ToDateTime();
+            var readingsQuery = _readingService.GetAllReadingsFromSensorQuery(sensor.Id)
+                .Where(r => r.Time > startDate && r.Time < endDate);
 
-            var readingsQuery = _readingService.GetAllReadingsFromSensorQuery(sensor.Id);
             var pagedList = await PagedList<Reading>.ToPagedListAsync(readingsQuery, query.PageNumber, query.PageSize,
                 cancellationToken);
             var pagedListMapped = pagedList
