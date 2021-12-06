@@ -6,6 +6,7 @@ using AutoMapper;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using MediatR;
+using Microsoft.Extensions.Options;
 using SensorData.Api.Commands;
 using SensorData.Core.Models;
 using SensorData.Core.Services;
@@ -25,11 +26,12 @@ namespace SensorData.Api.Handlers
         private readonly IMapper _mapper;
 
         public CreateReadingHandler(IReadingService readingService,
-            IGrpcService<DeviceGrpc.DeviceGrpcClient> deviceService, UserSettings userSettings, IMapper mapper)
+            IGrpcService<DeviceGrpc.DeviceGrpcClient> deviceService, IOptions<UserSettings> userSettings,
+            IMapper mapper)
         {
             _readingService = readingService;
             _deviceService = deviceService;
-            _userSettings = userSettings;
+            _userSettings = userSettings.Value;
             _mapper = mapper;
         }
 

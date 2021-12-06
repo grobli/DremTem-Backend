@@ -137,6 +137,8 @@ namespace DeviceManager.Api.Mapping
                     dest => dest.DeviceIds,
                     opt => opt.MapFrom(src => src.Devices.Select(d => d.Id)));
 
+            CreateMap<Group, GroupTinyDto>();
+
 
             //---------- Resource/Request to Domain ----------
             CreateMap<CreateDeviceRequest, Device>()

@@ -1,5 +1,4 @@
 ﻿using MediatR;
-using Shared.Proto.Common;
 using Shared.Proto.SensorData;
 
 namespace SensorData.Api.Queries

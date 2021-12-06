@@ -46,6 +46,7 @@ namespace SensorData.Api.Handlers
                 await memoryStream.WriteAsync(chunk.Chunk.Memory, cancellationToken);
             }
 
+            memoryStream.Position = 0;
             allowOverwrite ??= false;
             if (deviceId is null)
             {
@@ -78,7 +79,8 @@ namespace SensorData.Api.Handlers
                     {
                         Time = DateTime.Parse(r.Time).ToUniversalTime(), Value = r.Value,
                         SensorId = sensorIdDict[r.SensorName]
-                    });
+                    }).ToList();
+                Console.WriteLine(records.First());
                 await _readingService.SaveManyReadingsAsync(records, allowOverwrite.Value, cancellationToken);
             }
             catch (Exception e)

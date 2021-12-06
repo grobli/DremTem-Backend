@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -11,9 +12,11 @@ using Shared.Proto.Device;
 using Shared.Proto.Group;
 using Shared.Proto.Location;
 using Shared.Proto.Sensor;
+using Shared.Proto.SensorData;
 using Shared.Proto.SensorType;
 using Shared.Proto.User;
 using Shared.Proto.UserIdentity;
+using Shared.web;
 
 namespace ClientApiGateway.Api
 {
@@ -29,7 +32,8 @@ namespace ClientApiGateway.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers()
+            services.AddControllers(options =>
+                    options.Conventions.Add(new RouteTokenTransformerConvention(new SlugifyParameterTransformer())))
                 .AddJsonOptions(options => options.JsonSerializerOptions.IgnoreNullValues = true);
 
             services.AddSwaggerGen(c =>
@@ -75,6 +79,9 @@ namespace ClientApiGateway.Api
             // UserIdentity service
             services.AddGrpcServiceProvider<UserAuthGrpc.UserAuthGrpcClient>("UserIdentity");
             services.AddGrpcServiceProvider<UserGrpc.UserGrpcClient>("UserIdentity");
+
+            // SensorData service
+            services.AddGrpcServiceProvider<SensorDataGrpc.SensorDataGrpcClient>("SensorData");
 
 
             services.AddAutoMapper(typeof(Startup));

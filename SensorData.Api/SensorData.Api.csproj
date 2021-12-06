@@ -25,6 +25,7 @@
     <ItemGroup>
         <ProjectReference Include="..\DeviceManager.Core\DeviceManager.Core.csproj" />
         <ProjectReference Include="..\SensorData.Data\SensorData.Data.csproj" />
+        <ProjectReference Include="..\SensorData.Services\SensorData.Services.csproj" />
         <ProjectReference Include="..\Shared\Shared.csproj" />
         <ProjectReference Include="..\SensorData.Core\SensorData.Core.csproj" />
         <ProjectReference Include="..\UserIdentity.Core\UserIdentity.Core.csproj" />

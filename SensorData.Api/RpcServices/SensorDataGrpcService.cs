@@ -86,11 +86,12 @@ namespace SensorData.Api.RpcServices
             return await _mediator.Send(command, context.CancellationToken);
         }
 
-        public override Task GetRangeFromSensorAsFile(GetRangeFromSensorAsFileRequest request,
+        public override async Task GetRangeFromSensorAsFile(GetRangeFromSensorAsFileRequest request,
             IServerStreamWriter<GetRangeFromSensorFileChunk> responseStream,
             ServerCallContext context)
         {
-            return base.GetRangeFromSensorAsFile(request, responseStream, context);
+            var query = new GetRangeFromSensorAsFileQuery(request, responseStream);
+            await _mediator.Send(query, context.CancellationToken);
         }
 
         public override Task<Stat1DBucketResponse> CalculateStat1DForSensor(CalculateStat1DForSensorRequest request,

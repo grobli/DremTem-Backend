@@ -85,7 +85,7 @@ services:
       ASPNETCORE_ENVIRONMENT: 'docker'
       ASPNETCORE_Kestrel__Certificates__Default__Password: password
       ASPNETCORE_Kestrel__Certificates__Default__Path: /https/aspnetapp.pfx
-      User__Id: 'someuser111'
+      User__Id: 'f42caf8a-438e-479f-b479-4c0d23944c4c' # test admin user
     volumes:
       - '~/.aspnet/https:/https:ro'
     depends_on:

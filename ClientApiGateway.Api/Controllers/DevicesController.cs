@@ -84,8 +84,8 @@ namespace ClientApiGateway.Api.Controllers
             }
         }
 
-        // GET: api/v1/Devices/42?includeLocation=true
-        [HttpGet("{id:int}")]
+        // GET: api/v1/Devices/id/42?includeLocation=true
+        [HttpGet("id/{id:int}")]
         public async Task<ActionResult<DeviceExtendedDto>> GetDevice(int id,
             [FromQuery] DeviceParameters parameters, CancellationToken token)
         {
@@ -130,8 +130,8 @@ namespace ClientApiGateway.Api.Controllers
             }
         }
 
-        // PUT: api/v1/Devices/42
-        [HttpPut("{id:int}")]
+        // PUT: api/v1/Devices/id/42
+        [HttpPut("id/{id:int}")]
         public async Task<ActionResult<DeviceDto>> UpdateDevice(int id, UpdateDeviceResource resource,
             CancellationToken token)
         {
@@ -150,8 +150,8 @@ namespace ClientApiGateway.Api.Controllers
             }
         }
 
-        // GET: api/v1/Devices/42/token
-        [HttpGet("{id:int}/token", Name = "Generate device token")]
+        // GET: api/v1/Devices/id/42/token
+        [HttpGet("id/{id:int}/token", Name = "Generate device token")]
         public async Task<ActionResult<GenerateTokenResponse>> GenerateToken(int id, CancellationToken token)
         {
             var request = new GenerateTokenRequest { Id = id, UserId = UserId };
@@ -167,8 +167,8 @@ namespace ClientApiGateway.Api.Controllers
             }
         }
 
-        // DELETE: api/v1/Devices/42
-        [HttpDelete("{id:int}")]
+        // DELETE: api/v1/Devices/id/42
+        [HttpDelete("id/{id:int}")]
         public async Task<ActionResult<DeleteDeviceResponse>> DeleteDevice(int id, CancellationToken token)
         {
             var request = new GenericDeleteRequest { Id = id, UserId = UserId };

@@ -15,8 +15,10 @@ using Microsoft.Extensions.Hosting;
 using SensorData.Api.Consumers;
 using SensorData.Api.RpcServices;
 using SensorData.Core;
+using SensorData.Core.Services;
 using SensorData.Core.Settings;
 using SensorData.Data;
+using SensorData.Services;
 using Shared;
 using Shared.Extensions;
 using Shared.Proto.Device;
@@ -74,7 +76,7 @@ namespace SensorData.Api
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<ISensorDataContext, SensorDataContext>();
-            services.AddTransient<ISensorDataContext, SensorDataContext>();
+            services.AddTransient<IReadingService, ReadingService>();
 
             services.AddMediatR(typeof(Startup));
 
