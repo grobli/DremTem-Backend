@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
@@ -212,14 +213,17 @@ namespace ClientApiGateway.Api.Controllers
         }
 
 
-        // POST api/v1/SensorData/upload/csv/device/id/42
+        // POST api/v1/SensorData/upload/csv/device/42/sensor/temp1
         [RequestSizeLimit(50L * 1024L * 1024L)] // 50 MiB
-        [HttpPost("upload/csv/device/id/{deviceId:int}")]
-        public async Task<ActionResult<Empty>> UploadSensorDataFromCsv(SensorDataCsvResource csvResource, int deviceId,
-            [FromQuery] bool allowOverwrite, CancellationToken token)
+        [HttpPost("upload/csv/device/{deviceId:int}/sensor/{sensorName}")]
+        public async Task<ActionResult<Empty>> UploadSensorDataFromCsv([FromBody] SensorDataCsvResource csvResource,
+            int deviceId, string sensorName, [FromQuery] bool allowOverwrite, CancellationToken token)
         {
+            if (csvResource is null || string.IsNullOrWhiteSpace(csvResource.CsvContent))
+                return BadRequest();
+
             var client = _dataService.GetClient(UserId);
-            var call = client.SaveReadingsFromCsv();
+            var call = client.SaveReadingsFromCsv(cancellationToken: token);
             var chunks = csvResource.CsvContent
                 .Chunk(ChunkSize)
                 .Select(ch => Encoding.UTF8.GetBytes(ch.ToArray()));
@@ -231,7 +235,9 @@ namespace ClientApiGateway.Api.Controllers
                     await call.RequestStream.WriteAsync(
                         new SaveReadingsFromCsvChunk
                         {
-                            Chunk = ByteString.CopyFrom(chunk), AllowOverwrite = allowOverwrite, DeviceId = deviceId
+                            Chunk = ByteString.CopyFrom(chunk), AllowOverwrite = allowOverwrite,
+                            DeviceId = deviceId,
+                            SensorName = sensorName
                         });
                 }
 
