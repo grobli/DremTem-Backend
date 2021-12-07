@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -12,7 +11,7 @@ using SensorData.Core.Models;
 using SensorData.Core.Services;
 using SensorData.Core.Settings;
 using Shared.Proto.Common;
-using Shared.Proto.Device;
+using Shared.Proto.Sensor;
 using Shared.Proto.SensorData;
 using Shared.Services.GrpcClientServices;
 
@@ -21,46 +20,41 @@ namespace SensorData.Api.Handlers
     public class CreateReadingHandler : IRequestHandler<CreateReadingCommand, Empty>
     {
         private readonly IReadingService _readingService;
-        private readonly IGrpcService<DeviceGrpc.DeviceGrpcClient> _deviceService;
+        private readonly IGrpcService<SensorGrpc.SensorGrpcClient> _sensorService;
         private readonly UserSettings _userSettings;
         private readonly IMapper _mapper;
 
-        public CreateReadingHandler(IReadingService readingService,
-            IGrpcService<DeviceGrpc.DeviceGrpcClient> deviceService, IOptions<UserSettings> userSettings,
-            IMapper mapper)
+        public CreateReadingHandler(IReadingService readingService, IOptions<UserSettings> userSettings, IMapper mapper,
+            IGrpcService<SensorGrpc.SensorGrpcClient> sensorService)
         {
             _readingService = readingService;
-            _deviceService = deviceService;
             _userSettings = userSettings.Value;
             _mapper = mapper;
+            _sensorService = sensorService;
         }
 
         public async Task<Empty> Handle(CreateReadingCommand command, CancellationToken cancellationToken)
         {
-            // find sensor id
+            // find sensor by name
             if (command.Body.SourceCase == CreateReadingRequest.SourceOneofCase.DeviceAndName)
             {
-                var deviceRequest = new GenericGetRequest
+                var sensorRequest = new GetSensorByNameRequest
                 {
-                    Id = command.Body.DeviceAndName.DeviceId, Parameters = new GetRequestParameters
+                    DeviceId = command.Body.DeviceAndName.DeviceId,
+                    SensorName = command.Body.DeviceAndName.SensorName,
+                    Parameters = new GetRequestParameters
                     {
-                        UserId = _userSettings.Id.ToString(),
-                        IncludeFields = { Entity.Sensor }
+                        UserId = _userSettings.Id.ToString()
                     }
                 };
-                var device = await _deviceService.SendRequestAsync(async client =>
-                    await client.GetDeviceAsync(deviceRequest));
-                if (device is null)
-                {
-                    throw new RpcException(new Status(StatusCode.NotFound, "Device not found"));
-                }
-
-                command.Body.SensorId =
-                    device.Sensors.FirstOrDefault(s => s.Name == command.Body.DeviceAndName.SensorName)?.Id ?? -1;
-                if (command.Body.SensorId == -1)
+                var sensorDto = await _sensorService.SendRequestAsync(async client =>
+                    await client.GetSensorByNameAsync(sensorRequest));
+                if (sensorDto is null)
                 {
                     throw new RpcException(new Status(StatusCode.NotFound, "Sensor not found"));
                 }
+
+                command.Body.SensorId = sensorDto.Id;
             }
 
             var reading = _mapper.Map<CreateReadingRequest, Reading>(command.Body);

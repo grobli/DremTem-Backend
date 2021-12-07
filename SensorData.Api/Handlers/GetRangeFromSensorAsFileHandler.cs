@@ -92,6 +92,6 @@ namespace SensorData.Api.Handlers
             return new Empty();
         }
 
-        private record CsvRecord(string Time, double Value);
+        private record CsvRecord(string Time, double Reading);
     }
 }

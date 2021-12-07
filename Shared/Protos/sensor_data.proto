@@ -122,6 +122,8 @@ message SaveReadingsFromCsvChunk {
   bytes Chunk = 1;
   google.protobuf.BoolValue AllowOverwrite = 16;
   google.protobuf.Int32Value DeviceId = 17;
+  google.protobuf.StringValue SensorName = 18;
+
 }
 
 message GetFirstRecentFromSensorRequest {

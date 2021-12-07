@@ -14,7 +14,7 @@ using SensorData.Core.Models;
 using SensorData.Core.Services;
 using SensorData.Core.Settings;
 using Shared.Proto.Common;
-using Shared.Proto.Device;
+using Shared.Proto.Sensor;
 using Shared.Services.GrpcClientServices;
 
 namespace SensorData.Api.Handlers
@@ -22,14 +22,14 @@ namespace SensorData.Api.Handlers
     public class SaveReadingFromCsvHandler : IRequestHandler<SaveReadingsFromCsvCommand, Empty>
     {
         private readonly IReadingService _readingService;
-        private readonly IGrpcService<DeviceGrpc.DeviceGrpcClient> _deviceService;
         private readonly UserSettings _userSettings;
+        private readonly IGrpcService<SensorGrpc.SensorGrpcClient> _sensorService;
 
-        public SaveReadingFromCsvHandler(IReadingService readingService,
-            IGrpcService<DeviceGrpc.DeviceGrpcClient> deviceService, IOptions<UserSettings> userSettings)
+        public SaveReadingFromCsvHandler(IReadingService readingService, IOptions<UserSettings> userSettings,
+            IGrpcService<SensorGrpc.SensorGrpcClient> sensorService)
         {
             _readingService = readingService;
-            _deviceService = deviceService;
+            _sensorService = sensorService;
             _userSettings = userSettings.Value;
         }
 
@@ -37,12 +37,14 @@ namespace SensorData.Api.Handlers
         {
             int? deviceId = null;
             bool? allowOverwrite = null;
+            string sensorName = null;
             await using var memoryStream = new MemoryStream();
             using var streamReader = new StreamReader(memoryStream);
             await foreach (var chunk in command.Stream.ReadAllAsync(cancellationToken))
             {
                 deviceId ??= chunk.DeviceId;
                 allowOverwrite ??= chunk.AllowOverwrite;
+                sensorName ??= chunk.SensorName;
                 await memoryStream.WriteAsync(chunk.Chunk.Memory, cancellationToken);
             }
 
@@ -53,23 +55,22 @@ namespace SensorData.Api.Handlers
                 throw new RpcException(new Status(StatusCode.InvalidArgument, "Missing device id"));
             }
 
-            var deviceRequest = new GenericGetRequest
+            if (sensorName is null)
             {
-                Id = deviceId.Value,
-                Parameters = new GetRequestParameters
-                {
-                    UserId = _userSettings.Id.ToString(),
-                    IncludeFields = { Entity.Sensor }
-                }
-            };
-            var device = await _deviceService.SendRequestAsync(async client =>
-                await client.GetDeviceAsync(deviceRequest));
-            if (device is null)
-            {
-                throw new RpcException(new Status(StatusCode.NotFound, "Device not found"));
+                throw new RpcException(new Status(StatusCode.InvalidArgument, "Missing sensor name"));
             }
 
-            var sensorIdDict = device.Sensors.ToDictionary(s => s.Name, s => s.Id);
+            var sensorRequest = new GetSensorByNameRequest
+            {
+                DeviceId = deviceId.Value, SensorName = sensorName,
+                Parameters = new GetRequestParameters { UserId = _userSettings.Id.ToString() }
+            };
+            var sensor = await _sensorService.SendRequestAsync(async client =>
+                await client.GetSensorByNameAsync(sensorRequest));
+            if (sensor is null)
+            {
+                throw new RpcException(new Status(StatusCode.NotFound, "Sensor not found"));
+            }
 
             try
             {
@@ -77,8 +78,8 @@ namespace SensorData.Api.Handlers
                 var records = csv.GetRecords<CsvReading>()
                     .Select(r => new Reading
                     {
-                        Time = DateTime.Parse(r.Time).ToUniversalTime(), Value = r.Value,
-                        SensorId = sensorIdDict[r.SensorName]
+                        Time = DateTime.Parse(r.Time).ToUniversalTime(), Value = r.Reading,
+                        SensorId = sensor.Id
                     }).ToList();
                 Console.WriteLine(records.First());
                 await _readingService.SaveManyReadingsAsync(records, allowOverwrite.Value, cancellationToken);
@@ -91,6 +92,6 @@ namespace SensorData.Api.Handlers
             return new Empty();
         }
 
-        private record CsvReading(string Time, double Value, string SensorName);
+        private record CsvReading(string Time, double Reading);
     }
 }

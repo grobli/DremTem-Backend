@@ -12,8 +12,8 @@ using SensorData.Core.Services;
 using SensorData.Core.Settings;
 using Shared;
 using Shared.Extensions;
+using Shared.Proto;
 using Shared.Proto.Common;
-using Shared.Proto.Device;
 using Shared.Proto.Sensor;
 using Shared.Proto.SensorData;
 using Shared.Services.GrpcClientServices;
@@ -24,17 +24,15 @@ namespace SensorData.Api.Handlers
     {
         private readonly IReadingService _readingService;
         private readonly IGrpcService<SensorGrpc.SensorGrpcClient> _sensorService;
-        private readonly IGrpcService<DeviceGrpc.DeviceGrpcClient> _deviceService;
         private readonly UserSettings _userSettings;
         private readonly IMapper _mapper;
 
         public GetLastFromSensorHandler(IReadingService readingService,
-            IGrpcService<SensorGrpc.SensorGrpcClient> sensorService,
-            IGrpcService<DeviceGrpc.DeviceGrpcClient> deviceService, IOptions<UserSettings> userSettings, IMapper mapper)
+            IGrpcService<SensorGrpc.SensorGrpcClient> sensorService, IOptions<UserSettings> userSettings,
+            IMapper mapper)
         {
             _readingService = readingService;
             _sensorService = sensorService;
-            _deviceService = deviceService;
             _userSettings = userSettings.Value;
             _mapper = mapper;
         }
@@ -43,40 +41,36 @@ namespace SensorData.Api.Handlers
             CancellationToken cancellationToken)
         {
             var query = request.Query;
+            SensorDto sensorDto;
 
-            // find sensor id
+            // find sensor by name
             if (query.SensorCase == GetLastFromSensorRequest.SensorOneofCase.DeviceAndName)
             {
-                var deviceRequest = new GenericGetRequest
+                var sensorRequest = new GetSensorByNameRequest
                 {
-                    Id = query.DeviceAndName.DeviceId, Parameters = new GetRequestParameters
+                    DeviceId = query.DeviceAndName.DeviceId,
+                    SensorName = query.DeviceAndName.SensorName,
+                    Parameters = new GetRequestParameters
                     {
-                        UserId = _userSettings.Id.ToString(),
-                        IncludeFields = { Entity.Sensor }
+                        UserId = _userSettings.Id.ToString()
                     }
                 };
-                var device = await _deviceService.SendRequestAsync(async client =>
-                    await client.GetDeviceAsync(deviceRequest));
-                if (device is null)
+                sensorDto = await _sensorService.SendRequestAsync(async client =>
+                    await client.GetSensorByNameAsync(sensorRequest));
+            }
+            else
+            {
+                var sensorRequest = new GenericGetRequest
                 {
-                    throw new RpcException(new Status(StatusCode.NotFound, "Device not found"));
-                }
-
-                query.SensorId = device.Sensors.FirstOrDefault(s => s.Name == query.DeviceAndName.SensorName)?.Id ?? -1;
-                if (query.SensorId == -1)
-                {
-                    throw new RpcException(new Status(StatusCode.NotFound, "Sensor not found"));
-                }
+                    Id = query.SensorId, Parameters = new GetRequestParameters { UserId = _userSettings.Id.ToString() }
+                };
+                sensorDto = await _sensorService.SendRequestAsync(async client =>
+                    await client.GetSensorAsync(sensorRequest));
             }
 
-            var sensorRequest = new GenericGetRequest
-                { Id = query.SensorId, Parameters = new GetRequestParameters { UserId = _userSettings.Id.ToString() } };
-            var sensor = await _sensorService.SendRequestAsync(async client =>
-                await client.GetSensorAsync(sensorRequest));
-            if (sensor is null)
+            if (sensorDto is null)
             {
-                throw new RpcException(new Status(StatusCode.NotFound,
-                    "Sensor not found")); // maybe it was deleted in the meantime who knows?
+                throw new RpcException(new Status(StatusCode.NotFound, "Sensor not found"));
             }
 
             var dateOffset = query.TimeUnit switch
@@ -88,7 +82,7 @@ namespace SensorData.Api.Handlers
                 _ => throw new ArgumentOutOfRangeException(nameof(request))
             };
 
-            var readingsQuery = _readingService.GetAllReadingsFromSensorQuery(sensor.Id)
+            var readingsQuery = _readingService.GetAllReadingsFromSensorQuery(sensorDto.Id)
                 .Where(r => r.Time > dateOffset);
             var pagedList = await PagedList<Reading>.ToPagedListAsync(readingsQuery, query.PageNumber, query.PageSize,
                 cancellationToken);
@@ -97,8 +91,8 @@ namespace SensorData.Api.Handlers
             var response = new GetManyFromSensorResponse
             {
                 Readings = { pagedListMapped },
-                SensorId = sensor.Id,
-                SensorTypeId = sensor.TypeId,
+                SensorId = sensorDto.Id,
+                SensorTypeId = sensorDto.TypeId,
                 PaginationMetaData = new PaginationMetaData().FromPagedList(pagedList)
             };
 
