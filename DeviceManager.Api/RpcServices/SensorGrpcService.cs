@@ -36,6 +36,13 @@ namespace DeviceManager.Api.RpcServices
             return result;
         }
 
+        public override async Task<SensorDto> GetSensorByName(GetSensorByNameRequest request, ServerCallContext context)
+        {
+            var query = new GetSensorByNameQuery(request);
+            var result = await _mediator.Send(query, context.CancellationToken);
+            return result;
+        }
+
         public override async Task<SensorDto> AddSensor(CreateSensorRequest request, ServerCallContext context)
         {
             var command = new CreateSensorCommand(request);

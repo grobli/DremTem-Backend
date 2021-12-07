@@ -11,6 +11,7 @@ option csharp_namespace = "Shared.Proto.Location";
 service LocationGrpc {
   rpc GetAllLocations (common.GenericGetManyRequest) returns (GetAllLocationsResponse);
   rpc GetLocation (common.GenericGetRequest) returns (LocationExtendedDto);
+  rpc GetLocationByName (GetLocationByNameRequest) returns (LocationExtendedDto);
 
   rpc CreateLocation (CreateLocationRequest) returns (LocationDto);
   rpc UpdateLocation (UpdateLocationRequest) returns (LocationDto);
@@ -42,5 +43,10 @@ message UpdateLocationRequest {
 
   // allow only owner of the location to update it
   string UserId = 8;
+}
+
+message GetLocationByNameRequest {
+  string LocationName = 1;
+  common.GetRequestParameters Parameters = 2;
 }
 

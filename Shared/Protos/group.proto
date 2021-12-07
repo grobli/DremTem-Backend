@@ -12,6 +12,7 @@ service GroupGrpc {
   // queries
   rpc GetAllGroups (common.GenericGetManyRequest) returns (GetAllGroupsResponse);
   rpc GetGroup (common.GenericGetRequest) returns (GroupDto);
+  rpc GetGroupByName (GetGroupByNameRequest) returns (GroupDto);
 
   // commands
   rpc CreateGroup (CreateGroupRequest) returns (GroupDto);
@@ -56,4 +57,9 @@ message RemoveDeviceFromGroupRequest {
   int32 DeviceId = 2;
   // allow only owner of the group and device to remove it
   string UserId = 8;
-} 
+}
+
+message GetGroupByNameRequest {
+  string GroupName = 1;
+  common.GetRequestParameters Parameters = 2;
+}

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -85,7 +86,8 @@ namespace DeviceManager.Api.Handlers.LocationHandlers
 
                 foreach (var location in pagedListMapped)
                 {
-                    location.DeviceIds.AddRange(devicesDict[location.Id]);
+                    if (devicesDict.TryGetValue(location.Id, out var deviceIds))
+                        location.DeviceIds.AddRange(deviceIds);
                 }
             }
         }

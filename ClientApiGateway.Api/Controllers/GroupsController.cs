@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Text.Json;
 using System.Threading;
@@ -41,7 +42,7 @@ namespace ClientApiGateway.Api.Controllers
 
         // GET: api/v1/Groups
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<GroupDto>>> GetAllGroups(
+        public async Task<ActionResult<IEnumerable<GroupResource>>> GetAllGroups(
             [FromQuery] GroupPagedParameters parameters, CancellationToken token)
         {
             return await GetAllGroups(parameters, true, token);
@@ -50,13 +51,13 @@ namespace ClientApiGateway.Api.Controllers
         // GET: api/v1/Groups/all
         [Authorize(Roles = DefaultRoles.SuperUser)]
         [HttpGet("all")]
-        public async Task<ActionResult<IEnumerable<GroupDto>>> GetAllGroupsOfAllUsers(
+        public async Task<ActionResult<IEnumerable<GroupResource>>> GetAllGroupsOfAllUsers(
             [FromQuery] GroupPagedParameters parameters, CancellationToken token)
         {
             return await GetAllGroups(parameters, false, token);
         }
 
-        private async Task<ActionResult<IEnumerable<GroupDto>>> GetAllGroups(
+        private async Task<ActionResult<IEnumerable<GroupResource>>> GetAllGroups(
             [FromQuery] GroupPagedParameters parameters, bool limitToUser, CancellationToken token)
         {
             var request = new GenericGetManyRequest
@@ -73,7 +74,8 @@ namespace ClientApiGateway.Api.Controllers
                 var result = await _grpcService.SendRequestAsync(async client =>
                     await client.GetAllGroupsAsync(request, cancellationToken: token));
                 Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(result.MetaData));
-                return Ok(result.Groups);
+                var resources = result.Groups.Select(g => _mapper.Map<GroupDto, GroupResource>(g));
+                return Ok(resources);
             }
             catch (RpcException e)
             {
@@ -83,7 +85,7 @@ namespace ClientApiGateway.Api.Controllers
 
         // GET: api/v1/Groups/42
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<GroupDto>> GetGroup(int id, CancellationToken token)
+        public async Task<ActionResult<GroupResource>> GetGroup(int id, CancellationToken token)
         {
             var request = new GenericGetRequest
             {
@@ -97,7 +99,7 @@ namespace ClientApiGateway.Api.Controllers
             {
                 var response = await _grpcService.SendRequestAsync(async client =>
                     await client.GetGroupAsync(request, cancellationToken: token));
-                return Ok(response);
+                return Ok(_mapper.Map<GroupDto, GroupResource>(response));
             }
             catch (RpcException e)
             {
@@ -107,7 +109,8 @@ namespace ClientApiGateway.Api.Controllers
 
         // POST: api/v1/Groups
         [HttpPost]
-        public async Task<ActionResult<GroupDto>> CreateGroup(CreateGroupResource resource, CancellationToken token)
+        public async Task<ActionResult<GroupResource>> CreateGroup(CreateGroupResource resource,
+            CancellationToken token)
         {
             var request = _mapper.Map<CreateGroupResource, CreateGroupRequest>(resource);
             request.UserId = UserId;
@@ -115,7 +118,8 @@ namespace ClientApiGateway.Api.Controllers
             {
                 var createdGroup = await _grpcService.SendRequestAsync(async client =>
                     await client.CreateGroupAsync(request, cancellationToken: token));
-                return CreatedAtAction("GetGroup", new { id = createdGroup.Id }, createdGroup);
+                return CreatedAtAction("GetGroup", new { id = createdGroup.Id },
+                    _mapper.Map<GroupDto, GroupResource>(createdGroup));
             }
             catch (RpcException e)
             {
@@ -125,7 +129,7 @@ namespace ClientApiGateway.Api.Controllers
 
         // PUT: api/v1/Groups/42
         [HttpPut("{id:int}")]
-        public async Task<ActionResult<GroupDto>> UpdateGroup(UpdateGroupResource resource, int id,
+        public async Task<ActionResult<GroupResource>> UpdateGroup(UpdateGroupResource resource, int id,
             CancellationToken token)
         {
             var request = _mapper.Map<UpdateGroupResource, UpdateGroupRequest>(resource);
@@ -135,7 +139,7 @@ namespace ClientApiGateway.Api.Controllers
             {
                 var result = await _grpcService.SendRequestAsync(async client =>
                     await client.UpdateGroupAsync(request, cancellationToken: token));
-                return Ok(result);
+                return Ok(_mapper.Map<GroupDto, GroupResource>(result));
             }
             catch (RpcException e)
             {

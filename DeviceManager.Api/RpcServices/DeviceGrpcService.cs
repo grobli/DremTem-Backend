@@ -38,6 +38,14 @@ namespace DeviceManager.Api.RpcServices
             return result;
         }
 
+        public override async Task<DeviceExtendedDto> GetDeviceByName(GetDeviceByNameRequest request,
+            ServerCallContext context)
+        {
+            var query = new GetDeviceByNameQuery(request);
+            var result = await _mediator.Send(query, context.CancellationToken);
+            return result;
+        }
+
         public override async Task<DeviceExtendedDto> CreateDevice(CreateDeviceRequest request,
             ServerCallContext context)
         {

@@ -31,7 +31,7 @@ namespace ClientApiGateway.Api.Controllers
         }
 
         [Authorize(Roles = DefaultRoles.SuperUser)]
-        [HttpGet("warmup")]
+        [HttpPost("warmup")]
         public async Task<IActionResult> Warmup([FromQuery] bool force)
         {
             if (IsApiWarmedUp && !force) return Ok("API is warmed up already :)");

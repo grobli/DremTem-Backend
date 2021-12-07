@@ -22,12 +22,12 @@ namespace SensorData.Data.Repositories
 
         public IQueryable<Reading> GetReadings()
         {
-            return _context.Readings.OrderBy(r => r.Time);
+            return _context.Readings.OrderByDescending(r => r.Time);
         }
 
         public IQueryable<Reading> GetReadingsBySensorId(int sensorId)
         {
-            return _context.Readings.Where(r => r.SensorId == sensorId).OrderBy(r => r.Time);
+            return _context.Readings.Where(r => r.SensorId == sensorId).OrderByDescending(r => r.Time);
         }
 
         public async Task<Reading> GetReadingByTimestampAsync(DateTime timestamp, int sensorId, CancellationToken token)

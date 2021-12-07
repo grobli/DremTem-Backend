@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
@@ -6,13 +7,16 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using AutoMapper;
 using ClientApiGateway.Api.Resources;
+using ClientApiGateway.Api.Resources.Reading;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using SensorData.Core.Models;
 using Shared.Extensions;
 using Shared.Proto.SensorData;
@@ -30,19 +34,21 @@ namespace ClientApiGateway.Api.Controllers
 
         private readonly ILogger<SensorDataController> _logger;
         private readonly IGrpcService<SensorDataGrpc.SensorDataGrpcClient> _dataService;
+        private readonly IMapper _mapper;
         private string UserId => User.FindFirstValue(ClaimTypes.NameIdentifier);
 
 
         public SensorDataController(ILogger<SensorDataController> logger,
-            IGrpcService<SensorDataGrpc.SensorDataGrpcClient> dataService)
+            IGrpcService<SensorDataGrpc.SensorDataGrpcClient> dataService, IMapper mapper)
         {
             _logger = logger;
             _dataService = dataService;
+            _mapper = mapper;
         }
 
         // GET api/v1/SensorData/sensor/42/all
         [HttpGet("sensor/{sensorId:int}/all")]
-        public async Task<ActionResult<Empty>> GetAllReadings(int sensorId,
+        public async Task<ActionResult<GetReadingsFromSensorResource>> GetAllReadings(int sensorId,
             [FromQuery] ReadingPagedParameters parameters, CancellationToken token)
         {
             var request = new GetAllFromSensorRequest
@@ -57,7 +63,7 @@ namespace ClientApiGateway.Api.Controllers
                 var client = _dataService.GetClient(UserId);
                 var result = await client.GetAllFromSensorAsync(request, cancellationToken: token);
                 Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(result.PaginationMetaData));
-                return Ok(new { result.SensorId, result.SensorTypeId, result.Readings });
+                return Ok(_mapper.Map<GetManyFromSensorResponse, GetReadingsFromSensorResource>(result));
             }
             catch (RpcException e)
             {
@@ -67,7 +73,7 @@ namespace ClientApiGateway.Api.Controllers
 
         // GET api/v1/SensorData/device/42/sensor/temp1/all
         [HttpGet("device/{deviceId:int}/sensor/{sensorName}/all")]
-        public async Task<ActionResult<Empty>> GetAllReadings(int deviceId, string sensorName,
+        public async Task<ActionResult<GetReadingsFromSensorResource>> GetAllReadings(int deviceId, string sensorName,
             [FromQuery] ReadingPagedParameters parameters, CancellationToken token)
         {
             var request = new GetAllFromSensorRequest
@@ -82,7 +88,7 @@ namespace ClientApiGateway.Api.Controllers
                 var client = _dataService.GetClient(UserId);
                 var result = await client.GetAllFromSensorAsync(request, cancellationToken: token);
                 Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(result.PaginationMetaData));
-                return Ok(new { result.SensorId, result.SensorTypeId, result.Readings });
+                return Ok(_mapper.Map<GetManyFromSensorResponse, GetReadingsFromSensorResource>(result));
             }
             catch (RpcException e)
             {
@@ -92,7 +98,8 @@ namespace ClientApiGateway.Api.Controllers
 
         // GET api/v1/SensorData/device/42/sensor/temp1/last/second/40
         [HttpGet("device/{deviceId:int}/sensor/{sensorName}/last/second")]
-        public async Task<ActionResult<Empty>> GetLastReadingsBySeconds(int deviceId, string sensorName,
+        public async Task<ActionResult<GetReadingsFromSensorResource>> GetLastReadingsBySeconds(int deviceId,
+            string sensorName,
             [FromQuery] int amount, [FromQuery] ReadingPagedParameters parameters, CancellationToken token)
         {
             return await GetLastReadings(deviceId, sensorName, TimeUnit.Second, amount <= 0 ? 1 : amount, parameters,
@@ -101,7 +108,8 @@ namespace ClientApiGateway.Api.Controllers
 
         // GET api/v1/SensorData/device/42/sensor/temp1/last/minute/40
         [HttpGet("device/{deviceId:int}/sensor/{sensorName}/last/minute")]
-        public async Task<ActionResult<Empty>> GetLastReadingsByMinutes(int deviceId, string sensorName,
+        public async Task<ActionResult<GetReadingsFromSensorResource>> GetLastReadingsByMinutes(int deviceId,
+            string sensorName,
             [FromQuery] int amount, [FromQuery] ReadingPagedParameters parameters, CancellationToken token)
         {
             return await GetLastReadings(deviceId, sensorName, TimeUnit.Minute, amount <= 0 ? 1 : amount, parameters,
@@ -111,7 +119,8 @@ namespace ClientApiGateway.Api.Controllers
 
         // GET api/v1/SensorData/device/42/sensor/temp1/last/hour/2
         [HttpGet("device/{deviceId:int}/sensor/{sensorName}/last/hour")]
-        public async Task<ActionResult<Empty>> GetLastReadingsByHours(int deviceId, string sensorName,
+        public async Task<ActionResult<GetReadingsFromSensorResource>> GetLastReadingsByHours(int deviceId,
+            string sensorName,
             [FromQuery] int amount, [FromQuery] ReadingPagedParameters parameters, CancellationToken token)
         {
             return await GetLastReadings(deviceId, sensorName, TimeUnit.Hour, amount <= 0 ? 1 : amount, parameters,
@@ -120,7 +129,8 @@ namespace ClientApiGateway.Api.Controllers
 
         // GET api/v1/SensorData/device/42/sensor/temp1/last/day/2
         [HttpGet("device/{deviceId:int}/sensor/{sensorName}/last/day")]
-        public async Task<ActionResult<Empty>> GetLastReadingsByDays(int deviceId, string sensorName,
+        public async Task<ActionResult<GetReadingsFromSensorResource>> GetLastReadingsByDays(int deviceId,
+            string sensorName,
             [FromQuery] int amount, [FromQuery] ReadingPagedParameters parameters, CancellationToken token)
         {
             return await GetLastReadings(deviceId, sensorName, TimeUnit.Day, amount <= 0 ? 1 : amount, parameters,
@@ -128,7 +138,8 @@ namespace ClientApiGateway.Api.Controllers
         }
 
 
-        private async Task<ActionResult<Empty>> GetLastReadings(int deviceId, string sensorName, TimeUnit timeUnit,
+        private async Task<ActionResult<GetReadingsFromSensorResource>> GetLastReadings(int deviceId, string sensorName,
+            TimeUnit timeUnit,
             int amount, [FromQuery] ReadingPagedParameters parameters, CancellationToken token)
         {
             var request = new GetLastFromSensorRequest
@@ -145,7 +156,7 @@ namespace ClientApiGateway.Api.Controllers
                 var client = _dataService.GetClient(UserId);
                 var result = await client.GetLastFromSensorAsync(request, cancellationToken: token);
                 Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(result.PaginationMetaData));
-                return Ok(new { result.SensorId, result.SensorTypeId, result.Readings });
+                return Ok(_mapper.Map<GetManyFromSensorResponse, GetReadingsFromSensorResource>(result));
             }
             catch (RpcException e)
             {
@@ -155,7 +166,8 @@ namespace ClientApiGateway.Api.Controllers
 
         // GET api/v1/SensorData/device/42/sensor/temp1/range/{startDate:datetime}/{endDate:datetime}
         [HttpGet("device/{deviceId:int}/sensor/{sensorName}/range/{startDate:datetime}/{endDate:datetime}")]
-        public async Task<ActionResult<Empty>> GetAllReadings(int deviceId, string sensorName, DateTime startDate,
+        public async Task<ActionResult<GetReadingsFromSensorResource>> GetAllReadings(int deviceId, string sensorName,
+            DateTime startDate,
             DateTime endDate, [FromQuery] ReadingPagedParameters parameters, CancellationToken token)
         {
             var request = new GetRangeFromSensorRequest
@@ -172,7 +184,26 @@ namespace ClientApiGateway.Api.Controllers
                 var client = _dataService.GetClient(UserId);
                 var result = await client.GetRangeFromSensorAsync(request, cancellationToken: token);
                 Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(result.PaginationMetaData));
-                return Ok(new { result.SensorId, result.SensorTypeId, result.Readings });
+                return Ok(_mapper.Map<GetManyFromSensorResponse, GetReadingsFromSensorResource>(result));
+            }
+            catch (RpcException e)
+            {
+                return HandleRpcException(e);
+            }
+        }
+
+        // GET api/v1/SensorData/device/42/sensor/temp1/latest
+        [HttpGet("device/{deviceId:int}/sensor/{sensorName}/latest")]
+        public async Task<ActionResult<ReadingResource>> GetLatestReading(int deviceId, string sensorName,
+            CancellationToken token)
+        {
+            var request = new GetFirstRecentFromSensorRequest
+                { DeviceAndName = new DeviceAndSensorName { DeviceId = deviceId, SensorName = sensorName } };
+            try
+            {
+                var client = _dataService.GetClient(UserId);
+                var result = await client.GetFirstRecentFromSensorAsync(request, cancellationToken: token);
+                return Ok(_mapper.Map<ReadingDto, ReadingResource>(result));
             }
             catch (RpcException e)
             {
@@ -232,6 +263,7 @@ namespace ClientApiGateway.Api.Controllers
             return new EmptyResult();
         }
 
+
         [HttpGet(
             "download/csv/device/{deviceId:int}/sensor/{sensorName}/range/{startDate:datetime}/{endDate:datetime}")]
         public async Task<EmptyResult> GetRangeFromSensorAsCsv(int deviceId, string sensorName, DateTime startDate,
@@ -256,7 +288,7 @@ namespace ClientApiGateway.Api.Controllers
             Response.ContentType = "text/csv";
             var client = _dataService.GetClient(UserId);
 
-            var call = client.GetRangeFromSensorAsFile(request);
+            var call = client.GetRangeFromSensorAsFile(request, cancellationToken: token);
 
             await using var sw = new StreamWriter(Response.Body);
             await foreach (var chunk in call.ResponseStream.ReadAllAsync(token))

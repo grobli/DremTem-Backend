@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Text.Json;
 using System.Threading;
@@ -14,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using Shared.Proto;
 using Shared.Proto.Common;
 using Shared.Proto.Location;
+using Shared.Proto.SensorData;
 using Shared.Services.GrpcClientServices;
 using UserIdentity.Core.Models.Auth;
 using static ClientApiGateway.Api.Handlers.RpcExceptionHandler;
@@ -42,7 +44,7 @@ namespace ClientApiGateway.Api.Controllers
 
         // GET: api/v1/Locations?includeDevices=true
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<GetLocationResource>>> GetAllLocations(
+        public async Task<ActionResult<IEnumerable<LocationResource>>> GetAllLocations(
             [FromQuery] LocationPagedParameters parameters, CancellationToken token)
         {
             return await GetAllLocations(parameters, true, token);
@@ -51,13 +53,13 @@ namespace ClientApiGateway.Api.Controllers
         // GET: api/v1/Locations/all?includeDevices=true
         [Authorize(Roles = DefaultRoles.SuperUser)]
         [HttpGet("all")]
-        public async Task<ActionResult<IEnumerable<GetLocationResource>>> GetAllLocationsOfAllUsers(
+        public async Task<ActionResult<IEnumerable<LocationResource>>> GetAllLocationsOfAllUsers(
             [FromQuery] LocationPagedParameters parameters, CancellationToken token)
         {
             return await GetAllLocations(parameters, false, token);
         }
 
-        private async Task<ActionResult<IEnumerable<GetLocationResource>>> GetAllLocations(
+        private async Task<ActionResult<IEnumerable<LocationResource>>> GetAllLocations(
             [FromQuery] LocationPagedParameters parameters, bool limitToUser, CancellationToken token)
         {
             var request = new GenericGetManyRequest
@@ -75,7 +77,9 @@ namespace ClientApiGateway.Api.Controllers
                 var result = await _grpcService.SendRequestAsync(async client =>
                     await client.GetAllLocationsAsync(request, cancellationToken: token));
                 Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(result.MetaData));
-                return Ok(result.Locations);
+                var resources = result.Locations
+                    .Select(l => _mapper.Map<LocationExtendedDto, LocationResource>(l));
+                return Ok(resources);
             }
             catch (RpcException e)
             {
@@ -85,7 +89,7 @@ namespace ClientApiGateway.Api.Controllers
 
         // GET: api/v1/Locations/42?includeDevices=true
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<GetLocationResource>> GetLocation(int id,
+        public async Task<ActionResult<LocationResource>> GetLocation(int id,
             [FromQuery] LocationParameters parameters, CancellationToken token)
         {
             var request = new GenericGetRequest
@@ -101,8 +105,7 @@ namespace ClientApiGateway.Api.Controllers
             {
                 var response = await _grpcService.SendRequestAsync(async client =>
                     await client.GetLocationAsync(request, cancellationToken: token));
-                var location = _mapper.Map<LocationExtendedDto, GetLocationResource>(response);
-                if (parameters.IncludeDevices) location.Devices = null;
+                var location = _mapper.Map<LocationExtendedDto, LocationResource>(response);
                 return Ok(location);
             }
             catch (RpcException e)
@@ -113,7 +116,7 @@ namespace ClientApiGateway.Api.Controllers
 
         // POST: api/v1/Locations
         [HttpPost]
-        public async Task<ActionResult<LocationDto>> CreateLocation(CreateLocationResource resource,
+        public async Task<ActionResult<LocationResource>> CreateLocation(CreateLocationResource resource,
             CancellationToken token)
         {
             var request = _mapper.Map<CreateLocationResource, CreateLocationRequest>(resource);
@@ -122,7 +125,8 @@ namespace ClientApiGateway.Api.Controllers
             {
                 var createdLocation = await _grpcService.SendRequestAsync(async client =>
                     await client.CreateLocationAsync(request, cancellationToken: token));
-                return CreatedAtAction("GetLocation", new { id = createdLocation.Id }, createdLocation);
+                var createdResource = _mapper.Map<LocationDto, LocationResource>(createdLocation);
+                return CreatedAtAction("GetLocation", new { id = createdLocation.Id }, createdResource);
             }
             catch (RpcException e)
             {
@@ -132,7 +136,7 @@ namespace ClientApiGateway.Api.Controllers
 
         // PUT: api/v1/Locations/42
         [HttpPut("{id:int}")]
-        public async Task<ActionResult<LocationDto>> UpdateLocation(UpdateLocationResource resource, int id,
+        public async Task<ActionResult<LocationResource>> UpdateLocation(UpdateLocationResource resource, int id,
             CancellationToken token)
         {
             var request = _mapper.Map<UpdateLocationResource, UpdateLocationRequest>(resource);
@@ -142,7 +146,8 @@ namespace ClientApiGateway.Api.Controllers
             {
                 var result = await _grpcService.SendRequestAsync(async client =>
                     await client.UpdateLocationAsync(request, cancellationToken: token));
-                return Ok(result);
+                var updatedResource = _mapper.Map<LocationDto, LocationResource>(result);
+                return Ok(updatedResource);
             }
             catch (RpcException e)
             {

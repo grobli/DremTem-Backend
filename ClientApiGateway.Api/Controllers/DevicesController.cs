@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Text.Json;
 using System.Threading;
@@ -43,7 +44,7 @@ namespace ClientApiGateway.Api.Controllers
 
         // GET: api/v1/Devices?pageNumber=1&pageSize=3&includeLocation=true&includeSensors=false
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<DeviceExtendedDto>>> GetAllDevices(
+        public async Task<ActionResult<IEnumerable<DeviceResource>>> GetAllDevices(
             [FromQuery] DevicePagedParameters parameters, CancellationToken token)
         {
             return await GetAllDevices(parameters, true, token);
@@ -52,13 +53,13 @@ namespace ClientApiGateway.Api.Controllers
         // GET: api/v1/Devices/all?includeLocation=true&includeSensors=false
         [Authorize(Roles = DefaultRoles.SuperUser)]
         [HttpGet("all")]
-        public async Task<ActionResult<IEnumerable<DeviceExtendedDto>>> GetAllDevicesOfAllUsers(
+        public async Task<ActionResult<IEnumerable<DeviceResource>>> GetAllDevicesOfAllUsers(
             [FromQuery] DevicePagedParameters parameters, CancellationToken token)
         {
             return await GetAllDevices(parameters, false, token);
         }
 
-        private async Task<ActionResult<IEnumerable<DeviceExtendedDto>>> GetAllDevices(
+        private async Task<ActionResult<IEnumerable<DeviceResource>>> GetAllDevices(
             [FromQuery] DevicePagedParameters parameters, bool limitToUser, CancellationToken token)
         {
             var request = new GenericGetManyRequest
@@ -76,7 +77,10 @@ namespace ClientApiGateway.Api.Controllers
                 var result = await _grpcService.SendRequestAsync(async client =>
                     await client.GetAllDevicesAsync(request, cancellationToken: token));
                 Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(result.MetaData));
-                return Ok(result.Devices);
+
+                var resources = result.Devices
+                    .Select(d => _mapper.Map<DeviceExtendedDto, DeviceResource>(d));
+                return Ok(resources);
             }
             catch (RpcException e)
             {
@@ -86,7 +90,7 @@ namespace ClientApiGateway.Api.Controllers
 
         // GET: api/v1/Devices/id/42?includeLocation=true
         [HttpGet("id/{id:int}")]
-        public async Task<ActionResult<DeviceExtendedDto>> GetDevice(int id,
+        public async Task<ActionResult<DeviceResource>> GetDevice(int id,
             [FromQuery] DeviceParameters parameters, CancellationToken token)
         {
             var request = new GenericGetRequest
@@ -102,7 +106,36 @@ namespace ClientApiGateway.Api.Controllers
             {
                 var result = await _grpcService.SendRequestAsync(async client =>
                     await client.GetDeviceAsync(request, cancellationToken: token));
-                return Ok(result);
+
+                var resource = _mapper.Map<DeviceExtendedDto, DeviceResource>(result);
+                return Ok(resource);
+            }
+            catch (RpcException e)
+            {
+                return HandleRpcException(e);
+            }
+        }
+
+        // GET: api/v1/devices/name/device1?includeLocation=true
+        [HttpGet("name/{deviceName}")]
+        public async Task<ActionResult<DeviceResource>> GetDeviceByName(string deviceName,
+            [FromQuery] DeviceParameters parameters, CancellationToken token)
+        {
+            var request = new GetDeviceByNameRequest
+            {
+                DeviceName = deviceName,
+                Parameters = new GetRequestParameters
+                {
+                    UserId = UserId,
+                    IncludeFields = { parameters.FieldsToInclude() }
+                }
+            };
+            try
+            {
+                var result = await _grpcService.SendRequestAsync(async client =>
+                    await client.GetDeviceByNameAsync(request, cancellationToken: token));
+                var resource = _mapper.Map<DeviceExtendedDto, DeviceResource>(result);
+                return Ok(resource);
             }
             catch (RpcException e)
             {
@@ -112,7 +145,7 @@ namespace ClientApiGateway.Api.Controllers
 
         // POST: api/v1/Devices
         [HttpPost]
-        public async Task<ActionResult<DeviceDto>> CreateDevice([FromBody] CreateDeviceResource resource,
+        public async Task<ActionResult<DeviceResource>> CreateDevice([FromBody] CreateDeviceResource resource,
             CancellationToken token)
         {
             var request = _mapper.Map<CreateDeviceResource, CreateDeviceRequest>(resource);
@@ -122,7 +155,7 @@ namespace ClientApiGateway.Api.Controllers
                 var createdDevice = await _grpcService.SendRequestAsync(async client =>
                     await client.CreateDeviceAsync(request, cancellationToken: token));
                 return CreatedAtAction("GetDevice", new { id = createdDevice.Id },
-                    createdDevice);
+                    _mapper.Map<DeviceExtendedDto, DeviceResource>(createdDevice));
             }
             catch (RpcException e)
             {
@@ -132,7 +165,7 @@ namespace ClientApiGateway.Api.Controllers
 
         // PUT: api/v1/Devices/id/42
         [HttpPut("id/{id:int}")]
-        public async Task<ActionResult<DeviceDto>> UpdateDevice(int id, UpdateDeviceResource resource,
+        public async Task<ActionResult<DeviceResource>> UpdateDevice(int id, UpdateDeviceResource resource,
             CancellationToken token)
         {
             var request = _mapper.Map<UpdateDeviceResource, UpdateDeviceRequest>(resource);
@@ -142,7 +175,7 @@ namespace ClientApiGateway.Api.Controllers
             {
                 var result = await _grpcService.SendRequestAsync(async client =>
                     await client.UpdateDeviceAsync(request, cancellationToken: token));
-                return Ok(result);
+                return Ok(_mapper.Map<DeviceDto, DeviceResource>(result));
             }
             catch (RpcException e)
             {

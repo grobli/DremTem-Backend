@@ -17,25 +17,14 @@ namespace DeviceManager.Api.Mapping
     {
         public MappingProfile()
         {
+            AllowNullCollections = true;
+            AllowNullDestinationValues = true;
+
+            CreateMap<Timestamp, DateTime>().ConvertUsing(ts => ts.ToDateTime().ToUniversalTime());
+            CreateMap<DateTime, Timestamp>().ConvertUsing(dt => Timestamp.FromDateTime(dt.ToUniversalTime()));
+
             //---------- Domain to Resource/Request ----------
             CreateMap<Device, DeviceDto>()
-                .ForMember(
-                    dest => dest.Created,
-                    opt => opt.MapFrom(src => Timestamp.FromDateTime(src.Created)))
-                .ForMember(
-                    dest => dest.LastSeen,
-                    opt =>
-                    {
-                        opt.PreCondition(src => src.LastSeen.HasValue);
-                        opt.MapFrom(src => Timestamp.FromDateTime(src.LastSeen.Value));
-                    })
-                .ForMember(
-                    dest => dest.LastModified,
-                    opt =>
-                    {
-                        opt.PreCondition(src => src.LastModified.HasValue);
-                        opt.MapFrom(src => Timestamp.FromDateTime(src.LastModified.Value));
-                    })
                 .ForMember(
                     dest => dest.DisplayName,
                     opt => opt.Condition(src => !string.IsNullOrEmpty(src.DisplayName)))
@@ -47,23 +36,6 @@ namespace DeviceManager.Api.Mapping
 
             CreateMap<Device, DeviceExtendedDto>()
                 .ForMember(
-                    dest => dest.Created,
-                    opt => opt.MapFrom(src => Timestamp.FromDateTime(src.Created)))
-                .ForMember(
-                    dest => dest.LastSeen,
-                    opt =>
-                    {
-                        opt.PreCondition(src => src.LastSeen.HasValue);
-                        opt.MapFrom(src => Timestamp.FromDateTime(src.LastSeen.Value));
-                    })
-                .ForMember(
-                    dest => dest.LastModified,
-                    opt =>
-                    {
-                        opt.PreCondition(src => src.LastModified.HasValue);
-                        opt.MapFrom(src => Timestamp.FromDateTime(src.LastModified.Value));
-                    })
-                .ForMember(
                     dest => dest.DisplayName,
                     opt => opt.Condition(src => !string.IsNullOrEmpty(src.DisplayName)))
                 .ForMember(dest => dest.LocationId,
@@ -72,67 +44,20 @@ namespace DeviceManager.Api.Mapping
                     dest => dest.UserId,
                     opt => opt.MapFrom(src => src.UserId.ToString()));
 
-            CreateMap<Sensor, SensorDto>()
-                .ForMember(
-                    dest => dest.Created,
-                    opt => opt.MapFrom(src => Timestamp.FromDateTime(src.Created)))
-                .ForMember(
-                    dest => dest.LastModified,
-                    opt =>
-                    {
-                        opt.PreCondition(src => src.LastModified.HasValue);
-                        opt.MapFrom(src => Timestamp.FromDateTime(src.LastModified.Value));
-                    });
+            CreateMap<Sensor, SensorDto>();
 
-            CreateMap<SensorType, SensorTypeDto>()
-                .ForMember(
-                    dest => dest.Created,
-                    opt => opt.MapFrom(src => Timestamp.FromDateTime(src.Created)))
-                .ForMember(
-                    dest => dest.LastModified,
-                    opt =>
-                    {
-                        opt.PreCondition(src => src.LastModified.HasValue);
-                        opt.MapFrom(src => Timestamp.FromDateTime(src.LastModified.Value));
-                    });
 
-            CreateMap<Location, LocationDto>()
-                .ForMember(
-                    dest => dest.Created,
-                    opt => opt.MapFrom(src => Timestamp.FromDateTime(src.Created)))
-                .ForMember(
-                    dest => dest.LastModified,
-                    opt =>
-                    {
-                        opt.PreCondition(src => src.LastModified.HasValue);
-                        opt.MapFrom(src => Timestamp.FromDateTime(src.LastModified.Value));
-                    });
+            CreateMap<SensorType, SensorTypeDto>();
 
-            CreateMap<Location, LocationExtendedDto>()
-                .ForMember(
-                    dest => dest.Created,
-                    opt => opt.MapFrom(src => Timestamp.FromDateTime(src.Created)))
-                .ForMember(
-                    dest => dest.LastModified,
-                    opt =>
-                    {
-                        opt.PreCondition(src => src.LastModified.HasValue);
-                        opt.MapFrom(src => Timestamp.FromDateTime(src.LastModified.Value));
-                    });
+            CreateMap<Location, LocationDto>();
+
+
+            CreateMap<Location, LocationExtendedDto>();
+
 
             CreateMap<Device, GenerateTokenResponse>();
 
             CreateMap<Group, GroupDto>()
-                .ForMember(
-                    dest => dest.Created,
-                    opt => opt.MapFrom(src => Timestamp.FromDateTime(src.Created)))
-                .ForMember(
-                    dest => dest.LastModified,
-                    opt =>
-                    {
-                        opt.PreCondition(src => src.LastModified.HasValue);
-                        opt.MapFrom(src => Timestamp.FromDateTime(src.LastModified.Value));
-                    })
                 .ForMember(
                     dest => dest.DeviceIds,
                     opt => opt.MapFrom(src => src.Devices.Select(d => d.Id)));

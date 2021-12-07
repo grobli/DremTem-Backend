@@ -75,6 +75,28 @@ services:
       - '~/.aspnet/https:/https:ro'
     depends_on:
       - consul
+      - user-identity
+      - device-manager
+      - sensor-data-1
+  device-gateway:
+    build:
+      context: '.'
+      dockerfile: './DeviceApiGateway.Api/Dockerfile'
+    ports:
+      - '9090:9090'
+      - '9091:9091'
+    environment:
+      ASPNETCORE_URLS: 'http://+:9090;https://+:9091'
+      ASPNETCORE_HTTPS_PORT: '9091'
+      ASPNETCORE_ENVIRONMENT: 'docker'
+      ASPNETCORE_Kestrel__Certificates__Default__Password: password
+      ASPNETCORE_Kestrel__Certificates__Default__Path: /https/aspnetapp.pfx
+    volumes:
+      - '~/.aspnet/https:/https:ro'
+    depends_on:
+      - consul
+      - device-manager
+      - sensor-data-1
   sensor-data-1:
     build:
       context: '.'

@@ -11,6 +11,7 @@ option csharp_namespace = "Shared.Proto.Device";
 service DeviceGrpc {
   rpc GetAllDevices (common.GenericGetManyRequest) returns (GetAllDevicesResponse);
   rpc GetDevice (common.GenericGetRequest) returns (DeviceExtendedDto);
+  rpc GetDeviceByName (GetDeviceByNameRequest) returns (DeviceExtendedDto);
 
   rpc CreateDevice (CreateDeviceRequest) returns (DeviceExtendedDto);
   rpc UpdateDevice (UpdateDeviceRequest) returns (DeviceDto);
@@ -59,10 +60,13 @@ message PingRequest {
 }
 
 message GenerateTokenRequest {
-  int32 Id = 1;
+  oneof Identifier {
+    int32 Id = 1;
+    string Name = 2;
+  }
 
   // allow only owner of the device to generate the token
-  google.protobuf.StringValue UserId = 2;
+  string UserId = 3;
 }
 
 message GenerateTokenResponse {
@@ -73,5 +77,10 @@ message GenerateTokenResponse {
 message DeleteDeviceResponse {
   int32 DeletedDeviceId = 1;
   repeated int32 DeletedSensorIds = 2;
+}
+
+message GetDeviceByNameRequest {
+  string DeviceName = 1;
+  common.GetRequestParameters Parameters = 2;
 }
 

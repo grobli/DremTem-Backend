@@ -43,7 +43,9 @@ namespace DeviceManager.Api.Handlers.GroupHandlers
             }
 
             var userId = query.Parameters?.UserId() ?? Guid.Empty;
-            var groups = _groupService.GetAllGroupsQuery(userId).Include(d => d.Devices);
+            var groups = _groupService
+                .GetAllGroupsQuery(userId)
+                .Include(d => d.Devices);
 
             var pagedList = await PagedList<Group>.ToPagedListAsync(groups, query.PageNumber,
                 query.PageSize, cancellationToken);

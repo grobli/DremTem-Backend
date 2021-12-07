@@ -10,6 +10,7 @@ option csharp_namespace = "Shared.Proto.Sensor";
 service SensorGrpc {
   rpc GetAllSensors (common.GenericGetManyRequest) returns (GetAllSensorsResponse);
   rpc GetSensor (common.GenericGetRequest) returns (SensorDto);
+  rpc GetSensorByName (GetSensorByNameRequest) returns (SensorDto);
 
   rpc AddSensor (CreateSensorRequest) returns (SensorDto);
   rpc UpdateSensor (UpdateSensorRequest) returns (SensorDto);
@@ -44,4 +45,10 @@ message UpdateSensorRequest {
 message DeleteSensorResponse {
   int32 DeletedSensorId = 1;
   int32 ParentDeviceId = 2;
+}
+
+message GetSensorByNameRequest {
+  string SensorName = 1;
+  int32 DeviceId = 2;
+  common.GetRequestParameters Parameters = 3;
 }
