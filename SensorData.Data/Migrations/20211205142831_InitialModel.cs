@@ -45,6 +45,14 @@ namespace SensorData.Data.Migrations
                 WITH NO DATA;
             ");
             
+            // daily metrics - create refresh policy - refresh last 6 months' data every 2 weeks
+            migrationBuilder.Sql(@"
+				SELECT add_continuous_aggregate_policy('reading_metrics_daily',
+					start_offset => INTERVAL '6 month',
+					end_offset => INTERVAL '1 h',
+					schedule_interval => INTERVAL '14 day');
+			");
+            
             // create continuous aggregates - hourly metrics
             migrationBuilder.Sql(@"
                CREATE MATERIALIZED VIEW reading_metrics_hourly
@@ -61,6 +69,14 @@ namespace SensorData.Data.Migrations
                 GROUP BY bucket, sensor_id
                 WITH NO DATA;
             ");
+            
+            // hourly metrics - create refresh policy - refresh last month's data every hour
+            migrationBuilder.Sql(@"
+				SELECT add_continuous_aggregate_policy('reading_metrics_hourly',
+					start_offset => INTERVAL '1 month',
+					end_offset => INTERVAL '1 h',
+					schedule_interval => INTERVAL '1 h');
+			");
             
             // reading daily metrics summary
             migrationBuilder.Sql(@"
