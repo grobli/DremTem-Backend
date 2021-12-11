@@ -6,12 +6,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using ClientApiGateway.Api.Resources.Group;
-using DeviceManager.Core.Models;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Shared;
 using Shared.Proto;
 using Shared.Proto.Common;
 using Shared.Proto.Group;
@@ -43,22 +43,22 @@ namespace ClientApiGateway.Api.Controllers
         // GET: api/v1/Groups
         [HttpGet]
         public async Task<ActionResult<IEnumerable<GroupResource>>> GetAllGroups(
-            [FromQuery] GroupPagedParameters parameters, CancellationToken token)
+            [FromQuery] PaginationParameters pagination, CancellationToken token)
         {
-            return await GetAllGroups(parameters, true, token);
+            return await GetAllGroups(pagination, true, token);
         }
 
         // GET: api/v1/Groups/all
         [Authorize(Roles = DefaultRoles.SuperUser)]
         [HttpGet("all")]
         public async Task<ActionResult<IEnumerable<GroupResource>>> GetAllGroupsOfAllUsers(
-            [FromQuery] GroupPagedParameters parameters, CancellationToken token)
+            [FromQuery] PaginationParameters pagination, CancellationToken token)
         {
-            return await GetAllGroups(parameters, false, token);
+            return await GetAllGroups(pagination, false, token);
         }
 
         private async Task<ActionResult<IEnumerable<GroupResource>>> GetAllGroups(
-            [FromQuery] GroupPagedParameters parameters, bool limitToUser, CancellationToken token)
+            [FromQuery] PaginationParameters pagination, bool limitToUser, CancellationToken token)
         {
             var request = new GenericGetManyRequest
             {
@@ -66,8 +66,8 @@ namespace ClientApiGateway.Api.Controllers
                 {
                     UserId = limitToUser ? UserId : null
                 },
-                PageNumber = parameters.Page.Number,
-                PageSize = parameters.Page.Size
+                PageNumber = pagination.PageNumber,
+                PageSize = pagination.PageSize
             };
             try
             {

@@ -20,13 +20,4 @@ namespace DeviceManager.Core.Models
 
         public override string ToString() => JsonSerializer.Serialize(this);
     }
-
-    public class SensorTypeParameters : QueryStringParameters
-    {
-    }
-
-    public class SensorTypePagedParameters : SensorParameters
-    {
-        public PaginationParameters Page { get; } = new();
-    }
 }

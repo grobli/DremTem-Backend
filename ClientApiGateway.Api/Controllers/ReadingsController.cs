@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
@@ -18,8 +16,8 @@ using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
 using SensorData.Core.Models;
+using Shared;
 using Shared.Extensions;
 using Shared.Proto.SensorData;
 using Shared.Services.GrpcClientServices;
@@ -51,12 +49,12 @@ namespace ClientApiGateway.Api.Controllers
         // GET api/v1/readings/sensor/42/all
         [HttpGet("sensor/{sensorId:int}/all")]
         public async Task<ActionResult<GetReadingsFromSensorResource>> GetAllReadings(int sensorId,
-            [FromQuery] ReadingPagedParameters parameters, CancellationToken token)
+            [FromQuery] PaginationParameters pagination, CancellationToken token)
         {
             var request = new GetAllFromSensorRequest
             {
-                PageNumber = parameters.Page.Number,
-                PageSize = parameters.Page.Size,
+                PageNumber = pagination.PageNumber,
+                PageSize = pagination.PageSize,
                 SensorId = sensorId
             };
 
@@ -76,12 +74,12 @@ namespace ClientApiGateway.Api.Controllers
         // GET api/v1/readings/device/42/sensor/temp1/all
         [HttpGet("device/{deviceId:int}/sensor/{sensorName}/all")]
         public async Task<ActionResult<GetReadingsFromSensorResource>> GetAllReadings(int deviceId, string sensorName,
-            [FromQuery] ReadingPagedParameters parameters, CancellationToken token)
+            [FromQuery] PaginationParameters pagination, CancellationToken token)
         {
             var request = new GetAllFromSensorRequest
             {
-                PageNumber = parameters.Page.Number,
-                PageSize = parameters.Page.Size,
+                PageNumber = pagination.PageNumber,
+                PageSize = pagination.PageSize,
                 DeviceAndName = new DeviceAndSensorName { DeviceId = deviceId, SensorName = sensorName }
             };
 
@@ -102,9 +100,9 @@ namespace ClientApiGateway.Api.Controllers
         [HttpGet("device/{deviceId:int}/sensor/{sensorName}/last/second")]
         public async Task<ActionResult<GetReadingsFromSensorResource>> GetLastReadingsBySeconds(int deviceId,
             string sensorName,
-            [FromQuery] int amount, [FromQuery] ReadingPagedParameters parameters, CancellationToken token)
+            [FromQuery] int amount, [FromQuery] PaginationParameters pagination, CancellationToken token)
         {
-            return await GetLastReadings(deviceId, sensorName, TimeUnit.Second, amount <= 0 ? 1 : amount, parameters,
+            return await GetLastReadings(deviceId, sensorName, TimeUnit.Second, amount <= 0 ? 1 : amount, pagination,
                 token);
         }
 
@@ -112,9 +110,9 @@ namespace ClientApiGateway.Api.Controllers
         [HttpGet("device/{deviceId:int}/sensor/{sensorName}/last/minute")]
         public async Task<ActionResult<GetReadingsFromSensorResource>> GetLastReadingsByMinutes(int deviceId,
             string sensorName,
-            [FromQuery] int amount, [FromQuery] ReadingPagedParameters parameters, CancellationToken token)
+            [FromQuery] int amount, [FromQuery] PaginationParameters pagination, CancellationToken token)
         {
-            return await GetLastReadings(deviceId, sensorName, TimeUnit.Minute, amount <= 0 ? 1 : amount, parameters,
+            return await GetLastReadings(deviceId, sensorName, TimeUnit.Minute, amount <= 0 ? 1 : amount, pagination,
                 token);
         }
 
@@ -123,9 +121,9 @@ namespace ClientApiGateway.Api.Controllers
         [HttpGet("device/{deviceId:int}/sensor/{sensorName}/last/hour")]
         public async Task<ActionResult<GetReadingsFromSensorResource>> GetLastReadingsByHours(int deviceId,
             string sensorName,
-            [FromQuery] int amount, [FromQuery] ReadingPagedParameters parameters, CancellationToken token)
+            [FromQuery] int amount, [FromQuery] PaginationParameters pagination, CancellationToken token)
         {
-            return await GetLastReadings(deviceId, sensorName, TimeUnit.Hour, amount <= 0 ? 1 : amount, parameters,
+            return await GetLastReadings(deviceId, sensorName, TimeUnit.Hour, amount <= 0 ? 1 : amount, pagination,
                 token);
         }
 
@@ -133,21 +131,21 @@ namespace ClientApiGateway.Api.Controllers
         [HttpGet("device/{deviceId:int}/sensor/{sensorName}/last/day")]
         public async Task<ActionResult<GetReadingsFromSensorResource>> GetLastReadingsByDays(int deviceId,
             string sensorName,
-            [FromQuery] int amount, [FromQuery] ReadingPagedParameters parameters, CancellationToken token)
+            [FromQuery] int amount, [FromQuery] PaginationParameters pagination, CancellationToken token)
         {
-            return await GetLastReadings(deviceId, sensorName, TimeUnit.Day, amount <= 0 ? 1 : amount, parameters,
+            return await GetLastReadings(deviceId, sensorName, TimeUnit.Day, amount <= 0 ? 1 : amount, pagination,
                 token);
         }
 
 
         private async Task<ActionResult<GetReadingsFromSensorResource>> GetLastReadings(int deviceId, string sensorName,
             TimeUnit timeUnit,
-            int amount, [FromQuery] ReadingPagedParameters parameters, CancellationToken token)
+            int amount, [FromQuery] PaginationParameters pagination, CancellationToken token)
         {
             var request = new GetLastFromSensorRequest
             {
-                PageNumber = parameters.Page.Number,
-                PageSize = parameters.Page.Size,
+                PageNumber = pagination.PageNumber,
+                PageSize = pagination.PageSize,
                 DeviceAndName = new DeviceAndSensorName { DeviceId = deviceId, SensorName = sensorName },
                 TimeUnit = timeUnit,
                 TimeUnitValue = amount
@@ -169,13 +167,13 @@ namespace ClientApiGateway.Api.Controllers
         // GET api/v1/readings/device/42/sensor/temp1/range/{startDate:datetime}/{endDate:datetime}
         [HttpGet("device/{deviceId:int}/sensor/{sensorName}/range/{startDate:datetime}/{endDate:datetime}")]
         public async Task<ActionResult<GetReadingsFromSensorResource>> GetAllReadings(int deviceId, string sensorName,
-            DateTime startDate, DateTime endDate, [FromQuery] ReadingPagedParameters parameters,
+            DateTime startDate, DateTime endDate, [FromQuery] PaginationParameters pagination,
             CancellationToken token)
         {
             var request = new GetRangeFromSensorRequest
             {
-                PageNumber = parameters.Page.Number,
-                PageSize = parameters.Page.Size,
+                PageNumber = pagination.PageNumber,
+                PageSize = pagination.PageSize,
                 DeviceAndName = new DeviceAndSensorName { DeviceId = deviceId, SensorName = sensorName },
                 StartDate = Timestamp.FromDateTime(startDate.ToUniversalTime()),
                 EndDate = Timestamp.FromDateTime(endDate.ToUniversalTime())
@@ -309,10 +307,10 @@ namespace ClientApiGateway.Api.Controllers
         [HttpGet(
             "device/{deviceId:int}/sensor/{sensorName}/metrics/daily/range/{startDate:datetime}/{endDate:datetime}")]
         public async Task<ActionResult<GetMetricsResource>> GetDailyMetricsByRange(int deviceId,
-            string sensorName, DateTime startDate, DateTime endDate, [FromQuery] ReadingPagedParameters parameters,
+            string sensorName, DateTime startDate, DateTime endDate, [FromQuery] PaginationParameters pagination,
             CancellationToken token)
         {
-            return await GetMetricsByRange(deviceId, sensorName, startDate, endDate, parameters, MetricMode.Daily,
+            return await GetMetricsByRange(deviceId, sensorName, startDate, endDate, pagination, MetricMode.Daily,
                 token);
         }
 
@@ -320,22 +318,22 @@ namespace ClientApiGateway.Api.Controllers
         [HttpGet(
             "device/{deviceId:int}/sensor/{sensorName}/metrics/hourly/range/{startDate:datetime}/{endDate:datetime}")]
         public async Task<ActionResult<GetMetricsResource>> GetHourlyMetricsByRange(int deviceId,
-            string sensorName, DateTime startDate, DateTime endDate, [FromQuery] ReadingPagedParameters parameters,
+            string sensorName, DateTime startDate, DateTime endDate, [FromQuery] PaginationParameters pagination,
             CancellationToken token)
         {
-            return await GetMetricsByRange(deviceId, sensorName, startDate, endDate, parameters, MetricMode.Hourly,
+            return await GetMetricsByRange(deviceId, sensorName, startDate, endDate, pagination, MetricMode.Hourly,
                 token);
         }
 
         private async Task<ActionResult<GetMetricsResource>> GetMetricsByRange(int deviceId,
-            string sensorName, DateTime startDate, DateTime endDate, ReadingPagedParameters parameters, MetricMode mode,
+            string sensorName, DateTime startDate, DateTime endDate, PaginationParameters pagination, MetricMode mode,
             CancellationToken token)
         {
             var request = new GetMetricsByRangeRequest
             {
                 DeviceAndName = new DeviceAndSensorName { DeviceId = deviceId, SensorName = sensorName },
-                PageNumber = parameters.Page.Number,
-                PageSize = parameters.Page.Size,
+                PageNumber = pagination.PageNumber,
+                PageSize = pagination.PageSize,
                 StartDate = Timestamp.FromDateTime(startDate.ToUniversalTime()),
                 EndDate = Timestamp.FromDateTime(endDate.ToUniversalTime())
             };

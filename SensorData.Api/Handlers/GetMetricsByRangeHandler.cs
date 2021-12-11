@@ -69,7 +69,7 @@ namespace SensorData.Api.Handlers
                 throw new RpcException(new Status(StatusCode.NotFound, "Sensor not found"));
             }
 
-            var paginationParams = new PaginationParameters { Number = query.PageNumber, Size = query.PageSize };
+            var paginationParams = new PaginationParameters { PageNumber = query.PageNumber, PageSize = query.PageSize };
             var metrics = await _metricService.GetMetricsByRange(sensorDto.Id, request.MetricMode, paginationParams,
                 query.StartDate.ToDateTime(), query.EndDate.ToDateTime());
 

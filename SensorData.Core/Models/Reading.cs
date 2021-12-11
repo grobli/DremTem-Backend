@@ -9,13 +9,4 @@ namespace SensorData.Core.Models
         public double Value { get; set; }
         public int SensorId { get; set; }
     }
-
-    public class ReadingParameters : QueryStringParameters
-    {
-    }
-
-    public class ReadingPagedParameters : ReadingParameters
-    {
-        public PaginationParameters Page { get; } = new();
-    }
 }

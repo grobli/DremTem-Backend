@@ -11,6 +11,7 @@ using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Shared;
 using Shared.Proto;
 using Shared.Proto.Common;
 using Shared.Proto.Device;
@@ -45,22 +46,25 @@ namespace ClientApiGateway.Api.Controllers
         // GET: api/v1/Devices?pageNumber=1&pageSize=3&includeLocation=true&includeSensors=false
         [HttpGet]
         public async Task<ActionResult<IEnumerable<DeviceResource>>> GetAllDevices(
-            [FromQuery] DevicePagedParameters parameters, CancellationToken token)
+            [FromQuery] PaginationParameters pagination, [FromQuery] DeviceParameters parameters,
+            CancellationToken token)
         {
-            return await GetAllDevices(parameters, true, token);
+            return await GetAllDevices(pagination, parameters, true, token);
         }
 
         // GET: api/v1/Devices/all?includeLocation=true&includeSensors=false
         [Authorize(Roles = DefaultRoles.SuperUser)]
         [HttpGet("all")]
         public async Task<ActionResult<IEnumerable<DeviceResource>>> GetAllDevicesOfAllUsers(
-            [FromQuery] DevicePagedParameters parameters, CancellationToken token)
+            [FromQuery] PaginationParameters pagination, [FromQuery] DeviceParameters parameters,
+            CancellationToken token)
         {
-            return await GetAllDevices(parameters, false, token);
+            return await GetAllDevices(pagination, parameters, false, token);
         }
 
         private async Task<ActionResult<IEnumerable<DeviceResource>>> GetAllDevices(
-            [FromQuery] DevicePagedParameters parameters, bool limitToUser, CancellationToken token)
+            PaginationParameters pagination, DeviceParameters parameters, bool limitToUser,
+            CancellationToken token)
         {
             var request = new GenericGetManyRequest
             {
@@ -69,8 +73,8 @@ namespace ClientApiGateway.Api.Controllers
                     UserId = limitToUser ? UserId : null,
                     IncludeFields = { parameters.FieldsToInclude() }
                 },
-                PageNumber = parameters.Page.Number,
-                PageSize = parameters.Page.Size
+                PageNumber = pagination.PageNumber,
+                PageSize = pagination.PageSize
             };
             try
             {

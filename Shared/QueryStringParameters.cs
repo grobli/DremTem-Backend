@@ -11,14 +11,14 @@ namespace Shared
         public const int MaxPageSize = 2000;
         public const int DefaultPageSize = 500;
 
-        private int _size = DefaultPageSize;
+        private readonly int _pageSize = DefaultPageSize;
 
-        public int Size
+        public int PageSize
         {
-            get => _size;
-            set => _size = Math.Min(MaxPageSize, value);
+            get => _pageSize;
+            init => _pageSize = Math.Min(MaxPageSize, value);
         }
 
-        public int Number { get; set; } = 1;
+        public int PageNumber { get; set; } = 1;
     }
 }

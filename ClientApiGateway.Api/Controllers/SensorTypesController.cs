@@ -10,6 +10,7 @@ using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Shared;
 using Shared.Proto;
 using Shared.Proto.Common;
 using Shared.Proto.SensorType;
@@ -42,16 +43,12 @@ namespace ClientApiGateway.Api.Controllers
         // GET: api/v1/SensorTypes
         [HttpGet]
         public async Task<ActionResult<IEnumerable<SensorTypeDto>>> GetAllSensorTypes(
-            [FromQuery] SensorTypePagedParameters parameters, CancellationToken token)
+            [FromQuery] PaginationParameters pagination, CancellationToken token)
         {
             var request = new GenericGetManyRequest
             {
-                Parameters = new GetRequestParameters
-                {
-                    IncludeFields = { parameters.FieldsToInclude() }
-                },
-                PageNumber = parameters.Page.Number,
-                PageSize = parameters.Page.Size
+                PageNumber = pagination.PageNumber,
+                PageSize = pagination.PageSize
             };
             try
             {
@@ -68,8 +65,7 @@ namespace ClientApiGateway.Api.Controllers
 
         // GET: api/v1/SensorTypes/42
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<SensorTypeDto>> GetSensorType(int id,
-            [FromQuery] SensorTypeParameters parameters, CancellationToken token)
+        public async Task<ActionResult<SensorTypeDto>> GetSensorType(int id, CancellationToken token)
         {
             var request = new GenericGetRequest
             {

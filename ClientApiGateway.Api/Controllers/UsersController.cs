@@ -10,6 +10,7 @@ using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Shared;
 using Shared.Proto.User;
 using Shared.Services.GrpcClientServices;
 using UserIdentity.Core.Models.Auth;
@@ -40,10 +41,10 @@ namespace ClientApiGateway.Api.Controllers
         [Authorize(Roles = DefaultRoles.SuperUser)]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<UserDto>>> GetAllUsers(
-            [FromQuery] UserPagedParameters parameters, CancellationToken token)
+            [FromQuery] PaginationParameters pagination, CancellationToken token)
         {
             var request = new GetAllUsersRequest
-                { PageNumber = parameters.Page.Number, PageSize = parameters.Page.Size };
+                { PageNumber = pagination.PageNumber, PageSize = pagination.PageSize };
             try
             {
                 var result = await _grpcService.SendRequestAsync(async client =>

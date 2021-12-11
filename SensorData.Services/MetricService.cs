@@ -30,7 +30,7 @@ namespace SensorData.Services
                 .Where(m => m.TimeBucket >= startDate && m.TimeBucket <= endDate)
                 .OrderByDescending(m => m.TimeBucket);
 
-            return await PagedList<Metric>.ToPagedListAsync(query, parameters.Number, parameters.Size);
+            return await PagedList<Metric>.ToPagedListAsync(query, parameters.PageNumber, parameters.PageSize);
         }
     }
 }

@@ -39,9 +39,4 @@ namespace DeviceManager.Core.Models
 
         public IReadOnlyCollection<Entity> FieldsToInclude() => _fieldsToInclude;
     }
-
-    public class LocationPagedParameters : LocationParameters
-    {
-        public PaginationParameters Page { get; }= new();
-    }
 }

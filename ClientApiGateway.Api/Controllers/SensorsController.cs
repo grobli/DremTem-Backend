@@ -11,6 +11,7 @@ using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Shared;
 using Shared.Proto;
 using Shared.Proto.Common;
 using Shared.Proto.Sensor;
@@ -43,22 +44,25 @@ namespace ClientApiGateway.Api.Controllers
         // GET: api/v1/Sensors?detailed=true
         [HttpGet]
         public async Task<ActionResult<IEnumerable<SensorResource>>> GetAllSensors(
-            [FromQuery] SensorPagedParameters parameters, CancellationToken token)
+            [FromQuery] PaginationParameters pagination, [FromQuery] SensorParameters parameters,
+            CancellationToken token)
         {
-            return await GetSensors(parameters, true, token);
+            return await GetSensors(pagination, parameters, true, token);
         }
 
         // GET: api/v1/Sensors/all?detailed=true
         [Authorize(Roles = DefaultRoles.SuperUser)]
         [HttpGet("all")]
         public async Task<ActionResult<IEnumerable<SensorResource>>> GetSensorOfAllUsers(
-            [FromQuery] SensorPagedParameters parameters, CancellationToken token)
+            [FromQuery] PaginationParameters pagination, [FromQuery] SensorParameters parameters,
+            CancellationToken token)
         {
-            return await GetSensors(parameters, false, token);
+            return await GetSensors(pagination, parameters, false, token);
         }
 
         private async Task<ActionResult<IEnumerable<SensorResource>>> GetSensors(
-            [FromQuery] SensorPagedParameters parameters, bool limitToUser, CancellationToken token)
+            [FromQuery] PaginationParameters pagination, [FromQuery] SensorParameters parameters, bool limitToUser,
+            CancellationToken token)
         {
             var request = new GenericGetManyRequest
             {
@@ -67,8 +71,8 @@ namespace ClientApiGateway.Api.Controllers
                     UserId = limitToUser ? UserId : null,
                     IncludeFields = { parameters.FieldsToInclude() }
                 },
-                PageNumber = parameters.Page.Number,
-                PageSize = parameters.Page.Size
+                PageNumber = pagination.PageNumber,
+                PageSize = pagination.PageSize
             };
             try
             {

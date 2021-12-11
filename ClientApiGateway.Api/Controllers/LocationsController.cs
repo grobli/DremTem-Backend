@@ -12,10 +12,10 @@ using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Shared;
 using Shared.Proto;
 using Shared.Proto.Common;
 using Shared.Proto.Location;
-using Shared.Proto.SensorData;
 using Shared.Services.GrpcClientServices;
 using UserIdentity.Core.Models.Auth;
 using static ClientApiGateway.Api.Handlers.RpcExceptionHandler;
@@ -45,22 +45,25 @@ namespace ClientApiGateway.Api.Controllers
         // GET: api/v1/Locations?includeDevices=true
         [HttpGet]
         public async Task<ActionResult<IEnumerable<LocationResource>>> GetAllLocations(
-            [FromQuery] LocationPagedParameters parameters, CancellationToken token)
+            [FromQuery] PaginationParameters pagination, [FromQuery] LocationParameters parameters,
+            CancellationToken token)
         {
-            return await GetAllLocations(parameters, true, token);
+            return await GetAllLocations(pagination, parameters, true, token);
         }
 
         // GET: api/v1/Locations/all?includeDevices=true
         [Authorize(Roles = DefaultRoles.SuperUser)]
         [HttpGet("all")]
         public async Task<ActionResult<IEnumerable<LocationResource>>> GetAllLocationsOfAllUsers(
-            [FromQuery] LocationPagedParameters parameters, CancellationToken token)
+            [FromQuery] PaginationParameters pagination, [FromQuery] LocationParameters parameters,
+            CancellationToken token)
         {
-            return await GetAllLocations(parameters, false, token);
+            return await GetAllLocations(pagination, parameters, false, token);
         }
 
         private async Task<ActionResult<IEnumerable<LocationResource>>> GetAllLocations(
-            [FromQuery] LocationPagedParameters parameters, bool limitToUser, CancellationToken token)
+            [FromQuery] PaginationParameters pagination, [FromQuery] LocationParameters parameters, bool limitToUser,
+            CancellationToken token)
         {
             var request = new GenericGetManyRequest
             {
@@ -69,8 +72,8 @@ namespace ClientApiGateway.Api.Controllers
                     UserId = limitToUser ? UserId : null,
                     IncludeFields = { parameters.FieldsToInclude() }
                 },
-                PageNumber = parameters.Page.Number,
-                PageSize = parameters.Page.Size
+                PageNumber = pagination.PageNumber,
+                PageSize = pagination.PageSize
             };
             try
             {

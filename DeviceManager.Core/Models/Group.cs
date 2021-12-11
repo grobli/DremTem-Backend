@@ -14,13 +14,4 @@ namespace DeviceManager.Core.Models
         public Guid UserId { get; set; } // owner
         public ICollection<Device> Devices { get; set; }
     }
-
-    public class GroupParameters : QueryStringParameters
-    {
-    }
-
-    public class GroupPagedParameters : GroupParameters
-    {
-        public PaginationParameters Page { get; } = new();
-    }
 }

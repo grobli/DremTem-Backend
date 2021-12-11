@@ -9,9 +9,4 @@ namespace UserIdentity.Core.Models.Auth
         public string FirstName { get; set; }
         public string LastName { get; set; }
     }
-
-    public class UserPagedParameters
-    {
-        public PaginationParameters Page { get; } = new();
-    }
 }
