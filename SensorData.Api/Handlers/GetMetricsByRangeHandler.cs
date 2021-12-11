@@ -12,9 +12,6 @@ using SensorData.Core.Settings;
 using Shared;
 using Shared.Extensions;
 using Shared.Proto;
-using Shared.Proto.Common;
-using Shared.Proto.Sensor;
-using Shared.Proto.SensorData;
 using Shared.Services.GrpcClientServices;
 
 namespace SensorData.Api.Handlers
@@ -73,7 +70,7 @@ namespace SensorData.Api.Handlers
             var metrics = await _metricService.GetMetricsByRange(sensorDto.Id, request.MetricMode, paginationParams,
                 query.StartDate.ToDateTime(), query.EndDate.ToDateTime());
 
-            var metricsMapped = metrics.Select(m => _mapper.Map<Metric, MetricDto>(m));
+            var metricsMapped = metrics.Select(m => _mapper.Map<MetricBase, MetricDto>(m));
 
             var response = new GetMetricsByRangeResponse
             {

@@ -2,7 +2,7 @@
 using Grpc.Core;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using Shared.Proto.User;
+using Shared.Proto;
 using UserIdentity.Api.Commands;
 using UserIdentity.Api.Queries;
 

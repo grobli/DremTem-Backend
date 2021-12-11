@@ -34,9 +34,7 @@ namespace DeviceManager.Services
         public async Task<SensorType> CreateSensorTypeAsync(SensorType newSensorType,
             CancellationToken cancellationToken = default)
         {
-            newSensorType.Created = DateTime.UtcNow;
             await Validator.ValidateAndThrowAsync(newSensorType, cancellationToken);
-
             await _unitOfWork.SensorTypes.AddAsync(newSensorType, cancellationToken);
             await _unitOfWork.CommitAsync(cancellationToken);
 
@@ -46,33 +44,18 @@ namespace DeviceManager.Services
         public async Task UpdateSensorTypeAsync(SensorType sensorTypeToBeUpdated, SensorType sensorType,
             CancellationToken cancellationToken = default)
         {
-            var backup = sensorTypeToBeUpdated with { };
-
-            sensorTypeToBeUpdated.LastModified = DateTime.UtcNow;
-            sensorTypeToBeUpdated.Unit = sensorType.Unit;
-            sensorTypeToBeUpdated.UnitShort = sensorType.UnitShort;
-            sensorTypeToBeUpdated.UnitSymbol = sensorType.UnitSymbol;
-            sensorTypeToBeUpdated.IsDiscrete = sensorType.IsDiscrete;
-            sensorTypeToBeUpdated.IsSummable = sensorType.IsSummable;
+            var backup = new SensorType(sensorTypeToBeUpdated);
+            sensorType.LastModified = DateTime.UtcNow;
+            sensorTypeToBeUpdated.MapEditableFields(sensorType);
 
             var validationResult = await Validator.ValidateAsync(sensorTypeToBeUpdated, cancellationToken);
             if (!validationResult.IsValid)
             {
-                Restore();
+                sensorTypeToBeUpdated.MapEditableFields(backup);
                 throw new ValidationException(validationResult.Errors);
             }
 
             await _unitOfWork.CommitAsync(cancellationToken);
-
-            void Restore()
-            {
-                sensorTypeToBeUpdated.LastModified = backup.LastModified;
-                sensorTypeToBeUpdated.Unit = backup.Unit;
-                sensorTypeToBeUpdated.UnitShort = backup.UnitShort;
-                sensorTypeToBeUpdated.UnitSymbol = backup.UnitSymbol;
-                sensorTypeToBeUpdated.IsDiscrete = backup.IsDiscrete;
-                sensorTypeToBeUpdated.IsSummable = backup.IsSummable;
-            }
         }
 
         public async Task DeleteSensorTypeAsync(SensorType sensorType, CancellationToken cancellationToken = default)

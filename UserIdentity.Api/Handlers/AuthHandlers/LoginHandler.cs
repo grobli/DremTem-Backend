@@ -4,7 +4,7 @@ using Grpc.Core;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Shared.Proto.UserIdentity;
+using Shared.Proto;
 using UserIdentity.Api.Commands;
 using UserIdentity.Api.Services;
 using UserIdentity.Core.Models.Auth;

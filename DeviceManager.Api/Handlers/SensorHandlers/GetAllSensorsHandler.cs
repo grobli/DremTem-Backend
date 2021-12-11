@@ -13,8 +13,6 @@ using Microsoft.EntityFrameworkCore;
 using Shared;
 using Shared.Extensions;
 using Shared.Proto;
-using Shared.Proto.Common;
-using Shared.Proto.Sensor;
 
 namespace DeviceManager.Api.Handlers.SensorHandlers
 {

@@ -1,23 +1,39 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text.Json;
-using Shared;
+﻿using System.Collections.Generic;
 
 namespace DeviceManager.Core.Models
 {
-    public record SensorType
+    public sealed class SensorType : EntityBase<int, SensorType>
     {
-        public int Id { get; set; }
-        public string Name { get; set; }
         public string Unit { get; set; }
         public string UnitShort { get; set; }
         public string UnitSymbol { get; set; }
         public bool IsDiscrete { get; set; }
         public bool IsSummable { get; set; }
-        public DateTime? LastModified { get; set; }
-        public DateTime Created { get; set; }
         public IEnumerable<Sensor> Sensors { get; set; }
 
-        public override string ToString() => JsonSerializer.Serialize(this);
+        public SensorType()
+        {
+        }
+
+        /** copy constructor */
+        public SensorType(SensorType originalType) : base(originalType)
+        {
+            Unit = originalType.Unit;
+            UnitShort = originalType.UnitShort;
+            UnitSymbol = originalType.UnitSymbol;
+            IsDiscrete = originalType.IsDiscrete;
+            IsSummable = originalType.IsSummable;
+        }
+
+        public override void MapEditableFields(SensorType source)
+        {
+            base.MapEditableFields(source);
+
+            Unit = source.Unit;
+            UnitShort = source.UnitShort;
+            UnitSymbol = source.UnitSymbol;
+            IsDiscrete = source.IsDiscrete;
+            IsSummable = source.IsSummable;
+        }
     }
 }

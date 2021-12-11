@@ -3,8 +3,7 @@ using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using Shared.Proto.User;
-using Shared.Proto.UserIdentity;
+using Shared.Proto;
 using UserIdentity.Api.Commands;
 
 namespace UserIdentity.Api.Services.Rpc

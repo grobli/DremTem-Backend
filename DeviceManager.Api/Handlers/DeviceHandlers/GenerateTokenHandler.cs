@@ -7,7 +7,7 @@ using FluentValidation;
 using Grpc.Core;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Shared.Proto.Device;
+using Shared.Proto;
 using Shared.Extensions;
 
 namespace DeviceManager.Api.Handlers.DeviceHandlers

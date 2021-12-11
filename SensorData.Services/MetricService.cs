@@ -20,7 +20,7 @@ namespace SensorData.Services
         }
 
 
-        public async Task<PagedList<Metric>> GetMetricsByRange(int sensorId, MetricMode mode,
+        public async Task<PagedList<MetricBase>> GetMetricsByRange(int sensorId, MetricMode mode,
             PaginationParameters parameters, DateTime startDate, DateTime endDate = default)
         {
             if (endDate == default) endDate = DateTime.UtcNow;
@@ -30,7 +30,7 @@ namespace SensorData.Services
                 .Where(m => m.TimeBucket >= startDate && m.TimeBucket <= endDate)
                 .OrderByDescending(m => m.TimeBucket);
 
-            return await PagedList<Metric>.ToPagedListAsync(query, parameters.PageNumber, parameters.PageSize);
+            return await PagedList<MetricBase>.ToPagedListAsync(query, parameters.PageNumber, parameters.PageSize);
         }
     }
 }

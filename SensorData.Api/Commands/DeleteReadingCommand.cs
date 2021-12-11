@@ -1,6 +1,6 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using MediatR;
-using Shared.Proto.SensorData;
+using Shared.Proto;
 
 namespace SensorData.Api.Commands
 {

@@ -9,8 +9,7 @@ using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Shared.Proto.Device;
-using Shared.Proto.SensorData;
+using Shared.Proto;
 using Shared.Services.GrpcClientServices;
 using static DeviceApiGateway.Api.Handlers.RpcExceptionHandler;
 

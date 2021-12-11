@@ -34,9 +34,7 @@ namespace DeviceManager.Services
         public async Task<Location> CreateLocationAsync(Location newLocation,
             CancellationToken cancellationToken = default)
         {
-            newLocation.Created = DateTime.UtcNow;
             await Validator.ValidateAndThrowAsync(newLocation, cancellationToken);
-
             await _unitOfWork.Locations.AddAsync(newLocation, cancellationToken);
             await _unitOfWork.CommitAsync(cancellationToken);
 
@@ -46,29 +44,19 @@ namespace DeviceManager.Services
         public async Task UpdateLocationAsync(Location locationToBeUpdated, Location location,
             CancellationToken cancellationToken = default)
         {
-            var backup = locationToBeUpdated with { };
+            var backup = new Location(locationToBeUpdated);
 
-            locationToBeUpdated.LastModified = DateTime.UtcNow;
-            locationToBeUpdated.Latitude = location.Latitude;
-            locationToBeUpdated.Longitude = location.Longitude;
-            locationToBeUpdated.DisplayName = location.DisplayName;
+            location.LastModified = DateTime.UtcNow;
+            locationToBeUpdated.MapEditableFields(location);
 
             var validationResult = await Validator.ValidateAsync(locationToBeUpdated, cancellationToken);
             if (!validationResult.IsValid)
             {
-                Restore();
+                locationToBeUpdated.MapEditableFields(backup);
                 throw new ValidationException(validationResult.Errors);
             }
 
             await _unitOfWork.CommitAsync(cancellationToken);
-
-            void Restore()
-            {
-                locationToBeUpdated.LastModified = backup.LastModified;
-                locationToBeUpdated.Latitude = backup.Latitude;
-                locationToBeUpdated.Longitude = backup.Longitude;
-                locationToBeUpdated.DisplayName = backup.DisplayName;
-            }
         }
 
         public async Task DeleteLocationAsync(Location location, CancellationToken cancellationToken = default)

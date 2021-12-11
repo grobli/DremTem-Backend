@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 using Shared.Extensions;
-using Shared.Proto.User;
+using Shared.Proto;
 using UserIdentity.Data.Configurations;
 
 namespace UserIdentity.Api.Validators

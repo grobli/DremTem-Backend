@@ -10,7 +10,6 @@ using Grpc.Core;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Shared.Proto;
-using Shared.Proto.Common;
 
 namespace DeviceManager.Api.Handlers.SensorTypeHandlers
 {

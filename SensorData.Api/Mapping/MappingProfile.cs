@@ -2,7 +2,7 @@
 using AutoMapper;
 using Google.Protobuf.WellKnownTypes;
 using SensorData.Core.Models;
-using Shared.Proto.SensorData;
+using Shared.Proto;
 
 namespace SensorData.Api.Mapping
 {
@@ -18,7 +18,7 @@ namespace SensorData.Api.Mapping
 
             CreateMap<Reading, ReadingNoSensorDto>();
 
-            CreateMap<Metric, MetricDto>();
+            CreateMap<MetricBase, MetricDto>();
 
             //---------- Resource/Request to Domain ----------
             CreateMap<ReadingDto, Reading>();

@@ -8,7 +8,7 @@ using Grpc.Core;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Shared.Proto.User;
+using Shared.Proto;
 using UserIdentity.Api.Commands;
 using UserIdentity.Core.Messages;
 

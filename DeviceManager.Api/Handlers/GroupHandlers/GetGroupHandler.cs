@@ -12,7 +12,6 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Shared.Extensions;
 using Shared.Proto;
-using Shared.Proto.Common;
 
 namespace DeviceManager.Api.Handlers.GroupHandlers
 {

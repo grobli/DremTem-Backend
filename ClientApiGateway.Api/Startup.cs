@@ -8,14 +8,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Shared.Configs;
 using Shared.Extensions;
-using Shared.Proto.Device;
-using Shared.Proto.Group;
-using Shared.Proto.Location;
-using Shared.Proto.Sensor;
-using Shared.Proto.SensorData;
-using Shared.Proto.SensorType;
-using Shared.Proto.User;
-using Shared.Proto.UserIdentity;
+using Shared.Proto;
 using Shared.web;
 
 namespace ClientApiGateway.Api

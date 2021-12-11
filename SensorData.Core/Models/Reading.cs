@@ -1,12 +1,11 @@
 ﻿using System;
-using Shared;
 
 namespace SensorData.Core.Models
 {
-    public record Reading
+    public sealed class Reading
     {
-        public DateTime Time { get; set; }
+        public DateTime Time { get; init; }
         public double Value { get; set; }
-        public int SensorId { get; set; }
+        public int SensorId { get; init; }
     }
 }

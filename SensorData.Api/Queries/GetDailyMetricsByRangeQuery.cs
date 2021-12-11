@@ -1,6 +1,6 @@
 ﻿using MediatR;
 using SensorData.Core.Models;
-using Shared.Proto.SensorData;
+using Shared.Proto;
 
 namespace SensorData.Api.Queries
 {

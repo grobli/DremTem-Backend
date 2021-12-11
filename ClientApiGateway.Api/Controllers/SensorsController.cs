@@ -5,7 +5,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
-using ClientApiGateway.Api.Resources.Sensor;
+using ClientApiGateway.Api.Resources;
 using DeviceManager.Core.Models;
 using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
@@ -13,8 +13,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Shared;
 using Shared.Proto;
-using Shared.Proto.Common;
-using Shared.Proto.Sensor;
 using Shared.Services.GrpcClientServices;
 using UserIdentity.Core.Models.Auth;
 using static ClientApiGateway.Api.Handlers.RpcExceptionHandler;
@@ -148,7 +146,7 @@ namespace ClientApiGateway.Api.Controllers
         public async Task<ActionResult<SensorResource>> AddSensor(SaveSensorResource resource, CancellationToken token)
         {
             var request = _mapper.Map<SaveSensorResource, CreateSensorRequest>(resource);
-            request.UserId = User.IsInRole(DefaultRoles.SuperUser) ? null : UserId;
+            request.UserId = UserId;
             try
             {
                 var createdSensor = await _grpcService.SendRequestAsync(async client =>
@@ -168,7 +166,7 @@ namespace ClientApiGateway.Api.Controllers
             CancellationToken token)
         {
             var request = _mapper.Map<SaveSensorResource, UpdateSensorRequest>(resource);
-            request.UserId = User.IsInRole(DefaultRoles.SuperUser) ? null : UserId;
+            request.UserId = UserId;
             try
             {
                 var result = await _grpcService.SendRequestAsync(async client =>

@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using Shared.Proto.SensorType;
+using Shared.Proto;
 
 namespace DeviceManager.Api.Validation.SensorTypeRequests
 {

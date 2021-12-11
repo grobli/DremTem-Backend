@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using Shared.Proto.Device;
+using Shared.Proto;
 
 namespace DeviceManager.Api.Validation.DeviceRequests
 {

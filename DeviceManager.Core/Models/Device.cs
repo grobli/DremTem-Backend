@@ -1,18 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 using Shared;
-using Shared.Proto.Common;
+using Shared.Proto;
 
 namespace DeviceManager.Core.Models
 {
-    public record Device
+    public sealed class Device : EntityBase<int, Device>
     {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public string DisplayName { get; set; }
         public bool Online { get; set; }
 
         private string _macAddress;
@@ -26,16 +22,39 @@ namespace DeviceManager.Core.Models
         public string Model { get; set; }
         public string Manufacturer { get; set; }
         public DateTime? LastSeen { get; set; }
-        public DateTime? LastModified { get; set; }
-        public DateTime Created { get; set; }
         public Location Location { get; set; }
         public int? LocationId { get; set; }
-        public Guid UserId { get; set; }
+        public Guid UserId { get; init; }
 
         public ICollection<Sensor> Sensors { get; set; }
         public ICollection<Group> Groups { get; set; }
 
-        public override string ToString() => JsonSerializer.Serialize(this);
+        public Device()
+        {
+        }
+
+        /** copy constructor */
+        public Device(Device originalDevice) : base(originalDevice)
+        {
+            Online = originalDevice.Online;
+            MacAddress = originalDevice.MacAddress;
+            Model = originalDevice.Model;
+            Manufacturer = originalDevice.Manufacturer;
+            LastSeen = originalDevice.LastSeen;
+            LocationId = originalDevice.LocationId;
+            UserId = originalDevice.UserId;
+        }
+
+        public override void MapEditableFields(Device source)
+        {
+            base.MapEditableFields(source);
+
+            Online = source.Online;
+            MacAddress = source.MacAddress;
+            Model = source.Model;
+            Manufacturer = source.Manufacturer;
+            LocationId = source.LocationId;
+        }
 
         private static string NormalizeMacAddress(string mac)
         {
@@ -47,7 +66,7 @@ namespace DeviceManager.Core.Models
         }
     }
 
-    public class DeviceParameters : QueryStringParameters
+    public class DeviceParameters : QueryStringParametersBase
     {
         private readonly List<Entity> _fieldsToInclude = new();
         private bool _includeLocation;
@@ -73,6 +92,6 @@ namespace DeviceManager.Core.Models
             }
         }
 
-        public IReadOnlyCollection<Entity> FieldsToInclude() => _fieldsToInclude;
+        public IEnumerable<Entity> FieldsToInclude() => _fieldsToInclude;
     }
 }

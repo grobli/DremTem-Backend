@@ -1,6 +1,6 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using MediatR;
-using Shared.Proto.UserIdentity;
+using Shared.Proto;
 
 namespace UserIdentity.Api.Commands
 {

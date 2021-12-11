@@ -13,8 +13,6 @@ using Microsoft.EntityFrameworkCore;
 using Shared;
 using Shared.Extensions;
 using Shared.Proto;
-using Shared.Proto.Common;
-using Shared.Proto.Group;
 
 namespace DeviceManager.Api.Handlers.GroupHandlers
 {
@@ -54,7 +52,7 @@ namespace DeviceManager.Api.Handlers.GroupHandlers
                 .Select(d => _mapper.Map<Group, GroupDto>(d))
                 .ToList();
 
-            var response = new GetAllGroupsResponse()
+            var response = new GetAllGroupsResponse
             {
                 Groups = { pagedListMapped },
                 MetaData = new PaginationMetaData().FromPagedList(pagedList)

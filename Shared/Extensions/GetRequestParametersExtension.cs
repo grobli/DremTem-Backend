@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Shared.Proto.Common;
+using Shared.Proto;
 
 namespace Shared.Extensions
 {

@@ -1,8 +1,6 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using MediatR;
 using Shared.Proto;
-using Shared.Proto.Common;
-using Shared.Proto.Device;
 
 namespace DeviceManager.Api.Commands
 {

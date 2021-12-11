@@ -1,5 +1,5 @@
 ﻿using System;
-using Shared.Proto.User;
+using Shared.Proto;
 
 namespace UserIdentity.Core.Messages
 {

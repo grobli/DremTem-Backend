@@ -1,8 +1,5 @@
 ﻿using System;
-using Shared.Proto.Device;
-using Shared.Proto.Group;
-using Shared.Proto.Location;
-using Shared.Proto.Sensor;
+using Shared.Proto;
 
 namespace Shared.Extensions
 {

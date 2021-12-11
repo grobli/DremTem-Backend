@@ -9,7 +9,7 @@ using Grpc.Core;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Shared.Extensions;
-using Shared.Proto.Common;
+using Shared.Proto;
 
 namespace DeviceManager.Api.Handlers.LocationHandlers
 {

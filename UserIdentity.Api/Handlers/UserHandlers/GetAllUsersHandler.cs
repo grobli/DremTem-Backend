@@ -8,8 +8,7 @@ using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Shared;
 using Shared.Extensions;
-using Shared.Proto.Common;
-using Shared.Proto.User;
+using Shared.Proto;
 using UserIdentity.Api.Queries;
 using UserIdentity.Core.Models.Auth;
 

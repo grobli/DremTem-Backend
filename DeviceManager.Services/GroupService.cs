@@ -34,8 +34,6 @@ namespace DeviceManager.Services
 
         public async Task<Group> CreateGroupAsync(Group newGroup, CancellationToken cancellationToken = default)
         {
-            newGroup.Created = DateTime.UtcNow;
-            newGroup.Name = newGroup.Name.Trim();
             newGroup.DisplayName = string.IsNullOrWhiteSpace(newGroup.DisplayName) ? null : newGroup.DisplayName.Trim();
             await Validator.ValidateAndThrowAsync(newGroup, cancellationToken);
 
@@ -48,27 +46,18 @@ namespace DeviceManager.Services
         public async Task UpdateGroupAsync(Group groupToBeUpdated, Group group,
             CancellationToken cancellationToken = default)
         {
-            var backup = groupToBeUpdated with { };
-
-            groupToBeUpdated.LastModified = DateTime.UtcNow;
-            groupToBeUpdated.DisplayName = string.IsNullOrWhiteSpace(group.DisplayName)
-                ? null
-                : group.DisplayName.Trim();
+            var backup = new Group(groupToBeUpdated);
+            group.LastModified = DateTime.UtcNow;
+            groupToBeUpdated.MapEditableFields(group);
 
             var validationResult = await Validator.ValidateAsync(groupToBeUpdated, cancellationToken);
             if (!validationResult.IsValid)
             {
-                Restore();
+                groupToBeUpdated.MapEditableFields(backup);
                 throw new ValidationException(validationResult.Errors);
             }
 
             await _unitOfWork.CommitAsync(cancellationToken);
-
-            void Restore()
-            {
-                groupToBeUpdated.LastModified = backup.LastModified;
-                groupToBeUpdated.DisplayName = backup.DisplayName;
-            }
         }
 
         public async Task DeleteGroupAsync(Group @group, CancellationToken cancellationToken = default)

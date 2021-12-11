@@ -12,7 +12,6 @@ using Microsoft.EntityFrameworkCore;
 using DeviceManager.Core.Models;
 using Shared.Extensions;
 using Shared.Proto;
-using Shared.Proto.Common;
 
 namespace DeviceManager.Api.Handlers.LocationHandlers
 {

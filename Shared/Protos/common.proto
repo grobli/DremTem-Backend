@@ -2,7 +2,7 @@
 
 import "google/protobuf/wrappers.proto";
 
-option csharp_namespace = "Shared.Proto.Common";
+option csharp_namespace = "Shared.Proto";
 
 package common;
 

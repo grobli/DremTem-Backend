@@ -1,4 +1,4 @@
-﻿namespace ClientApiGateway.Api.Resources.SensorType
+﻿namespace ClientApiGateway.Api.Resources
 {
     public record UpdateSensorTypeResource
     (

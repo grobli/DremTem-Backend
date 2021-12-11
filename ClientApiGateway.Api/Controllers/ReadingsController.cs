@@ -8,8 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using ClientApiGateway.Api.Resources;
-using ClientApiGateway.Api.Resources.Reading;
-using ClientApiGateway.Api.Resources.Reading.Metric;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
@@ -19,7 +17,7 @@ using Microsoft.Extensions.Logging;
 using SensorData.Core.Models;
 using Shared;
 using Shared.Extensions;
-using Shared.Proto.SensorData;
+using Shared.Proto;
 using Shared.Services.GrpcClientServices;
 using static ClientApiGateway.Api.Handlers.RpcExceptionHandler;
 
@@ -310,8 +308,8 @@ namespace ClientApiGateway.Api.Controllers
             string sensorName, DateTime startDate, DateTime endDate, [FromQuery] PaginationParameters pagination,
             CancellationToken token)
         {
-            return await GetMetricsByRange(deviceId, sensorName, startDate, endDate, pagination, MetricMode.Daily,
-                token);
+            return await GetMetricsByRange(new DeviceAndSensorName { DeviceId = deviceId, SensorName = sensorName },
+                startDate, endDate, pagination, MetricMode.Daily, token);
         }
 
         // GET api/v1/readings/device/42/sensor/temp1/metrics/hourly/range/{startDate:datetime}/{endDate:datetime}
@@ -321,17 +319,18 @@ namespace ClientApiGateway.Api.Controllers
             string sensorName, DateTime startDate, DateTime endDate, [FromQuery] PaginationParameters pagination,
             CancellationToken token)
         {
-            return await GetMetricsByRange(deviceId, sensorName, startDate, endDate, pagination, MetricMode.Hourly,
-                token);
+            return await GetMetricsByRange(new DeviceAndSensorName { DeviceId = deviceId, SensorName = sensorName },
+                startDate, endDate, pagination, MetricMode.Hourly, token);
         }
 
-        private async Task<ActionResult<GetMetricsResource>> GetMetricsByRange(int deviceId,
-            string sensorName, DateTime startDate, DateTime endDate, PaginationParameters pagination, MetricMode mode,
+        private async Task<ActionResult<GetMetricsResource>> GetMetricsByRange(DeviceAndSensorName deviceAndSensorName,
+            DateTime startDate, DateTime endDate, PaginationParameters pagination, MetricMode mode,
             CancellationToken token)
         {
             var request = new GetMetricsByRangeRequest
             {
-                DeviceAndName = new DeviceAndSensorName { DeviceId = deviceId, SensorName = sensorName },
+                DeviceAndName = new DeviceAndSensorName
+                    { DeviceId = deviceAndSensorName.DeviceId, SensorName = deviceAndSensorName.SensorName },
                 PageNumber = pagination.PageNumber,
                 PageSize = pagination.PageSize,
                 StartDate = Timestamp.FromDateTime(startDate.ToUniversalTime()),

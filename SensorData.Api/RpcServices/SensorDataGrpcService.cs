@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using SensorData.Api.Commands;
 using SensorData.Api.Queries;
 using SensorData.Core.Models;
-using Shared.Proto.SensorData;
+using Shared.Proto;
 
 namespace SensorData.Api.RpcServices
 {

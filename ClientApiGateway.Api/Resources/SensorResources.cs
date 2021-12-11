@@ -1,8 +1,16 @@
 ﻿using System;
 using Shared.Proto;
 
-namespace ClientApiGateway.Api.Resources.Sensor
+namespace ClientApiGateway.Api.Resources
 {
+    public record SaveSensorResource
+    (
+        string Name,
+        int DeviceId,
+        string DisplayName,
+        int TypeId
+    );
+
     public class SensorResource
     {
         public int Id { get; set; }

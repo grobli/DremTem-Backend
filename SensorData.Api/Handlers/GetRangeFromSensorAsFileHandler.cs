@@ -9,7 +9,7 @@ using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using MediatR;
 using SensorData.Api.Queries;
-using Shared.Proto.SensorData;
+using Shared.Proto;
 
 namespace SensorData.Api.Handlers
 {

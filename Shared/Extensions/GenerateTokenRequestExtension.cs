@@ -1,5 +1,5 @@
 ﻿using System;
-using Shared.Proto.Device;
+using Shared.Proto;
 
 namespace Shared.Extensions
 {

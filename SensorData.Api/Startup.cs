@@ -23,9 +23,7 @@ using SensorData.Data.Repositories;
 using SensorData.Services;
 using Shared;
 using Shared.Extensions;
-using Shared.Proto.Device;
-using Shared.Proto.Sensor;
-using Shared.Proto.SensorType;
+using Shared.Proto;
 
 namespace SensorData.Api
 {

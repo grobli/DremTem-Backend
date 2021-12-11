@@ -1,4 +1,4 @@
-﻿using Shared.Proto.Common;
+﻿using Shared.Proto;
 
 namespace Shared.Extensions
 {

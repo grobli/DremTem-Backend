@@ -13,7 +13,6 @@ using DeviceManager.Core.Messages;
 using EasyNetQ;
 using Shared.Extensions;
 using Shared.Proto;
-using Shared.Proto.Sensor;
 
 namespace DeviceManager.Api.Handlers.SensorHandlers
 {

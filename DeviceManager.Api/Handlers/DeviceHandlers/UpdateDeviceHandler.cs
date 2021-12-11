@@ -11,7 +11,6 @@ using Microsoft.EntityFrameworkCore;
 using DeviceManager.Core.Messages;
 using EasyNetQ;
 using Shared.Proto;
-using Shared.Proto.Device;
 using Shared.Extensions;
 
 namespace DeviceManager.Api.Handlers.DeviceHandlers

@@ -5,11 +5,6 @@ using DeviceManager.Core.Messages;
 using DeviceManager.Core.Models;
 using Google.Protobuf.WellKnownTypes;
 using Shared.Proto;
-using Shared.Proto.Device;
-using Shared.Proto.Group;
-using Shared.Proto.Location;
-using Shared.Proto.Sensor;
-using Shared.Proto.SensorType;
 
 namespace DeviceManager.Api.Mapping
 {

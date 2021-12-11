@@ -5,7 +5,7 @@ import "google/protobuf/timestamp.proto";
 import "Protos/common.proto";
 import "google/protobuf/wrappers.proto";
 
-option csharp_namespace = "Shared.Proto.SensorData";
+option csharp_namespace = "Shared.Proto";
 
 service SensorDataGrpc {
   // Commands (Create, Update, Delete, etc)
@@ -94,7 +94,8 @@ message DeleteReadingRequest {
 }
 
 message DeleteManyReadingsRequest {
-  repeated DeleteReadingRequest DeleteRequests = 1;
+  int32 SensorId = 1;
+  repeated google.protobuf.Timestamp Timestamps = 2;
 }
 
 message SaveReadingsFromCsvChunk {

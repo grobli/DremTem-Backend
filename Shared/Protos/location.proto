@@ -6,7 +6,7 @@ import "google/protobuf/wrappers.proto";
 import "Protos/shared_definitions.proto";
 import "Protos/common.proto";
 
-option csharp_namespace = "Shared.Proto.Location";
+option csharp_namespace = "Shared.Proto";
 
 service LocationGrpc {
   rpc GetAllLocations (common.GenericGetManyRequest) returns (GetAllLocationsResponse);

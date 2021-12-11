@@ -1,7 +1,5 @@
 ﻿using MediatR;
 using Shared.Proto;
-using Shared.Proto.Common;
-using Shared.Proto.SensorType;
 
 namespace DeviceManager.Api.Commands
 {

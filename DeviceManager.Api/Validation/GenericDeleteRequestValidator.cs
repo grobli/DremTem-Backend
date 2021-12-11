@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 using Shared.Extensions;
-using Shared.Proto.Common;
+using Shared.Proto;
 
 namespace DeviceManager.Api.Validation
 {

@@ -11,6 +11,7 @@ namespace DeviceManager.Data.Configurations
         public const int UnitMaxLength = 64;
         public const int UnitShortMaxLength = 32;
         public const int UnitSymbolMaxLength = 16;
+        public const int DisplayNameMaxLength = 150;
 
         public void Configure(EntityTypeBuilder<SensorType> builder)
         {
@@ -28,6 +29,10 @@ namespace DeviceManager.Data.Configurations
                 .Property(st => st.Name)
                 .IsRequired()
                 .HasMaxLength(NameMaxLength);
+
+            builder
+                .Property(s => s.DisplayName)
+                .HasMaxLength(DisplayNameMaxLength);
 
             builder
                 .Property(st => st.Unit)

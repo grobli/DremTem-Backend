@@ -5,8 +5,6 @@ using Grpc.Core;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Shared.Proto;
-using Shared.Proto.Common;
-using Shared.Proto.Sensor;
 
 namespace DeviceManager.Api.RpcServices
 {

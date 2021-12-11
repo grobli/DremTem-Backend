@@ -8,7 +8,7 @@ using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Shared.Proto.Common;
+using Shared.Proto;
 using Shared.Extensions;
 
 namespace DeviceManager.Api.Handlers.GroupHandlers

@@ -13,8 +13,6 @@ using Microsoft.EntityFrameworkCore;
 using Shared;
 using Shared.Extensions;
 using Shared.Proto;
-using Shared.Proto.Common;
-using Shared.Proto.Device;
 
 namespace DeviceManager.Api.Handlers.DeviceHandlers
 {
@@ -98,7 +96,8 @@ namespace DeviceManager.Api.Handlers.DeviceHandlers
 
                     foreach (var device in pagedListMapped)
                     {
-                        device.SensorIds.AddRange(sensorDict[device.Id]);
+                        if (sensorDict.TryGetValue(device.Id, out var sensorIds))
+                            device.SensorIds.AddRange(sensorIds);
                     }
                 }
             }

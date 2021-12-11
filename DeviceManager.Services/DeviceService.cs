@@ -35,10 +35,7 @@ namespace DeviceManager.Services
         /** <exception cref="ValidationException">device model is not valid</exception> */
         public async Task<Device> CreateDeviceAsync(Device newDevice, CancellationToken cancellationToken = default)
         {
-            newDevice.Created = DateTime.UtcNow;
-
             await Validator.ValidateAndThrowAsync(newDevice, cancellationToken);
-
             await _unitOfWork.Devices.AddAsync(newDevice, cancellationToken);
             await _unitOfWork.CommitAsync(cancellationToken);
 
@@ -49,35 +46,19 @@ namespace DeviceManager.Services
         public async Task UpdateDeviceAsync([NotNull] Device deviceToBeUpdated, [NotNull] Device device,
             CancellationToken cancellationToken = default)
         {
-            var backup = deviceToBeUpdated with { };
+            var backup = new Device(deviceToBeUpdated);
 
-            deviceToBeUpdated.LastModified = DateTime.UtcNow;
-            deviceToBeUpdated.DisplayName = device.DisplayName;
-            deviceToBeUpdated.Online = device.Online;
-            deviceToBeUpdated.Model = device.Model;
-            deviceToBeUpdated.Manufacturer = device.Manufacturer;
-            deviceToBeUpdated.LocationId = device.LocationId;
-            deviceToBeUpdated.MacAddress = device.MacAddress;
+            device.LastModified = DateTime.UtcNow;
+            deviceToBeUpdated.MapEditableFields(device);
 
             var validationResult = await Validator.ValidateAsync(deviceToBeUpdated, cancellationToken);
             if (!validationResult.IsValid)
             {
-                Restore();
+                deviceToBeUpdated.MapEditableFields(backup);
                 throw new ValidationException(validationResult.Errors);
             }
 
             await _unitOfWork.CommitAsync(cancellationToken);
-
-            void Restore()
-            {
-                deviceToBeUpdated.LastModified = backup.LastModified;
-                deviceToBeUpdated.DisplayName = backup.DisplayName;
-                deviceToBeUpdated.Online = backup.Online;
-                deviceToBeUpdated.Model = backup.Model;
-                deviceToBeUpdated.Manufacturer = backup.Manufacturer;
-                deviceToBeUpdated.LocationId = backup.LocationId;
-                deviceToBeUpdated.MacAddress = backup.MacAddress;
-            }
         }
 
         public async Task UpdateDeviceLastSeenAsync(Device device,

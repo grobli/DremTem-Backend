@@ -12,8 +12,6 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Shared.Extensions;
 using Shared.Proto;
-using Shared.Proto.Common;
-using Shared.Proto.Sensor;
 
 namespace DeviceManager.Api.Handlers.SensorHandlers
 {

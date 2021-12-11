@@ -1,26 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using AutoMapper;
-using ClientApiGateway.Api.Resources.Device;
-using ClientApiGateway.Api.Resources.Group;
-using ClientApiGateway.Api.Resources.Location;
-using ClientApiGateway.Api.Resources.Reading;
-using ClientApiGateway.Api.Resources.Reading.Metric;
-using ClientApiGateway.Api.Resources.Sensor;
-using ClientApiGateway.Api.Resources.SensorType;
-using ClientApiGateway.Api.Resources.User;
-using Google.Protobuf;
-using Google.Protobuf.Collections;
+using ClientApiGateway.Api.Resources;
 using Google.Protobuf.WellKnownTypes;
 using Shared.Proto;
-using Shared.Proto.Device;
-using Shared.Proto.Group;
-using Shared.Proto.Location;
-using Shared.Proto.Sensor;
-using Shared.Proto.SensorData;
-using Shared.Proto.SensorType;
-using Shared.Proto.User;
 
 namespace ClientApiGateway.Api.Mapping
 {

@@ -8,8 +8,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Shared.Configs;
 using Shared.Extensions;
-using Shared.Proto.Device;
-using Shared.Proto.SensorData;
+using Shared.Proto;
 using Shared.web;
 
 namespace DeviceApiGateway.Api

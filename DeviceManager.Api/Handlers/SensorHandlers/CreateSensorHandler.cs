@@ -11,7 +11,6 @@ using FluentValidation;
 using Grpc.Core;
 using MediatR;
 using Shared.Proto;
-using Shared.Proto.Sensor;
 
 namespace DeviceManager.Api.Handlers.SensorHandlers
 {

@@ -9,8 +9,7 @@ using FluentValidation;
 using Grpc.Core;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Shared.Proto.Common;
-using Shared.Proto.SensorType;
+using Shared.Proto;
 
 namespace DeviceManager.Api.Handlers.SensorTypeHandlers
 {

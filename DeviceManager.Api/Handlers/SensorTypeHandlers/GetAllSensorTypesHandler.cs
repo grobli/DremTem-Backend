@@ -11,8 +11,6 @@ using MediatR;
 using Shared;
 using Shared.Extensions;
 using Shared.Proto;
-using Shared.Proto.Common;
-using Shared.Proto.SensorType;
 
 namespace DeviceManager.Api.Handlers.SensorTypeHandlers
 {

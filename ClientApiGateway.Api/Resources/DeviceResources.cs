@@ -1,11 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using ClientApiGateway.Api.Resources.Location;
-using ClientApiGateway.Api.Resources.Sensor;
 using Shared.Proto;
 
-namespace ClientApiGateway.Api.Resources.Device
+namespace ClientApiGateway.Api.Resources
 {
+    public record CreateDeviceResource
+    (
+        string Name,
+        string DisplayName,
+        bool Online,
+        string MacAddress,
+        string Model,
+        string Manufacturer,
+        int? LocationId,
+        IEnumerable<CreateDeviceSensorResource> Sensors
+    );
+
     public class DeviceResource
     {
         public int Id { get; set; }
@@ -25,4 +35,14 @@ namespace ClientApiGateway.Api.Resources.Device
         public IEnumerable<SensorResource> Sensors { get; set; }
         public LocationResource Location { get; set; }
     }
+
+    public record UpdateDeviceResource
+    (
+        string DisplayName,
+        bool Online,
+        string Model,
+        string Manufacturer,
+        string MacAddress,
+        int? LocationId
+    );
 }

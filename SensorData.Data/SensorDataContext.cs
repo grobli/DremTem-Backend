@@ -11,8 +11,8 @@ namespace SensorData.Data
     public class SensorDataContext : DbContext, ISensorDataContext
     {
         public DbSet<Reading> Readings { get; set; }
-        public DbSet<MetricDaily> MetricsDaily { get; set; }
-        public DbSet<MetricHourly> MetricsHourly { get; set; }
+        public DbSet<MetricBaseDaily> MetricsDaily { get; set; }
+        public DbSet<MetricBaseHourly> MetricsHourly { get; set; }
 
         public SensorDataContext(DbContextOptions<SensorDataContext> options) : base(options)
         {

@@ -7,7 +7,7 @@ namespace SensorData.Core.Services
 {
     public interface IMetricService
     {
-        Task<PagedList<Metric>> GetMetricsByRange(int sensorId, MetricMode mode, PaginationParameters parameters,
+        Task<PagedList<MetricBase>> GetMetricsByRange(int sensorId, MetricMode mode, PaginationParameters parameters,
             DateTime startDate, DateTime endDate = default);
     }
 }

@@ -278,6 +278,11 @@ namespace DeviceManager.Data.Migrations
                         .HasColumnType("timestamp(0) without time zone")
                         .HasColumnName("created");
 
+                    b.Property<string>("DisplayName")
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("display_name");
+
                     b.Property<bool>("IsDiscrete")
                         .HasColumnType("boolean")
                         .HasColumnName("is_discrete");

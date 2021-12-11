@@ -5,7 +5,7 @@ import "google/protobuf/wrappers.proto";
 import "Protos/shared_definitions.proto";
 import "Protos/common.proto";
 
-option csharp_namespace = "Shared.Proto.Sensor";
+option csharp_namespace = "Shared.Proto";
 
 service SensorGrpc {
   rpc GetAllSensors (common.GenericGetManyRequest) returns (GetAllSensorsResponse);

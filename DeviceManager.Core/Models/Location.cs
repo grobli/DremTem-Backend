@@ -1,28 +1,40 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text.Json;
 using Shared;
-using Shared.Proto.Common;
+using Shared.Proto;
 
 namespace DeviceManager.Core.Models
 {
-    public record Location
+    public sealed class Location : EntityBase<int, Location>
     {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public string DisplayName { get; set; }
         public float? Latitude { get; set; }
         public float? Longitude { get; set; }
-        public DateTime? LastModified { get; set; }
-        public DateTime Created { get; set; }
-        public Guid UserId { get; set; }
+        public Guid UserId { get; init; }
 
         public ICollection<Device> Devices { get; set; }
 
-        public override string ToString() => JsonSerializer.Serialize(this);
+        public Location()
+        {
+        }
+
+        /** copy constructor */
+        public Location(Location originalLocation) : base(originalLocation)
+        {
+            Latitude = originalLocation.Latitude;
+            Longitude = originalLocation.Longitude;
+            UserId = originalLocation.UserId;
+        }
+
+        public override void MapEditableFields(Location source)
+        {
+            base.MapEditableFields(source);
+
+            Latitude = source.Latitude;
+            Longitude = source.Longitude;
+        }
     }
 
-    public class LocationParameters : QueryStringParameters
+    public class LocationParameters : QueryStringParametersBase
     {
         private readonly List<Entity> _fieldsToInclude = new();
         private bool _includeDevices;

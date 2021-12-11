@@ -15,7 +15,7 @@ namespace SensorData.Data.Repositories
             _context = context;
         }
 
-        public IQueryable<Metric> GetMetrics(int sensorId, MetricMode mode)
+        public IQueryable<MetricBase> GetMetrics(int sensorId, MetricMode mode)
         {
             return mode switch
             {

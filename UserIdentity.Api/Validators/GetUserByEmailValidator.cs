@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using Shared.Proto.User;
+using Shared.Proto;
 
 namespace UserIdentity.Api.Validators
 {

@@ -34,9 +34,7 @@ namespace DeviceManager.Services
 
         public async Task<Sensor> CreateSensorAsync(Sensor newSensor, CancellationToken cancellationToken = default)
         {
-            newSensor.Created = DateTime.UtcNow;
             await Validator.ValidateAndThrowAsync(newSensor, cancellationToken);
-
             await _unitOfWork.Sensors.AddAsync(newSensor, cancellationToken);
             await _unitOfWork.CommitAsync(cancellationToken);
 
@@ -50,7 +48,6 @@ namespace DeviceManager.Services
             var sensors = newSensors as Sensor[] ?? newSensors.ToArray();
             foreach (var sensor in sensors)
             {
-                sensor.Created = now;
                 await Validator.ValidateAndThrowAsync(sensor, cancellationToken);
             }
 
@@ -63,27 +60,19 @@ namespace DeviceManager.Services
         public async Task UpdateSensorAsync(Sensor sensorToBeUpdated, Sensor sensor,
             CancellationToken cancellationToken = default)
         {
-            var backup = sensorToBeUpdated with { };
+            var backup = new Sensor(sensorToBeUpdated);
 
-            sensorToBeUpdated.LastModified = DateTime.UtcNow;
-            sensorToBeUpdated.DisplayName = sensor.DisplayName;
-            sensorToBeUpdated.TypeId = sensor.TypeId;
+            sensor.LastModified = DateTime.UtcNow;
+            sensorToBeUpdated.MapEditableFields(sensor);
 
             var validationResult = await Validator.ValidateAsync(sensorToBeUpdated, cancellationToken);
             if (!validationResult.IsValid)
             {
-                Restore();
+                sensorToBeUpdated.MapEditableFields(backup);
                 throw new ValidationException(validationResult.Errors);
             }
 
             await _unitOfWork.CommitAsync(cancellationToken);
-
-            void Restore()
-            {
-                sensorToBeUpdated.LastModified = backup.LastModified;
-                sensorToBeUpdated.DisplayName = backup.DisplayName;
-                sensorToBeUpdated.TypeId = backup.TypeId;
-            }
         }
 
         public async Task DeleteSensorAsync(Sensor sensor, CancellationToken cancellationToken = default)

@@ -7,7 +7,7 @@ using MediatR;
 using SensorData.Api.Commands;
 using SensorData.Core.Models;
 using SensorData.Core.Services;
-using Shared.Proto.SensorData;
+using Shared.Proto;
 
 namespace SensorData.Api.Handlers
 {

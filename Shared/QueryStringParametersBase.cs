@@ -2,7 +2,7 @@
 
 namespace Shared
 {
-    public abstract class QueryStringParameters
+    public abstract class QueryStringParametersBase
     {
     }
 

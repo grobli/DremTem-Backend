@@ -10,9 +10,7 @@ using SensorData.Api.Commands;
 using SensorData.Core.Models;
 using SensorData.Core.Services;
 using SensorData.Core.Settings;
-using Shared.Proto.Common;
-using Shared.Proto.Sensor;
-using Shared.Proto.SensorData;
+using Shared.Proto;
 using Shared.Services.GrpcClientServices;
 
 namespace SensorData.Api.Handlers

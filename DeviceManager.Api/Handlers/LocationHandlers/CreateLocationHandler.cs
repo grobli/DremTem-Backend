@@ -9,7 +9,6 @@ using FluentValidation;
 using Grpc.Core;
 using MediatR;
 using Shared.Proto;
-using Shared.Proto.Location;
 
 namespace DeviceManager.Api.Handlers.LocationHandlers
 {

@@ -8,7 +8,7 @@ using Grpc.Core;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Shared.Proto.User;
+using Shared.Proto;
 using UserIdentity.Api.Extensions;
 using UserIdentity.Api.Queries;
 using UserIdentity.Core.Models.Auth;

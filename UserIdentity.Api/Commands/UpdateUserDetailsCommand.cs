@@ -1,5 +1,5 @@
 ﻿using MediatR;
-using Shared.Proto.User;
+using Shared.Proto;
 
 namespace UserIdentity.Api.Commands
 {

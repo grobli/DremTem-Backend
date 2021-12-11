@@ -11,7 +11,6 @@ using Microsoft.EntityFrameworkCore;
 using DeviceManager.Core.Models;
 using Shared.Extensions;
 using Shared.Proto;
-using Shared.Proto.Group;
 
 namespace DeviceManager.Api.Handlers.GroupHandlers
 {

@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
-using Shared.Proto.User;
+using Shared.Proto;
 using UserIdentity.Core.Models.Auth;
 
 namespace UserIdentity.Api.Extensions

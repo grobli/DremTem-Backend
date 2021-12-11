@@ -4,9 +4,9 @@ using SensorData.Core.Models;
 
 namespace SensorData.Data.Configurations
 {
-    public class MetricDailyConfiguration : IEntityTypeConfiguration<MetricDaily>
+    public class MetricDailyConfiguration : IEntityTypeConfiguration<MetricBaseDaily>
     {
-        public void Configure(EntityTypeBuilder<MetricDaily> builder)
+        public void Configure(EntityTypeBuilder<MetricBaseDaily> builder)
         {
             builder
                 .HasNoKey()
@@ -14,9 +14,9 @@ namespace SensorData.Data.Configurations
         }
     }
 
-    public class MetricHourlyConfiguration : IEntityTypeConfiguration<MetricHourly>
+    public class MetricHourlyConfiguration : IEntityTypeConfiguration<MetricBaseHourly>
     {
-        public void Configure(EntityTypeBuilder<MetricHourly> builder)
+        public void Configure(EntityTypeBuilder<MetricBaseHourly> builder)
         {
             builder
                 .HasNoKey()

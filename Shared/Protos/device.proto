@@ -6,7 +6,7 @@ import "google/protobuf/wrappers.proto";
 import "Protos/shared_definitions.proto";
 import "Protos/common.proto";
 
-option csharp_namespace = "Shared.Proto.Device";
+option csharp_namespace = "Shared.Proto";
 
 service DeviceGrpc {
   rpc GetAllDevices (common.GenericGetManyRequest) returns (GetAllDevicesResponse);
