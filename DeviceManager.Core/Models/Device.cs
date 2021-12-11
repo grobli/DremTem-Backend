@@ -78,6 +78,6 @@ namespace DeviceManager.Core.Models
 
     public class DevicePagedParameters : DeviceParameters
     {
-        public PageQueryStringParameters Page { get; } = new();
+        public PaginationParameters Page { get; } = new();
     }
 }

@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System;
+using AutoMapper;
 using Google.Protobuf.WellKnownTypes;
 using SensorData.Core.Models;
 using Shared.Proto.SensorData;
@@ -9,37 +10,26 @@ namespace SensorData.Api.Mapping
     {
         public MappingProfile()
         {
-            //---------- Domain to Resource/Request ----------
-            CreateMap<Reading, ReadingDto>()
-                .ForMember(
-                    dest => dest.Time,
-                    opt => opt.MapFrom(src => Timestamp.FromDateTime(src.Time)));
+            CreateMap<DateTime, Timestamp>().ConvertUsing(dt => Timestamp.FromDateTime(dt.ToUniversalTime()));
+            CreateMap<Timestamp, DateTime>().ConvertUsing(ts => ts.ToDateTime().ToUniversalTime());
 
-            CreateMap<Reading, ReadingNoSensorDto>()
-                .ForMember(
-                    dest => dest.Time,
-                    opt => opt.MapFrom(src => Timestamp.FromDateTime(src.Time)));
+            //---------- Domain to Resource/Request ----------
+            CreateMap<Reading, ReadingDto>();
+
+            CreateMap<Reading, ReadingNoSensorDto>();
+
+            CreateMap<Metric, MetricDto>();
 
             //---------- Resource/Request to Domain ----------
-            CreateMap<ReadingDto, Reading>()
-                .ForMember(dest => dest.Time,
-                    opt => opt.MapFrom(src => src.Time.ToDateTime().ToUniversalTime()));
+            CreateMap<ReadingDto, Reading>();
 
-            CreateMap<ReadingNoSensorDto, Reading>()
-                .ForMember(dest => dest.Time,
-                    opt => opt.MapFrom(src => src.Time.ToDateTime().ToUniversalTime()));
+            CreateMap<ReadingNoSensorDto, Reading>();
 
-            CreateMap<CreateReadingRequest, Reading>()
-                .ForMember(dest => dest.Time,
-                    opt => opt.MapFrom(src => src.Time.ToDateTime().ToUniversalTime()));
+            CreateMap<CreateReadingRequest, Reading>();
 
-            CreateMap<UpdateReadingRequest, Reading>()
-                .ForMember(dest => dest.Time,
-                    opt => opt.MapFrom(src => src.Time.ToDateTime().ToUniversalTime()));
+            CreateMap<UpdateReadingRequest, Reading>();
 
-            CreateMap<DeleteReadingRequest, Reading>()
-                .ForMember(dest => dest.Time,
-                    opt => opt.MapFrom(src => src.Time.ToDateTime().ToUniversalTime()));
+            CreateMap<DeleteReadingRequest, Reading>();
         }
     }
 }

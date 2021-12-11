@@ -11,6 +11,8 @@ namespace SensorData.Data
     public class SensorDataContext : DbContext, ISensorDataContext
     {
         public DbSet<Reading> Readings { get; set; }
+        public DbSet<MetricDaily> MetricsDaily { get; set; }
+        public DbSet<MetricHourly> MetricsHourly { get; set; }
 
         public SensorDataContext(DbContextOptions<SensorDataContext> options) : base(options)
         {
@@ -23,6 +25,8 @@ namespace SensorData.Data
             builder.ConvertDateTimesToUtc();
 
             builder.ApplyConfiguration(new ReadingConfiguration());
+            builder.ApplyConfiguration(new MetricDailyConfiguration());
+            builder.ApplyConfiguration(new MetricHourlyConfiguration());
         }
     }
 

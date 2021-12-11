@@ -9,6 +9,8 @@ namespace SensorData.Core
     public interface ISensorDataContext : IDisposable
     {
         DbSet<Reading> Readings { get; set; }
+        DbSet<MetricDaily> MetricsDaily { get; set; }
+        DbSet<MetricHourly> MetricsHourly { get; set; }
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 }

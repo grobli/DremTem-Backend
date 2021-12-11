@@ -12,6 +12,6 @@ namespace UserIdentity.Core.Models.Auth
 
     public class UserPagedParameters
     {
-        public PageQueryStringParameters Page { get; } = new();
+        public PaginationParameters Page { get; } = new();
     }
 }

@@ -42,6 +42,6 @@ namespace DeviceManager.Core.Models
 
     public class LocationPagedParameters : LocationParameters
     {
-        public PageQueryStringParameters Page { get; }= new();
+        public PaginationParameters Page { get; }= new();
     }
 }

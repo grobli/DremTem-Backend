@@ -26,7 +26,8 @@ service SensorDataGrpc {
 
   rpc GetRangeFromSensor (GetRangeFromSensorRequest) returns (GetManyFromSensorResponse);
 
-  rpc CalculateStat1DForSensor (CalculateStat1DForSensorRequest) returns (Stat1DBucketResponse);
+  rpc GetDailyMetricsByRange (GetMetricsByRangeRequest) returns (GetMetricsByRangeResponse);
+  rpc GetHourlyMetricsByRange (GetMetricsByRangeRequest) returns (GetMetricsByRangeResponse);
 
   rpc GetRangeFromSensorAsFile (GetRangeFromSensorAsFileRequest) returns (stream GetRangeFromSensorFileChunk);
 }
@@ -43,17 +44,6 @@ message ReadingNoSensorDto {
   double Value = 2;
 }
 
-enum StatFunction1D {
-  AVERAGE = 0;
-  MIN = 1;
-  MAX = 2;
-  STANDARD_DEVIATION = 3;
-  VARIANCE = 4;
-  HISTOGRAM = 5;
-  SUM = 6;
-  NUMBER_OF_VALUES = 7;
-}
-
 enum StatFunction2D {
   AVERAGE_X = 0;
   AVERAGE_Y = 1;
@@ -63,22 +53,11 @@ enum StatFunction2D {
   SLOPE = 5;
 }
 
-message Stat1DBucketRowDto {
-  google.protobuf.Timestamp TimeBucket = 1;
-  repeated double Values = 2;
-}
-
 message Stat2DBucketRowDto {
   google.protobuf.Timestamp TimeBucket = 1;
   repeated double Values = 2;
 }
 
-message Stat1DBucketResponse {
-  repeated int32 SensorIds = 1;
-  int32 SensorTypeId = 2;
-  repeated StatFunction1D StatFunctions = 3;
-  repeated Stat1DBucketRowDto Data = 4;
-}
 message Stat2DBucketResponse {
   repeated int32 XSensorIds = 1;
   repeated int32 YSensorIds = 2;
@@ -178,18 +157,36 @@ message GetRangeFromSensorRequest {
   google.protobuf.Timestamp EndDate = 6;
 }
 
-message CalculateStat1DForSensorRequest {
+message MetricDto {
+  google.protobuf.Timestamp TimeBucket = 1;
+  int32 SensorId = 2;
+  double Max = 3;
+  double Min = 4;
+  double Average = 5;
+  double Sum = 6;
+  double StdDev = 7;
+  double Variance = 8;
+  int32 NumberOfValues = 9;
+}
+
+message GetMetricsByRangeRequest {
   oneof Sensor {
     DeviceAndSensorName DeviceAndName = 1;
     int32 SensorId = 2;
   }
-  TimeUnit TimeBucketUnit = 3;
-  int32 TimeBucketValue = 4;
-  repeated StatFunction1D Functions = 5;
-
-  int32 PageSize = 6;
-  int32 PageNumber = 7;
+  int32 PageSize = 3;
+  int32 PageNumber = 4;
+  google.protobuf.Timestamp StartDate = 5;
+  google.protobuf.Timestamp EndDate = 6;
 }
+
+message GetMetricsByRangeResponse {
+  int32 SensorId = 1;
+  int32 SensorTypeId = 2;
+  common.PaginationMetaData PaginationMetaData = 3;
+  repeated MetricDto Metrics = 4;
+}
+
 
 enum FileType {
   CSV = 0;

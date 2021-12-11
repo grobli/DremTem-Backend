@@ -27,6 +27,6 @@ namespace DeviceManager.Core.Models
 
     public class SensorTypePagedParameters : SensorParameters
     {
-        public PageQueryStringParameters Page { get; } = new();
+        public PaginationParameters Page { get; } = new();
     }
 }

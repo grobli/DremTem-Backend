@@ -5,6 +5,7 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using SensorData.Api.Commands;
 using SensorData.Api.Queries;
+using SensorData.Core.Models;
 using Shared.Proto.SensorData;
 
 namespace SensorData.Api.RpcServices
@@ -94,10 +95,20 @@ namespace SensorData.Api.RpcServices
             await _mediator.Send(query, context.CancellationToken);
         }
 
-        public override Task<Stat1DBucketResponse> CalculateStat1DForSensor(CalculateStat1DForSensorRequest request,
+        public override async Task<GetMetricsByRangeResponse> GetDailyMetricsByRange(GetMetricsByRangeRequest request,
             ServerCallContext context)
         {
-            return base.CalculateStat1DForSensor(request, context);
+            var query = new GetDailyMetricsByRangeQuery(request, MetricMode.Daily);
+            var result = await _mediator.Send(query, context.CancellationToken);
+            return result;
+        }
+
+        public override async Task<GetMetricsByRangeResponse> GetHourlyMetricsByRange(GetMetricsByRangeRequest request,
+            ServerCallContext context)
+        {
+            var query = new GetDailyMetricsByRangeQuery(request, MetricMode.Hourly);
+            var result = await _mediator.Send(query, context.CancellationToken);
+            return result;
         }
     }
 }

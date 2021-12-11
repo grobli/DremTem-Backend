@@ -21,6 +21,6 @@ namespace DeviceManager.Core.Models
 
     public class GroupPagedParameters : GroupParameters
     {
-        public PageQueryStringParameters Page { get; } = new();
+        public PaginationParameters Page { get; } = new();
     }
 }

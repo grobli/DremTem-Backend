@@ -6,7 +6,7 @@ namespace Shared
     {
     }
 
-    public sealed class PageQueryStringParameters
+    public sealed class PaginationParameters
     {
         public const int MaxPageSize = 2000;
         public const int DefaultPageSize = 500;

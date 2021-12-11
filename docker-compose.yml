@@ -9,7 +9,7 @@ services:
     volumes:
       - './data/db:/var/lib/postgresql/data'
   db-timescale:
-    image: 'timescale/timescaledb:latest-pg14'
+    image: 'timescale/timescaledb-ha:pg14-latest'
     ports:
       - '5555:5432'
     environment:
@@ -115,4 +115,5 @@ services:
       - rabbitmq
       - device-manager
       - db-timescale
+    command: [ './wait-for-it.sh', 'db-postgres:5432' ]
       

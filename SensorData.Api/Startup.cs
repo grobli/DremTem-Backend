@@ -15,9 +15,11 @@ using Microsoft.Extensions.Hosting;
 using SensorData.Api.Consumers;
 using SensorData.Api.RpcServices;
 using SensorData.Core;
+using SensorData.Core.Repositories;
 using SensorData.Core.Services;
 using SensorData.Core.Settings;
 using SensorData.Data;
+using SensorData.Data.Repositories;
 using SensorData.Services;
 using Shared;
 using Shared.Extensions;
@@ -77,6 +79,9 @@ namespace SensorData.Api
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<ISensorDataContext, SensorDataContext>();
             services.AddTransient<IReadingService, ReadingService>();
+            
+            services.AddScoped<IMetricRepository, MetricRepository>();
+            services.AddTransient<IMetricService, MetricService>();
 
             services.AddMediatR(typeof(Startup));
 

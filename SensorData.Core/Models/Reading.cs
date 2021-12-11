@@ -16,6 +16,6 @@ namespace SensorData.Core.Models
 
     public class ReadingPagedParameters : ReadingParameters
     {
-        public PageQueryStringParameters Page { get; } = new();
+        public PaginationParameters Page { get; } = new();
     }
 }

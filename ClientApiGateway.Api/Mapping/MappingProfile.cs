@@ -6,6 +6,7 @@ using ClientApiGateway.Api.Resources.Device;
 using ClientApiGateway.Api.Resources.Group;
 using ClientApiGateway.Api.Resources.Location;
 using ClientApiGateway.Api.Resources.Reading;
+using ClientApiGateway.Api.Resources.Reading.Metric;
 using ClientApiGateway.Api.Resources.Sensor;
 using ClientApiGateway.Api.Resources.SensorType;
 using ClientApiGateway.Api.Resources.User;
@@ -70,6 +71,8 @@ namespace ClientApiGateway.Api.Mapping
             CreateMap<ReadingDto, ReadingResource>();
             CreateMap<ReadingNoSensorDto, ReadingNoSensorResource>();
             CreateMap<GetManyFromSensorResponse, GetReadingsFromSensorResource>();
+
+            CreateMap<MetricDto, MetricNoSensorIdResource>();
         }
     }
 }
