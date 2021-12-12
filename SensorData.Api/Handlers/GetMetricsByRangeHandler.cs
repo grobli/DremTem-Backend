@@ -1,8 +1,10 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Grpc.Core;
+using LazyCache;
 using MediatR;
 using Microsoft.Extensions.Options;
 using SensorData.Api.Queries;
@@ -22,15 +24,17 @@ namespace SensorData.Api.Handlers
         private readonly IGrpcService<SensorGrpc.SensorGrpcClient> _sensorService;
         private readonly UserSettings _userSettings;
         private readonly IMapper _mapper;
+        private readonly IAppCache _cache;
 
         public GetMetricsByRangeHandler(IMetricService metricService,
             IGrpcService<SensorGrpc.SensorGrpcClient> sensorService, IOptions<UserSettings> userSettings,
-            IMapper mapper)
+            IMapper mapper, IAppCache cache)
         {
             _metricService = metricService;
             _sensorService = sensorService;
             _userSettings = userSettings.Value;
             _mapper = mapper;
+            _cache = cache;
         }
 
         public async Task<GetMetricsByRangeResponse> Handle(GetDailyMetricsByRangeQuery request,
@@ -38,27 +42,29 @@ namespace SensorData.Api.Handlers
         {
             var query = request.Query;
             SensorDto sensorDto;
+            string cacheKey;
 
             // find sensor by name
             if (query.SensorCase == GetMetricsByRangeRequest.SensorOneofCase.DeviceAndName)
             {
-                var sensorRequest = new GetSensorByNameRequest
-                {
-                    DeviceId = query.DeviceAndName.DeviceId,
-                    SensorName = query.DeviceAndName.SensorName,
-                    Parameters = new GetRequestParameters { UserId = _userSettings.Id.ToString() }
-                };
-                sensorDto = await _sensorService.SendRequestAsync(async client =>
-                    await client.GetSensorByNameAsync(sensorRequest));
+                var deviceId = query.DeviceAndName.DeviceId;
+                var sensorName = query.DeviceAndName.SensorName;
+                cacheKey = $"{nameof(HandlerUtils.FindSensorByName)}{deviceId}{sensorName}";
+                sensorDto = await _cache.GetOrAddAsync(cacheKey,
+                    async () => await HandlerUtils.FindSensorByName(_sensorService, deviceId, sensorName,
+                        _userSettings.Id), TimeSpan.FromMinutes(15));
             }
             else
             {
                 var sensorRequest = new GenericGetRequest
                 {
-                    Id = query.SensorId, Parameters = new GetRequestParameters { UserId = _userSettings.Id.ToString() }
+                    Id = query.SensorId,
+                    Parameters = new GetRequestParameters { UserId = _userSettings.Id.ToString() }
                 };
-                sensorDto = await _sensorService.SendRequestAsync(async client =>
-                    await client.GetSensorAsync(sensorRequest));
+                cacheKey = $"{nameof(SensorDto)}{query.SensorId}";
+                sensorDto = await _cache.GetOrAddAsync(cacheKey,
+                    async () => await _sensorService.SendRequestAsync(async client =>
+                        await client.GetSensorAsync(sensorRequest)), TimeSpan.FromMinutes(15));
             }
 
             if (sensorDto is null)
@@ -66,17 +72,22 @@ namespace SensorData.Api.Handlers
                 throw new RpcException(new Status(StatusCode.NotFound, "Sensor not found"));
             }
 
-            var paginationParams = new PaginationParameters { PageNumber = query.PageNumber, PageSize = query.PageSize };
-            var metrics = await _metricService.GetMetricsByRange(sensorDto.Id, request.MetricMode, paginationParams,
-                query.StartDate.ToDateTime(), query.EndDate.ToDateTime());
+            var paginationParams = new PaginationParameters
+                { PageNumber = query.PageNumber, PageSize = query.PageSize };
+            cacheKey =
+                $"{GetType().Name}{sensorDto.Id}-{request.MetricMode}-{query.StartDate}-{query.EndDate}-{paginationParams}";
 
-            var metricsMapped = metrics.Select(m => _mapper.Map<MetricBase, MetricDto>(m));
+            var pagedList = await _cache.GetOrAddAsync(cacheKey, async () => await _metricService.GetMetricsByRange(
+                sensorDto.Id, request.MetricMode, paginationParams,
+                query.StartDate.ToDateTime(), query.EndDate.ToDateTime()), TimeSpan.FromSeconds(15));
+
+            var metricsMapped = pagedList.Select(m => _mapper.Map<MetricBase, MetricDto>(m));
 
             var response = new GetMetricsByRangeResponse
             {
                 SensorId = sensorDto.Id,
                 SensorTypeId = sensorDto.TypeId,
-                PaginationMetaData = new PaginationMetaData().FromPagedList(metrics),
+                PaginationMetaData = new PaginationMetaData().FromPagedList(pagedList),
                 Metrics = { metricsMapped }
             };
 

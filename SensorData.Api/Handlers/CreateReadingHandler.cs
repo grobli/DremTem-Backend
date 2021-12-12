@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
+using LazyCache;
 using MediatR;
 using Microsoft.Extensions.Options;
 using SensorData.Api.Commands;
@@ -21,14 +22,16 @@ namespace SensorData.Api.Handlers
         private readonly IGrpcService<SensorGrpc.SensorGrpcClient> _sensorService;
         private readonly UserSettings _userSettings;
         private readonly IMapper _mapper;
+        private readonly IAppCache _cache;
 
         public CreateReadingHandler(IReadingService readingService, IOptions<UserSettings> userSettings, IMapper mapper,
-            IGrpcService<SensorGrpc.SensorGrpcClient> sensorService)
+            IGrpcService<SensorGrpc.SensorGrpcClient> sensorService, IAppCache cache)
         {
             _readingService = readingService;
             _userSettings = userSettings.Value;
             _mapper = mapper;
             _sensorService = sensorService;
+            _cache = cache;
         }
 
         public async Task<Empty> Handle(CreateReadingCommand command, CancellationToken cancellationToken)
@@ -36,17 +39,14 @@ namespace SensorData.Api.Handlers
             // find sensor by name
             if (command.Body.SourceCase == CreateReadingRequest.SourceOneofCase.DeviceAndName)
             {
-                var sensorRequest = new GetSensorByNameRequest
-                {
-                    DeviceId = command.Body.DeviceAndName.DeviceId,
-                    SensorName = command.Body.DeviceAndName.SensorName,
-                    Parameters = new GetRequestParameters
-                    {
-                        UserId = _userSettings.Id.ToString()
-                    }
-                };
-                var sensorDto = await _sensorService.SendRequestAsync(async client =>
-                    await client.GetSensorByNameAsync(sensorRequest));
+                var deviceId = command.Body.DeviceAndName.DeviceId;
+                var sensorName = command.Body.DeviceAndName.SensorName;
+                var cacheKey = $"{nameof(HandlerUtils.FindSensorByName)}{deviceId}{sensorName}";
+
+                var sensorDto = await _cache.GetOrAddAsync(cacheKey,
+                    async () => await HandlerUtils.FindSensorByName(_sensorService, deviceId, sensorName,
+                        _userSettings.Id), TimeSpan.FromMinutes(15));
+
                 if (sensorDto is null)
                 {
                     throw new RpcException(new Status(StatusCode.NotFound, "Sensor not found"));

@@ -58,8 +58,8 @@ namespace ClientApiGateway.Api.Controllers
 
             try
             {
-                var client = _dataService.GetClient(UserId);
-                var result = await client.GetAllFromSensorAsync(request, cancellationToken: token);
+                var result = await _dataService.SendRequestAsync(async client =>
+                    await client.GetAllFromSensorAsync(request, cancellationToken: token), UserId);
                 Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(result.PaginationMetaData));
                 return Ok(_mapper.Map<GetManyFromSensorResponse, GetReadingsFromSensorResource>(result));
             }
@@ -83,8 +83,8 @@ namespace ClientApiGateway.Api.Controllers
 
             try
             {
-                var client = _dataService.GetClient(UserId);
-                var result = await client.GetAllFromSensorAsync(request, cancellationToken: token);
+                var result = await _dataService.SendRequestAsync(async client =>
+                    await client.GetAllFromSensorAsync(request, cancellationToken: token), UserId);
                 Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(result.PaginationMetaData));
                 return Ok(_mapper.Map<GetManyFromSensorResponse, GetReadingsFromSensorResource>(result));
             }
@@ -151,8 +151,8 @@ namespace ClientApiGateway.Api.Controllers
 
             try
             {
-                var client = _dataService.GetClient(UserId);
-                var result = await client.GetLastFromSensorAsync(request, cancellationToken: token);
+                var result = await _dataService.SendRequestAsync(async client =>
+                    await client.GetLastFromSensorAsync(request, cancellationToken: token), UserId);
                 Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(result.PaginationMetaData));
                 return Ok(_mapper.Map<GetManyFromSensorResponse, GetReadingsFromSensorResource>(result));
             }
@@ -179,8 +179,8 @@ namespace ClientApiGateway.Api.Controllers
 
             try
             {
-                var client = _dataService.GetClient(UserId);
-                var result = await client.GetRangeFromSensorAsync(request, cancellationToken: token);
+                var result = await _dataService.SendRequestAsync(async client =>
+                    await client.GetRangeFromSensorAsync(request, cancellationToken: token), UserId);
                 Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(result.PaginationMetaData));
                 return Ok(_mapper.Map<GetManyFromSensorResponse, GetReadingsFromSensorResource>(result));
             }
@@ -199,8 +199,8 @@ namespace ClientApiGateway.Api.Controllers
                 { DeviceAndName = new DeviceAndSensorName { DeviceId = deviceId, SensorName = sensorName } };
             try
             {
-                var client = _dataService.GetClient(UserId);
-                var result = await client.GetFirstRecentFromSensorAsync(request, cancellationToken: token);
+                var result = await _dataService.SendRequestAsync(async client =>
+                    await client.GetFirstRecentFromSensorAsync(request, cancellationToken: token), UserId);
                 return Ok(_mapper.Map<ReadingDto, ReadingResource>(result));
             }
             catch (RpcException e)

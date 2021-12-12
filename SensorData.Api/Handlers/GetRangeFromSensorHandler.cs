@@ -1,8 +1,10 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Grpc.Core;
+using LazyCache;
 using MediatR;
 using Microsoft.Extensions.Options;
 using SensorData.Api.Queries;
@@ -22,15 +24,17 @@ namespace SensorData.Api.Handlers
         private readonly IGrpcService<SensorGrpc.SensorGrpcClient> _sensorService;
         private readonly UserSettings _userSettings;
         private readonly IMapper _mapper;
+        private readonly IAppCache _cache;
 
         public GetRangeFromSensorHandler(IReadingService readingService,
             IGrpcService<SensorGrpc.SensorGrpcClient> sensorService, IOptions<UserSettings> userSettings,
-            IMapper mapper)
+            IMapper mapper, IAppCache cache)
         {
             _readingService = readingService;
             _sensorService = sensorService;
             _userSettings = userSettings.Value;
             _mapper = mapper;
+            _cache = cache;
         }
 
         public async Task<GetManyFromSensorResponse> Handle(GetRangeFromSensorQuery request,
@@ -38,30 +42,29 @@ namespace SensorData.Api.Handlers
         {
             var query = request.Query;
             SensorDto sensorDto;
+            string cacheKey;
 
             // find sensor by name
             if (query.SensorCase == GetRangeFromSensorRequest.SensorOneofCase.DeviceAndName)
             {
-                var sensorRequest = new GetSensorByNameRequest
-                {
-                    DeviceId = query.DeviceAndName.DeviceId,
-                    SensorName = query.DeviceAndName.SensorName,
-                    Parameters = new GetRequestParameters
-                    {
-                        UserId = _userSettings.Id.ToString()
-                    }
-                };
-                sensorDto = await _sensorService.SendRequestAsync(async client =>
-                    await client.GetSensorByNameAsync(sensorRequest));
+                var deviceId = query.DeviceAndName.DeviceId;
+                var sensorName = query.DeviceAndName.SensorName;
+                cacheKey = $"{nameof(HandlerUtils.FindSensorByName)}{deviceId}{sensorName}";
+                sensorDto = await _cache.GetOrAddAsync(cacheKey,
+                    async () => await HandlerUtils.FindSensorByName(_sensorService, deviceId, sensorName,
+                        _userSettings.Id), TimeSpan.FromMinutes(15));
             }
             else
             {
                 var sensorRequest = new GenericGetRequest
                 {
-                    Id = query.SensorId, Parameters = new GetRequestParameters { UserId = _userSettings.Id.ToString() }
+                    Id = query.SensorId,
+                    Parameters = new GetRequestParameters { UserId = _userSettings.Id.ToString() }
                 };
-                sensorDto = await _sensorService.SendRequestAsync(async client =>
-                    await client.GetSensorAsync(sensorRequest));
+                cacheKey = $"{nameof(SensorDto)}{query.SensorId}";
+                sensorDto = await _cache.GetOrAddAsync(cacheKey,
+                    async () => await _sensorService.SendRequestAsync(async client =>
+                        await client.GetSensorAsync(sensorRequest)), TimeSpan.FromMinutes(15));
             }
 
             if (sensorDto is null)
@@ -71,11 +74,16 @@ namespace SensorData.Api.Handlers
 
             var startDate = query.StartDate.ToDateTime();
             var endDate = query.EndDate.ToDateTime();
-            var readingsQuery = _readingService.GetAllReadingsFromSensorQuery(sensorDto.Id)
-                .Where(r => r.Time > startDate && r.Time < endDate);
 
-            var pagedList = await PagedList<Reading>.ToPagedListAsync(readingsQuery, query.PageNumber, query.PageSize,
-                cancellationToken);
+            cacheKey = $"{GetType().Name}{sensorDto.Id}-{startDate}-{endDate}-{query.PageNumber}-{query.PageSize}";
+            var pagedList = await _cache.GetOrAddAsync(cacheKey, async () =>
+            {
+                var readingsQuery = _readingService.GetAllReadingsFromSensorQuery(sensorDto.Id)
+                    .Where(r => r.Time > startDate && r.Time < endDate);
+                return await PagedList<Reading>.ToPagedListAsync(readingsQuery, query.PageNumber, query.PageSize,
+                    cancellationToken);
+            }, TimeSpan.FromSeconds(15));
+
             var pagedListMapped = pagedList
                 .Select(r => _mapper.Map<Reading, ReadingNoSensorDto>(r));
 

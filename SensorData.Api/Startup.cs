@@ -48,6 +48,8 @@ namespace SensorData.Api
         {
             services.AddGrpc();
 
+            services.AddLazyCache();
+
             services.AddHealthChecks();
 
             services.AddSingleton<HealthServiceImpl>();
@@ -77,7 +79,7 @@ namespace SensorData.Api
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<ISensorDataContext, SensorDataContext>();
             services.AddTransient<IReadingService, ReadingService>();
-            
+
             services.AddScoped<IMetricRepository, MetricRepository>();
             services.AddTransient<IMetricService, MetricService>();
 
