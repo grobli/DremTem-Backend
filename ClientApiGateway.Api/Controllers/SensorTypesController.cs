@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Text.Json;
 using System.Threading;
@@ -6,6 +7,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using ClientApiGateway.Api.Resources;
 using Grpc.Core;
+using LazyCache;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -25,16 +27,22 @@ namespace ClientApiGateway.Api.Controllers
         private readonly ILogger<SensorTypesController> _logger;
         private readonly IGrpcService<SensorTypeGrpc.SensorTypeGrpcClient> _grpcService;
         private readonly IMapper _mapper;
+        private readonly IAppCache _cache;
 
         private string UserId => User.FindFirstValue(ClaimTypes.NameIdentifier);
 
+        private bool DenyCache => string.Equals(Request.Headers["Cache-Control"], "no-cache",
+            StringComparison.InvariantCultureIgnoreCase);
+
+
         public SensorTypesController(
             ILogger<SensorTypesController> logger,
-            IMapper mapper, IGrpcService<SensorTypeGrpc.SensorTypeGrpcClient> grpcService)
+            IMapper mapper, IGrpcService<SensorTypeGrpc.SensorTypeGrpcClient> grpcService, IAppCache cache)
         {
             _logger = logger;
             _mapper = mapper;
             _grpcService = grpcService;
+            _cache = cache;
         }
 
         // GET: api/v1/SensorTypes
@@ -47,16 +55,33 @@ namespace ClientApiGateway.Api.Controllers
                 PageNumber = pagination.PageNumber,
                 PageSize = pagination.PageSize
             };
+            var cacheKey = $"{nameof(GetAllSensorTypes)}{request}{UserId}";
+            var cacheTimespan = TimeSpan.FromSeconds(15);
             try
             {
-                var result = await _grpcService.SendRequestAsync(async client =>
-                    await client.GetAllSensorTypesAsync(request, cancellationToken: token));
+                GetAllSensorTypesResponse result;
+                if (DenyCache)
+                {
+                    result = await GetAll();
+                    _cache.Add(cacheKey, result, cacheTimespan);
+                }
+                else
+                {
+                    result = await _cache.GetOrAddAsync(cacheKey, GetAll, cacheTimespan);
+                }
+
                 Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(result.MetaData));
                 return Ok(result.SensorTypes);
             }
             catch (RpcException e)
             {
                 return HandleRpcException(e);
+            }
+
+            async Task<GetAllSensorTypesResponse> GetAll()
+            {
+                return await _grpcService.SendRequestAsync(async client =>
+                    await client.GetAllSensorTypesAsync(request, cancellationToken: token));
             }
         }
 
@@ -68,15 +93,32 @@ namespace ClientApiGateway.Api.Controllers
             {
                 Id = id
             };
+            var cacheKey = $"{nameof(GetSensorType)}{request}{UserId}";
+            var cacheTimespan = TimeSpan.FromSeconds(15);
             try
             {
-                var result = await _grpcService.SendRequestAsync(async client =>
-                    await client.GetSensorTypeAsync(request, cancellationToken: token));
+                SensorTypeDto result;
+                if (DenyCache)
+                {
+                    result = await Get();
+                    _cache.Add(cacheKey, result, cacheTimespan);
+                }
+                else
+                {
+                    result = await _cache.GetOrAddAsync(cacheKey, Get, cacheTimespan);
+                }
+
                 return Ok(result);
             }
             catch (RpcException e)
             {
                 return HandleRpcException(e);
+            }
+
+            async Task<SensorTypeDto> Get()
+            {
+                return await _grpcService.SendRequestAsync(async client =>
+                    await client.GetSensorTypeAsync(request, cancellationToken: token));
             }
         }
 

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.Json;
@@ -8,6 +9,7 @@ using AutoMapper;
 using ClientApiGateway.Api.Resources;
 using DeviceManager.Core.Models;
 using Grpc.Core;
+using LazyCache;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -25,23 +27,26 @@ namespace ClientApiGateway.Api.Controllers
     public class DevicesController : ControllerBase
     {
         private readonly ILogger<DevicesController> _logger;
-
-        //     private readonly DeviceGrpcService.DeviceGrpcServiceClient _deviceService;
+        private readonly IAppCache _cache;
         private readonly IMapper _mapper;
         private readonly IGrpcService<DeviceGrpc.DeviceGrpcClient> _grpcService;
 
         private string UserId => User.FindFirstValue(ClaimTypes.NameIdentifier);
 
+        private bool DenyCache => string.Equals(Request.Headers["Cache-Control"], "no-cache",
+            StringComparison.InvariantCultureIgnoreCase);
+
         public DevicesController(
             ILogger<DevicesController> logger, IMapper mapper,
-            IGrpcService<DeviceGrpc.DeviceGrpcClient> grpcService)
+            IGrpcService<DeviceGrpc.DeviceGrpcClient> grpcService, IAppCache cache)
         {
             _logger = logger;
             _mapper = mapper;
             _grpcService = grpcService;
+            _cache = cache;
         }
 
-        // GET: api/v1/Devices?pageNumber=1&pageSize=3&includeLocation=true&includeSensors=false
+        // GET: api/v1/devices?pageNumber=1&pageSize=3&includeLocation=true&includeSensors=false
         [HttpGet]
         public async Task<ActionResult<IEnumerable<DeviceResource>>> GetAllDevices(
             [FromQuery] PaginationParameters pagination, [FromQuery] DeviceParameters parameters,
@@ -50,7 +55,7 @@ namespace ClientApiGateway.Api.Controllers
             return await GetAllDevices(pagination, parameters, true, token);
         }
 
-        // GET: api/v1/Devices/all?includeLocation=true&includeSensors=false
+        // GET: api/v1/devices/all?includeLocation=true&includeSensors=false
         [Authorize(Roles = DefaultRoles.SuperUser)]
         [HttpGet("all")]
         public async Task<ActionResult<IEnumerable<DeviceResource>>> GetAllDevicesOfAllUsers(
@@ -74,10 +79,21 @@ namespace ClientApiGateway.Api.Controllers
                 PageNumber = pagination.PageNumber,
                 PageSize = pagination.PageSize
             };
+            var cacheKey = $"{nameof(GetAllDevices)}-{request}";
+            var cacheTimespan = TimeSpan.FromSeconds(15);
             try
             {
-                var result = await _grpcService.SendRequestAsync(async client =>
-                    await client.GetAllDevicesAsync(request, cancellationToken: token));
+                GetAllDevicesResponse result;
+                if (DenyCache)
+                {
+                    result = await GetAll();
+                    _cache.Add(cacheKey, result, cacheTimespan);
+                }
+                else
+                {
+                    result = await _cache.GetOrAddAsync(cacheKey, GetAll, cacheTimespan);
+                }
+
                 Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(result.MetaData));
 
                 var resources = result.Devices
@@ -87,6 +103,12 @@ namespace ClientApiGateway.Api.Controllers
             catch (RpcException e)
             {
                 return HandleRpcException(e);
+            }
+
+            async Task<GetAllDevicesResponse> GetAll()
+            {
+                return await _grpcService.SendRequestAsync(async client =>
+                    await client.GetAllDevicesAsync(request, cancellationToken: token));
             }
         }
 
@@ -104,10 +126,20 @@ namespace ClientApiGateway.Api.Controllers
                     IncludeFields = { parameters.FieldsToInclude() }
                 }
             };
+            var cacheKey = $"{nameof(GetDevice)}-{request}";
+            var cacheTimespan = TimeSpan.FromSeconds(15);
             try
             {
-                var result = await _grpcService.SendRequestAsync(async client =>
-                    await client.GetDeviceAsync(request, cancellationToken: token));
+                DeviceExtendedDto result;
+                if (DenyCache)
+                {
+                    result = await Get();
+                    _cache.Add(cacheKey, result, cacheTimespan);
+                }
+                else
+                {
+                    result = await _cache.GetOrAddAsync(cacheKey, Get, cacheTimespan);
+                }
 
                 var resource = _mapper.Map<DeviceExtendedDto, DeviceResource>(result);
                 return Ok(resource);
@@ -115,6 +147,12 @@ namespace ClientApiGateway.Api.Controllers
             catch (RpcException e)
             {
                 return HandleRpcException(e);
+            }
+
+            async Task<DeviceExtendedDto> Get()
+            {
+                return await _grpcService.SendRequestAsync(async client =>
+                    await client.GetDeviceAsync(request, cancellationToken: token));
             }
         }
 
@@ -132,16 +170,33 @@ namespace ClientApiGateway.Api.Controllers
                     IncludeFields = { parameters.FieldsToInclude() }
                 }
             };
+            var cacheKey = $"{nameof(GetDeviceByName)}-{request}";
+            var cacheTimespan = TimeSpan.FromSeconds(15);
             try
             {
-                var result = await _grpcService.SendRequestAsync(async client =>
-                    await client.GetDeviceByNameAsync(request, cancellationToken: token));
+                DeviceExtendedDto result;
+                if (DenyCache)
+                {
+                    result = await Get();
+                    _cache.Add(cacheKey, result, cacheTimespan);
+                }
+                else
+                {
+                    result = await _cache.GetOrAddAsync(cacheKey, Get, cacheTimespan);
+                }
+
                 var resource = _mapper.Map<DeviceExtendedDto, DeviceResource>(result);
                 return Ok(resource);
             }
             catch (RpcException e)
             {
                 return HandleRpcException(e);
+            }
+
+            async Task<DeviceExtendedDto> Get()
+            {
+                return await _grpcService.SendRequestAsync(async client =>
+                    await client.GetDeviceByNameAsync(request, cancellationToken: token));
             }
         }
 

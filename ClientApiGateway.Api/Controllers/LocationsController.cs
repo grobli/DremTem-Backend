@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.Json;
@@ -9,6 +10,7 @@ using ClientApiGateway.Api.Resources;
 using DeviceManager.Core.Models;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
+using LazyCache;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -28,16 +30,22 @@ namespace ClientApiGateway.Api.Controllers
         private readonly ILogger<LocationsController> _logger;
         private readonly IGrpcService<LocationGrpc.LocationGrpcClient> _grpcService;
         private readonly IMapper _mapper;
+        private readonly IAppCache _cache;
 
         private string UserId => User.FindFirstValue(ClaimTypes.NameIdentifier);
 
+        private bool DenyCache => string.Equals(Request.Headers["Cache-Control"], "no-cache",
+            StringComparison.InvariantCultureIgnoreCase);
+
+
         public LocationsController(
             ILogger<LocationsController> logger,
-            IMapper mapper, IGrpcService<LocationGrpc.LocationGrpcClient> grpcService)
+            IMapper mapper, IGrpcService<LocationGrpc.LocationGrpcClient> grpcService, IAppCache cache)
         {
             _logger = logger;
             _mapper = mapper;
             _grpcService = grpcService;
+            _cache = cache;
         }
 
         // GET: api/v1/Locations?includeDevices=true
@@ -73,10 +81,21 @@ namespace ClientApiGateway.Api.Controllers
                 PageNumber = pagination.PageNumber,
                 PageSize = pagination.PageSize
             };
+            var cacheKey = $"{nameof(GetAllLocations)}{request}";
+            var cacheTimespan = TimeSpan.FromSeconds(15);
             try
             {
-                var result = await _grpcService.SendRequestAsync(async client =>
-                    await client.GetAllLocationsAsync(request, cancellationToken: token));
+                GetAllLocationsResponse result;
+                if (DenyCache)
+                {
+                    result = await GetAll();
+                    _cache.Add(cacheKey, result, cacheTimespan);
+                }
+                else
+                {
+                    result = await _cache.GetOrAddAsync(cacheKey, GetAll, cacheTimespan);
+                }
+
                 Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(result.MetaData));
                 var resources = result.Locations
                     .Select(l => _mapper.Map<LocationExtendedDto, LocationResource>(l));
@@ -85,6 +104,12 @@ namespace ClientApiGateway.Api.Controllers
             catch (RpcException e)
             {
                 return HandleRpcException(e);
+            }
+
+            async Task<GetAllLocationsResponse> GetAll()
+            {
+                return await _grpcService.SendRequestAsync(async client =>
+                    await client.GetAllLocationsAsync(request, cancellationToken: token));
             }
         }
 
@@ -102,16 +127,33 @@ namespace ClientApiGateway.Api.Controllers
                     IncludeFields = { parameters.FieldsToInclude() }
                 }
             };
+            var cacheKey = $"{nameof(GetLocation)}{request}";
+            var cacheTimespan = TimeSpan.FromSeconds(15);
             try
             {
-                var response = await _grpcService.SendRequestAsync(async client =>
-                    await client.GetLocationAsync(request, cancellationToken: token));
-                var location = _mapper.Map<LocationExtendedDto, LocationResource>(response);
+                LocationExtendedDto result;
+                if (DenyCache)
+                {
+                    result = await Get();
+                    _cache.Add(cacheKey, result, cacheTimespan);
+                }
+                else
+                {
+                    result = await _cache.GetOrAddAsync(cacheKey, Get, cacheTimespan);
+                }
+
+                var location = _mapper.Map<LocationExtendedDto, LocationResource>(result);
                 return Ok(location);
             }
             catch (RpcException e)
             {
                 return HandleRpcException(e);
+            }
+
+            async Task<LocationExtendedDto> Get()
+            {
+                return await _grpcService.SendRequestAsync(async client =>
+                    await client.GetLocationAsync(request, cancellationToken: token));
             }
         }
 

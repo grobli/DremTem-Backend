@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using ClientApiGateway.Api.Resources;
 using Grpc.Core;
+using LazyCache;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -26,14 +27,20 @@ namespace ClientApiGateway.Api.Controllers
         private readonly ILogger<UsersController> _logger;
         private readonly IGrpcService<UserGrpc.UserGrpcClient> _grpcService;
         private readonly IMapper _mapper;
+        private readonly IAppCache _cache;
+        private string UserId => User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        private bool DenyCache => string.Equals(Request.Headers["Cache-Control"], "no-cache",
+            StringComparison.InvariantCultureIgnoreCase);
 
         public UsersController(
             ILogger<UsersController> logger, IMapper mapper,
-            IGrpcService<UserGrpc.UserGrpcClient> grpcService)
+            IGrpcService<UserGrpc.UserGrpcClient> grpcService, IAppCache cache)
         {
             _logger = logger;
             _mapper = mapper;
             _grpcService = grpcService;
+            _cache = cache;
         }
 
 
@@ -98,18 +105,34 @@ namespace ClientApiGateway.Api.Controllers
         [HttpGet("me")]
         public async Task<ActionResult<UserDto>> GetCurrentUser(CancellationToken token)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var request = new GetUserByIdRequest { Id = UserId };
+            var cacheKey = $"{nameof(GetCurrentUser)}{UserId}";
             try
             {
-                var request = new GetUserByIdRequest { Id = userId };
-                var result = await _grpcService.SendRequestAsync(
-                    async client => await client.GetUserByIdAsync(request, cancellationToken: token),
-                    TimeSpan.FromSeconds(1));
+                var cacheTimespan = TimeSpan.FromSeconds(15);
+                UserDto result;
+                if (DenyCache)
+                {
+                    result = await Get();
+                    _cache.Add(cacheKey, result, cacheTimespan);
+                }
+                else
+                {
+                    result = await _cache.GetOrAddAsync(cacheKey, Get, cacheTimespan);
+                }
+
                 return Ok(result);
             }
             catch (RpcException e)
             {
                 return HandleRpcException(e);
+            }
+
+            async Task<UserDto> Get()
+            {
+                return await _grpcService.SendRequestAsync(
+                    async client => await client.GetUserByIdAsync(request, cancellationToken: token),
+                    TimeSpan.FromSeconds(1));
             }
         }
 

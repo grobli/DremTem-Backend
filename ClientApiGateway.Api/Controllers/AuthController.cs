@@ -34,7 +34,7 @@ namespace ClientApiGateway.Api.Controllers
         {
             try
             {
-                _logger.LogInformation($"User signup request: {request.Email}");
+                _logger.LogInformation("User signup request: {Email}", request.Email);
                 var result = await _grpcService.SendRequestAsync(async client =>
                     await client.SignUpAsync(request, cancellationToken: token));
                 return Ok(result);

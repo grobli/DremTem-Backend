@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.Json;
@@ -8,6 +9,7 @@ using AutoMapper;
 using ClientApiGateway.Api.Resources;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
+using LazyCache;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -27,15 +29,21 @@ namespace ClientApiGateway.Api.Controllers
         private readonly ILogger<GroupsController> _logger;
         private readonly IGrpcService<GroupGrpc.GroupGrpcClient> _grpcService;
         private readonly IMapper _mapper;
+        private readonly IAppCache _cache;
 
         private string UserId => User.FindFirstValue(ClaimTypes.NameIdentifier);
 
+        private bool DenyCache => string.Equals(Request.Headers["Cache-Control"], "no-cache",
+            StringComparison.InvariantCultureIgnoreCase);
+
+
         public GroupsController(ILogger<GroupsController> logger, IGrpcService<GroupGrpc.GroupGrpcClient> grpcService,
-            IMapper mapper)
+            IMapper mapper, IAppCache cache)
         {
             _logger = logger;
             _grpcService = grpcService;
             _mapper = mapper;
+            _cache = cache;
         }
 
         // GET: api/v1/Groups
@@ -67,10 +75,21 @@ namespace ClientApiGateway.Api.Controllers
                 PageNumber = pagination.PageNumber,
                 PageSize = pagination.PageSize
             };
+            var cacheKey = $"{nameof(GetAllGroups)}{request}";
+            var cacheTimespan = TimeSpan.FromSeconds(15);
             try
             {
-                var result = await _grpcService.SendRequestAsync(async client =>
-                    await client.GetAllGroupsAsync(request, cancellationToken: token));
+                GetAllGroupsResponse result;
+                if (DenyCache)
+                {
+                    result = await GetAll();
+                    _cache.Add(cacheKey, result, cacheTimespan);
+                }
+                else
+                {
+                    result = await _cache.GetOrAddAsync(cacheKey, GetAll, cacheTimespan);
+                }
+
                 Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(result.MetaData));
                 var resources = result.Groups.Select(g => _mapper.Map<GroupDto, GroupResource>(g));
                 return Ok(resources);
@@ -78,6 +97,12 @@ namespace ClientApiGateway.Api.Controllers
             catch (RpcException e)
             {
                 return HandleRpcException(e);
+            }
+
+            async Task<GetAllGroupsResponse> GetAll()
+            {
+                return await _grpcService.SendRequestAsync(async client =>
+                    await client.GetAllGroupsAsync(request, cancellationToken: token));
             }
         }
 
@@ -93,15 +118,32 @@ namespace ClientApiGateway.Api.Controllers
                     UserId = User.IsInRole(DefaultRoles.SuperUser) ? null : UserId
                 }
             };
+            var cacheKey = $"{nameof(GetGroup)}{request}";
+            var cacheTimespan = TimeSpan.FromSeconds(15);
             try
             {
-                var response = await _grpcService.SendRequestAsync(async client =>
-                    await client.GetGroupAsync(request, cancellationToken: token));
-                return Ok(_mapper.Map<GroupDto, GroupResource>(response));
+                GroupDto result;
+                if (DenyCache)
+                {
+                    result = await Get();
+                    _cache.Add(cacheKey, result, cacheTimespan);
+                }
+                else
+                {
+                    result = await _cache.GetOrAddAsync(cacheKey, Get, cacheTimespan);
+                }
+
+                return Ok(_mapper.Map<GroupDto, GroupResource>(result));
             }
             catch (RpcException e)
             {
                 return HandleRpcException(e);
+            }
+
+            async Task<GroupDto> Get()
+            {
+                return await _grpcService.SendRequestAsync(async client =>
+                    await client.GetGroupAsync(request, cancellationToken: token));
             }
         }
 

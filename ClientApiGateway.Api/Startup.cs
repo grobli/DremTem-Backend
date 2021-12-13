@@ -25,6 +25,8 @@ namespace ClientApiGateway.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddLazyCache();
+
             services.AddControllers(options =>
                     options.Conventions.Add(new RouteTokenTransformerConvention(new SlugifyParameterTransformer())))
                 .AddJsonOptions(options => options.JsonSerializerOptions.IgnoreNullValues = true);
