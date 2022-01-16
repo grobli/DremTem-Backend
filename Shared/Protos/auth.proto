@@ -10,6 +10,7 @@ service UserAuthGrpc {
   rpc SignIn (UserLoginRequest) returns (UserLoginResponse);
   rpc CreateRole (CreateRoleRequest) returns (google.protobuf.Empty);
   rpc AddUserToRole (AddUserToRoleRequest) returns (google.protobuf.Empty);
+  rpc ChangePassword (ChangePasswordRequest) returns (google.protobuf.Empty);
 }
 
 message UserSignUpRequest{
@@ -36,5 +37,11 @@ message CreateRoleRequest {
 message AddUserToRoleRequest {
   string Email = 1;
   string RoleName = 2;
+}
+
+message ChangePasswordRequest {
+  string UserId = 1;
+  string OldPassword = 2;
+  string NewPassword = 3;
 }
 

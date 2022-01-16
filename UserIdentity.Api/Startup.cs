@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
+using System.Security.Claims;
+using System.Security.Principal;
 using System.Threading.Tasks;
 using EasyNetQ;
 using EasyNetQ.AutoSubscribe;
@@ -91,13 +93,14 @@ namespace UserIdentity.Api
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IBus bus,
             IHostApplicationLifetime lifetime, UserDbContext dbContext, RoleManager<Role> roleManager,
-            ILogger<Startup> logger)
+            UserManager<User> userManager, ILogger<Startup> logger)
         {
             if (env.IsDevelopment() || env.IsEnvironment("docker"))
             {
                 app.UseDeveloperExceptionPage();
                 dbContext.Database.Migrate();
                 AddDefaultRolesIfNotExist(roleManager, logger);
+                AddDefaultAdminAccount(userManager, logger);
             }
 
             // EasyNetQ
@@ -132,12 +135,40 @@ namespace UserIdentity.Api
             {
                 var baseUser = new Role { Name = DefaultRoles.BaseUser };
                 var superUser = new Role { Name = DefaultRoles.SuperUser };
-                Task.WaitAll(roleManager.CreateAsync(baseUser));
-                Task.WaitAll(roleManager.CreateAsync(superUser));
+                Task.WaitAll(roleManager.CreateAsync(baseUser), roleManager.CreateAsync(superUser));
             }
             catch (Exception e)
             {
                 logger.LogError(e, "An error occured while adding the default roles. :(");
+            }
+        }
+
+        private static void AddDefaultAdminAccount(UserManager<User> userManager, ILogger<Startup> logger)
+        {
+            if (userManager.Users.Any(user => user.UserName == "admin" && user.Email == "admin")) return;
+            Task.WaitAll(CreateAdminAsync());
+
+            async Task CreateAdminAsync()
+            {
+                var admin = new User { Email = "admin", UserName = "admin" };
+
+                var userCreateResult = await userManager.CreateAsync(admin, "Password@123");
+                if (!userCreateResult.Succeeded)
+                {
+                    const string errorText = "[FATAL] Failed to create default admin account!";
+                    logger.LogError(errorText);
+                    throw new Exception(errorText);
+                }
+
+                var roles = new[] { DefaultRoles.BaseUser, DefaultRoles.SuperUser };
+                var roleResult = await userManager.AddToRolesAsync(admin, roles);
+                if (!roleResult.Succeeded)
+                {
+                    await userManager.DeleteAsync(admin);
+                    const string errorText = "[FATAL] Failed to add role to default admin account!";
+                    logger.LogError(errorText);
+                    throw new Exception(errorText);
+                }
             }
         }
     }

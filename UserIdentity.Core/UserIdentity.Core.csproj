@@ -10,7 +10,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\SensorData.Core\SensorData.Core.csproj" />
         <ProjectReference Include="..\Shared\Shared.csproj" />
     </ItemGroup>
 

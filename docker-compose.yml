@@ -40,6 +40,7 @@ services:
       - db-postgres
       - rabbitmq
       - consul
+    restart: on-failure
     command: [ './wait-for-it.sh', 'db-postgres:5432' ]
   device-manager:
     build:
@@ -57,6 +58,7 @@ services:
       - db-postgres
       - rabbitmq
       - consul
+    restart: on-failure
     command: [ './wait-for-it.sh', 'db-postgres:5432' ]
     deploy:
       resources:
@@ -70,6 +72,7 @@ services:
     ports:
       - '8080:8080'
       - '8081:8081'
+    restart: on-failure
     environment:
       ASPNETCORE_URLS: 'http://+:8080;https://+:8081'
       ASPNETCORE_HTTPS_PORT: '8081'
@@ -102,6 +105,7 @@ services:
       - consul
       - device-manager
       - sensor-data-1
+    restart: on-failure
   sensor-data-1:
     build:
       context: '.'
@@ -112,7 +116,7 @@ services:
       ASPNETCORE_ENVIRONMENT: 'docker'
       ASPNETCORE_Kestrel__Certificates__Default__Password: password
       ASPNETCORE_Kestrel__Certificates__Default__Path: /https/aspnetapp.pfx
-      User__Id: 'f42caf8a-438e-479f-b479-4c0d23944c4c' # test admin user
+      User__Id: 'f42caf8a-438e-479f-b479-4c0d23944c4c' # test user
     volumes:
       - '~/.aspnet/https:/https:ro'
     depends_on:
@@ -121,4 +125,5 @@ services:
       - device-manager
       - db-timescale
     command: [ './wait-for-it.sh', 'db-postgres:5432' ]
+    restart: on-failure
       

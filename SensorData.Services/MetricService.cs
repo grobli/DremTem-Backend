@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using SensorData.Core.Models;
 using SensorData.Core.Repositories;
 using SensorData.Core.Services;

@@ -43,5 +43,11 @@ namespace UserIdentity.Api.Services.Rpc
             var command = new AddUserToRoleCommand(request);
             return await _mediator.Send(command, context.CancellationToken);
         }
+
+        public override async Task<Empty> ChangePassword(ChangePasswordRequest request, ServerCallContext context)
+        {
+            var command = new ChangePasswordCommand(request);
+            return await _mediator.Send(command, context.CancellationToken);
+        }
     }
 }

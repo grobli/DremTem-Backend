@@ -7,7 +7,7 @@ namespace DeviceManager.Api.Validation.GroupRequests
 {
     public class AddDeviceToGroupRequestValidator : AbstractValidator<AddDeviceToGroupRequest>
     {
-        public AddDeviceToGroupRequestValidator(IUnitOfWork unitOfWork)
+        public AddDeviceToGroupRequestValidator()
         {
             RuleFor(r => r.UserId)
                 .NotEmpty()

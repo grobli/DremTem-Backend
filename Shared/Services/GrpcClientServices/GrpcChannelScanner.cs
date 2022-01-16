@@ -31,7 +31,7 @@ namespace Shared.Services.GrpcClientServices
                 catch (Exception ex)
                 {
                     _logger.LogError(ex,
-                        "Error occurred executing {WorkItem}.", nameof(_clientProvider.RefreshChannels));
+                        "Error occurred executing {WorkItem}", nameof(_clientProvider.RefreshChannels));
                 }
             }
         }

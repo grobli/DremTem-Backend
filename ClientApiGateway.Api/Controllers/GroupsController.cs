@@ -17,7 +17,7 @@ using Shared;
 using Shared.Proto;
 using Shared.Services.GrpcClientServices;
 using UserIdentity.Core.Models.Auth;
-using static ClientApiGateway.Api.Handlers.RpcExceptionHandler;
+using static ClientApiGateway.Api.ExceptionHandlers.RpcExceptionHandler;
 
 namespace ClientApiGateway.Api.Controllers
 {

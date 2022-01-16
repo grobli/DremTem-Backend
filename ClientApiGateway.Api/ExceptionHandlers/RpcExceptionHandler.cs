@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Extensions;
 
-namespace ClientApiGateway.Api.Handlers
+namespace ClientApiGateway.Api.ExceptionHandlers
 {
     public static class RpcExceptionHandler
     {

@@ -1,6 +1,5 @@
 ﻿using System;
 using Microsoft.AspNetCore.Identity;
-using Shared;
 
 namespace UserIdentity.Core.Models.Auth
 {

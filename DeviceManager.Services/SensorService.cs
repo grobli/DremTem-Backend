@@ -44,7 +44,6 @@ namespace DeviceManager.Services
         public async Task<IEnumerable<Sensor>> CreateSensorsRangeAsync(IEnumerable<Sensor> newSensors,
             CancellationToken cancellationToken = default)
         {
-            var now = DateTime.UtcNow;
             var sensors = newSensors as Sensor[] ?? newSensors.ToArray();
             foreach (var sensor in sensors)
             {

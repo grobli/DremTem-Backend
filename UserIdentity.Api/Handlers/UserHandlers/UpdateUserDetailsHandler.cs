@@ -48,6 +48,12 @@ namespace UserIdentity.Api.Handlers.UserHandlers
             {
                 throw new RpcException(new Status(StatusCode.NotFound, "User not found"));
             }
+            
+            if (user.UserName == "admin")
+            {
+                throw new RpcException(new Status(StatusCode.PermissionDenied,
+                    "Default admin account cannot be modified except password!"));
+            }
 
             user.FirstName = request.Body.FirstName;
             user.LastName = request.Body.LastName;

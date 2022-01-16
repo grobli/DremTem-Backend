@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Grpc.Core;
 using Shared.Proto;
 using Shared.Services.GrpcClientServices;
 
