@@ -16,7 +16,7 @@ namespace DeviceManager.Core.Models
         public string MacAddress
         {
             get => _macAddress;
-            set => _macAddress = value is null ? null : NormalizeMacAddress(value);
+            set => _macAddress = string.IsNullOrWhiteSpace(value) ? null : NormalizeMacAddress(value);
         }
 
         public string Model { get; set; }

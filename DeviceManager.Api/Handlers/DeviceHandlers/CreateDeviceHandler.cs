@@ -65,6 +65,8 @@ namespace DeviceManager.Api.Handlers.DeviceHandlers
             }
             catch (ValidationException e)
             {
+                if (_deviceService.GetDeviceQuery(newDevice.Id).Any())
+                    await _deviceService.DeleteDeviceAsync(newDevice, cancellationToken);
                 throw new RpcException(new Status(StatusCode.InvalidArgument, e.Message, e));
             }
         }

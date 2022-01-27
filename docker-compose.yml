@@ -19,15 +19,20 @@ services:
   consul:
     image: 'consul'
     ports:
+      - '8300:8300'
       - '8500:8500'
   rabbitmq:
     image: 'rabbitmq:3-management'
     ports:
       - '15672:15672' # management
+      - '5672:5672' # bus
   user-identity:
     build:
       context: '.'
       dockerfile: './UserIdentity.Api/Dockerfile'
+    ports:
+      - '6000:6000'
+      - '6001:6001'
     environment:
       ASPNETCORE_URLS: 'http://+:6000;https://+:6001'
       ASPNETCORE_HTTPS_PORT: '6001'
@@ -46,6 +51,9 @@ services:
     build:
       context: '.'
       dockerfile: './DeviceManager.Api/Dockerfile'
+    ports:
+      - '5000:5000'
+      - '5001:5001'
     environment:
       ASPNETCORE_URLS: 'http://+:5000;https://+:5001'
       ASPNETCORE_HTTPS_PORT: '5001'
@@ -110,6 +118,8 @@ services:
     build:
       context: '.'
       dockerfile: './SensorData.Api/Dockerfile'
+    ports:
+      - '7000:7000'
     environment:
       ASPNETCORE_URLS: 'http://+:7000;https://+:7001'
       ASPNETCORE_HTTPS_PORT: '7001'
@@ -126,4 +136,3 @@ services:
       - db-timescale
     command: [ './wait-for-it.sh', 'db-postgres:5432' ]
     restart: on-failure
-      

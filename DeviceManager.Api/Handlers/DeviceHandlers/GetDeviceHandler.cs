@@ -61,7 +61,8 @@ namespace DeviceManager.Api.Handlers.DeviceHandlers
             var deviceMap = _mapper.Map<Device, DeviceExtendedDto>(device);
 
             // add sensor ids
-            var sensors = query.Parameters.IncludeFieldsSet(Entity.Sensor).Count > 0
+            var sensors = query.Parameters is not null &&
+                          query.Parameters.IncludeFieldsSet(Entity.Sensor).Count > 0
                 ? deviceMap.Sensors.Select(s => s.Id)
                 : await _sensorService.GetAllSensorsQuery(userId)
                     .Where(s => s.DeviceId == device.Id)

@@ -6,7 +6,7 @@ namespace DeviceManager.Core.Models
     public abstract class EntityBase<TIdentifier, TEntity> : IEntity<TIdentifier, TEntity>
         where TEntity : EntityBase<TIdentifier, TEntity>
     {
-        public TIdentifier Id { get; }
+        public TIdentifier Id { get; set; }
         private readonly string _name;
 
         public string Name

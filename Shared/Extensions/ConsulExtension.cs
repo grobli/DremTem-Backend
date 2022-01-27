@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using Consul;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -43,10 +44,10 @@ namespace Shared.Extensions
 
             // get server ip address
             var serverAddressesFeature = app.ServerFeatures.Get<IServerAddressesFeature>();
-            var address = serverAddressesFeature.Addresses
-                .First()
-                .Replace("+", Dns.GetHostEntry(Dns.GetHostName()).AddressList
-                    .First(ip => ip.AddressFamily == AddressFamily.InterNetwork).ToString());
+            var ip = Dns.GetHostEntry(Dns.GetHostName()).AddressList
+                .First(ip => ip.AddressFamily == AddressFamily.InterNetwork).ToString();
+            var address = serverAddressesFeature.Addresses.First();
+            address = Regex.Replace(address, "[+]|localhost", ip);
 
             // register service with consul
             var uri = new Uri(address);
